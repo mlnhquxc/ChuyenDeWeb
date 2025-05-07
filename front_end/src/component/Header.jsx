@@ -51,6 +51,9 @@ const Header = () => {
     navigate('/cart'); // Chuyển sang trang /cart
   };
 
+  const wishListClick = () => {
+    navigate('/wishlist'); // Chuyển sang trang /wishlist
+  };
 
 
 
@@ -158,7 +161,7 @@ const Header = () => {
               </div>
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <FiHeart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer" />
+                  <FiHeart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer" onClick={wishListClick}/>
                   <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {wishlistCount}
                   </span>
