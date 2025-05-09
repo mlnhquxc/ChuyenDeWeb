@@ -105,7 +105,7 @@ const Header = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="w-40">
+            <div className="w-40 cursor-pointer" onClick={() => navigate('/')}>
               <img 
                 src="https://images.unsplash.com/photo-1614680376573-df3480f0c6ff" 
                 alt="Logo" 
