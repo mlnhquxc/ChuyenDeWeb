@@ -91,8 +91,7 @@ const Header = () => {
             <div className="flex items-center space-x-4">
               <select className="bg-transparent text-sm text-gray-600 focus:outline-none">
                 <option value="en">English</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
+                <option value="es">Vietnamese</option>
               </select>
               <button className="text-sm text-gray-600 hover:text-red-600">Login</button>
             </div>
@@ -107,7 +106,7 @@ const Header = () => {
             {/* Logo */}
             <div className="w-40 cursor-pointer" onClick={() => navigate('/')}>
               <img 
-                src="https://images.unsplash.com/photo-1614680376573-df3480f0c6ff" 
+                src="https://i.pinimg.com/736x/af/a5/38/afa538f94bca768daba1dcbb804fde4b.jpg" 
                 alt="Logo" 
                 className="h-12 object-contain"
                 
