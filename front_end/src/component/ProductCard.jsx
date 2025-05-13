@@ -9,6 +9,9 @@ const ProductCard = ({product}) => {
     navigate('/product_detail'); // Chuyển sang trang /about
   };
 
+  const addToWishlist = () => {
+  }
+
   return (
       <div
         className="bg-white dark:bg-gray-700 rounded-lg overflow-hidden shadow-lg group" onClick={handleClick}
@@ -33,7 +36,9 @@ const ProductCard = ({product}) => {
               Add to Cart
             </button>
             <button>
-              <FiHeart className="w-5 h-5 mr-2" />
+              <FiHeart
+              onClick={0}
+              className="w-5 h-5 mr-2" />
             </button>
           </div>
         </div>

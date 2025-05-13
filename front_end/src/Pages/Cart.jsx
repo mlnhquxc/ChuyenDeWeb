@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { FiHeart, FiShoppingCart, FiMinus, FiPlus, FiTrash2, FiArrowLeft } from "react-icons/fi";
+import {
+  FiHeart,
+  FiShoppingCart,
+  FiMinus,
+  FiPlus,
+  FiTrash2,
+  FiArrowLeft,
+} from "react-icons/fi";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
@@ -12,7 +19,7 @@ const Cart = () => {
       size: "M",
       price: 29.99,
       quantity: 1,
-      image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab"
+      image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
     },
     {
       id: 2,
@@ -21,8 +28,8 @@ const Cart = () => {
       size: "L",
       price: 89.99,
       quantity: 2,
-      image: "https://images.unsplash.com/photo-1503341960582-b45751874cf0"
-    }
+      image: "https://images.unsplash.com/photo-1503341960582-b45751874cf0",
+    },
   ]);
   const [promoCode, setPromoCode] = useState("");
   const [discount, setDiscount] = useState(0);
@@ -31,36 +38,41 @@ const Cart = () => {
   const tax = 0.1; // 10% tax
 
   const updateQuantity = (id, newQuantity) => {
-    setCartItems(items =>
-      items.map(item =>
+    setCartItems((items) =>
+      items.map((item) =>
         item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item
       )
     );
   };
 
   const removeItem = (id) => {
-    setCartItems(items => items.filter(item => item.id !== id));
+    setCartItems((items) => items.filter((item) => item.id !== id));
   };
 
   const clearCart = () => {
     setCartItems([]);
   };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
   const taxAmount = subtotal * tax;
   const total = subtotal + taxAmount + shipping - discount;
   // Payment
   const navigate = useNavigate();
   const handleCheckout = () => {
-    navigate('/payment');
-  } 
+    navigate("/payment");
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="lg:w-2/3 space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">Shopping Cart ({cartItems.length} items)</h2>
+            <h2 className="text-2xl font-bold">
+              Shopping Cart ({cartItems.length} items)
+            </h2>
             <button
               onClick={clearCart}
               className="text-red-500 hover:text-red-600 flex items-center gap-2"
@@ -69,8 +81,11 @@ const Cart = () => {
             </button>
           </div>
 
-          {cartItems.map(item => (
-            <div key={item.id} className="flex gap-4 bg-white p-4 rounded-lg shadow">
+          {cartItems.map((item) => (
+            <div
+              key={item.id}
+              className="flex gap-4 bg-white p-4 rounded-lg shadow"
+            >
               <img
                 src={item.image}
                 alt={item.name}
@@ -106,15 +121,22 @@ const Cart = () => {
                     </button>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold">${(item.price * item.quantity).toFixed(2)}</div>
-                    <div className="text-sm text-gray-500">${item.price} each</div>
+                    <div className="font-semibold">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      ${item.price} each
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           ))}
 
-          <button className="flex items-center text-green-500 hover:text-green-600 gap-2">
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center text-green-500 hover:text-green-600 gap-2 mt-8"
+          >
             <FiArrowLeft /> Continue Shopping
           </button>
         </div>
@@ -122,7 +144,7 @@ const Cart = () => {
         <div className="lg:w-1/3">
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-xl font-bold mb-4">Order Summary</h3>
-            
+
             <div className="space-y-2 mb-4">
               <div className="flex justify-between">
                 <span>Subtotal</span>
@@ -162,7 +184,10 @@ const Cart = () => {
                 </button>
               </div>
 
-              <button className="w-full bg-black text-white py-3 rounded-full hover:bg-gray-800 transition" onClick={handleCheckout}>
+              <button
+                className="w-full bg-black text-white py-3 rounded-full hover:bg-gray-800 transition"
+                onClick={handleCheckout}
+              >
                 Proceed to Checkout
               </button>
             </div>

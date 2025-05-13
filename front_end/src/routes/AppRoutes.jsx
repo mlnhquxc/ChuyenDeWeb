@@ -5,6 +5,7 @@ import ProductDetail from '../Pages/ProductDetail';
 import Cart from '../Pages/Cart'
 import CheckoutPage from '../Pages/Payment'
 import AuthPage from '../Pages/Authentication'
+import WishList from '../Pages/WishList';
 
 function AppRoutes() {
   
@@ -16,6 +17,7 @@ function AppRoutes() {
       <Route path="/cart" element={<Cart/>} />
       <Route path="/payment" element={<CheckoutPage/>} />
       <Route path="/login" element={<AuthPage/>} />
+      <Route path="/wishList" element={<WishList/>} />
     </Routes>
   );
 }

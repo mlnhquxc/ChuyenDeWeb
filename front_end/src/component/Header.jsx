@@ -51,6 +51,9 @@ const Header = () => {
     navigate('/cart'); // Chuyển sang trang /cart
   };
 
+  const wishListClick = () => {
+    navigate('/wishlist'); // Chuyển sang trang /wishlist
+  };
 
 
 
@@ -88,8 +91,7 @@ const Header = () => {
             <div className="flex items-center space-x-4">
               <select className="bg-transparent text-sm text-gray-600 focus:outline-none">
                 <option value="en">English</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
+                <option value="es">Vietnamese</option>
               </select>
               <button className="text-sm text-gray-600 hover:text-red-600">Login</button>
             </div>
@@ -102,9 +104,9 @@ const Header = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="w-40">
+            <div className="w-40 cursor-pointer" onClick={() => navigate('/')}>
               <img 
-                src="https://images.unsplash.com/photo-1614680376573-df3480f0c6ff" 
+                src="https://i.pinimg.com/736x/af/a5/38/afa538f94bca768daba1dcbb804fde4b.jpg" 
                 alt="Logo" 
                 className="h-12 object-contain"
                 
@@ -158,7 +160,7 @@ const Header = () => {
               </div>
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <FiHeart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer" />
+                  <FiHeart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer" onClick={wishListClick}/>
                   <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {wishlistCount}
                   </span>
