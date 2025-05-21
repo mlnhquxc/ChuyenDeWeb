@@ -39,7 +39,6 @@ public class OrderService {
         if (cart.getCartItems().isEmpty()) {
             throw new RuntimeException("Cart is empty");
         }
-
         User user = userService.findById(userId);
         
         Order order = Order.builder()
