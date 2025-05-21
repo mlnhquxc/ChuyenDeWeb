@@ -1,6 +1,9 @@
 package com.example.back_end.service;
 
+import com.example.back_end.entity.Product;
 import com.example.back_end.entity.Review;
+import com.example.back_end.entity.User;
+import com.example.back_end.repositories.ProductRepository;
 import com.example.back_end.repositories.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,6 +16,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
+    private final UserService userService;
+    private final ProductRepository productRepository;
 
     public List<Review> getReviewsByProductId(Long productId) {
         return reviewRepository.findByProductId(productId);
@@ -28,9 +33,13 @@ public class ReviewService {
 
     @Transactional
     public Review createReview(Integer userId, Long productId, Integer rating, String comment) {
+        User user = userService.findById(userId);
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+                
         Review review = Review.builder()
-                .userId(userId)
-                .productId(productId)
+                .user(user)
+                .product(product)
                 .rating(rating)
                 .comment(comment)
                 .reviewDate(LocalDateTime.now())

@@ -3,17 +3,21 @@ package com.example.back_end.service;
 import com.example.back_end.entity.Cart;
 import com.example.back_end.entity.CartItem;
 import com.example.back_end.entity.Product;
+import com.example.back_end.entity.User;
 import com.example.back_end.repositories.CartRepository;
 import com.example.back_end.repositories.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+
 @Service
 @RequiredArgsConstructor
 public class CartService {
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
+    private final UserService userService;
 
     public Cart getCartByUserId(Integer userId) {
         return cartRepository.findByUserId(userId)
@@ -22,8 +26,10 @@ public class CartService {
 
     @Transactional
     public Cart createCart(Integer userId) {
+        User user = userService.findById(userId);
         Cart cart = Cart.builder()
-                .userId(userId)
+                .user(user)
+                .cartItems(new ArrayList<>())
                 .build();
         return cartRepository.save(cart);
     }

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,6 +18,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final CartService cartService;
+    private final UserService userService;
 
     public List<Order> getOrdersByUserId(Integer userId) {
         return orderRepository.findByUserId(userId);
@@ -38,13 +40,16 @@ public class OrderService {
             throw new RuntimeException("Cart is empty");
         }
 
+        User user = userService.findById(userId);
+        
         Order order = Order.builder()
-                .userId(userId)
+                .user(user)
                 .orderDate(LocalDateTime.now())
                 .status("PENDING")
                 .shippingAddress(shippingAddress)
                 .phone(phone)
                 .totalAmount(calculateTotalAmount(cart))
+                .orderDetails(new ArrayList<>())
                 .build();
 
         // Create order details and update product stock
