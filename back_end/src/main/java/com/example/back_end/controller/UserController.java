@@ -34,5 +34,5 @@ public class UserController {
         authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
         return userService.getUsers(); }
     @GetMapping("/{userId}")
-    User getUserById(@PathVariable int userId) { return userService.getUserById(userId); }
+    User getUserById(@PathVariable int userId) { return userService.findById(userId); }
 }
