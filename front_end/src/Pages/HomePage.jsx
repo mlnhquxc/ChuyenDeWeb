@@ -24,7 +24,7 @@ const HomePage = () => {
     if(currentCategoryIndex < categories.length -4){
       setCurrentCategoryIndex(prev => prev + 1);
     }
-   console.log("currentCategoryIndex : right");
+  console.log("currentCategoryIndex : right");
   };
   
   const prevCategory = () => {
@@ -171,7 +171,7 @@ const HomePage = () => {
 
       {/* Categories */}
       <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Popular Categories</h2>
+        <h2 className="text-3xl font-bold text-center mb-12 ">Popular Categories</h2>
         <div className="relative">
           <button 
             onClick={prevCategory}
@@ -208,8 +208,8 @@ const HomePage = () => {
 
       {/* Featured Products */}
       <section className="container mx-auto px-4 py-16 bg-gray-50 dark:bg-gray-800">
-        <h2 className="text-3xl font-bold text-center mb-12">Featured Products</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <h2 className="text-3xl font-bold dark:text-white text-center mb-12">Featured Products</h2>
+        <div className="grid grid-cols-1 dark:text-white md:grid-cols-2 lg:grid-cols-4 gap-8">
           {products.map((product, index) => (
             <ProductCard key={index} product={product}/>
           ))}

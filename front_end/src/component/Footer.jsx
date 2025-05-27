@@ -1,4 +1,5 @@
 import { FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
+import { Link } from 'react-router-dom';
 import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiX, FiHeart, FiMail ,FiChevronLeft, FiChevronRight} from "react-icons/fi";
 
 const Footer = ()=> {
@@ -15,10 +16,10 @@ const Footer = ()=> {
             <div>
               <h3 className="text-xl font-bold mb-4">Quick Links</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white">About Us</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Contact</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Shop</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Blog</a></li>
+                <li><Link to="/aboutUs" className="text-gray-400 hover:text-white">About Us</Link></li>
+                <li><Link to="/baoHanh" className="text-gray-400 hover:text-white">Bảo Hành</Link></li>
+                <li><Link to="/doiTra" className="text-gray-400 hover:text-white">Chính sách đổi trả</Link></li>
+                <li><Link to="/faq" className="text-gray-400 hover:text-white">FAQ</Link></li>
               </ul>
             </div>
             <div>
@@ -26,7 +27,7 @@ const Footer = ()=> {
               <ul className="space-y-2 text-gray-400">
                 <li>123 Street, City, Country</li>
                 <li>Phone: +1 234 567 8900</li>
-                <li>Email: info@ogani.com</li>
+                <li>Email: Nagis@gmail.com</li>
               </ul>
             </div>
             <div>

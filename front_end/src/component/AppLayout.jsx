@@ -7,7 +7,7 @@ import { useLocation } from 'react-router-dom';
 
 function AppLayout() {
   const location = useLocation();
-  const hideHeaderFooter = location.pathname === "/login";
+  const hideHeaderFooter = location.pathname === "";
 
   return (
     <>
