@@ -5,6 +5,7 @@ import ProductDetail from '../Pages/ProductDetail';
 import Cart from '../Pages/Cart'
 import CheckoutPage from '../Pages/Payment'
 import AuthPage from '../Pages/Authentication'
+
 import BaoHanh from '../Pages/baoHanh'
 import DoiTra from '../Pages/doiTra'
 import FAQ from '../Pages/FAQ'
