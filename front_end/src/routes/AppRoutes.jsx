@@ -5,6 +5,12 @@ import ProductDetail from '../Pages/ProductDetail';
 import Cart from '../Pages/Cart'
 import CheckoutPage from '../Pages/Payment'
 import AuthPage from '../Pages/Authentication'
+
+import BaoHanh from '../Pages/baoHanh'
+import DoiTra from '../Pages/doiTra'
+import FAQ from '../Pages/FAQ'
+import Contact from '../Pages/Contact'
+import AboutUs from '../Pages/aboutUs'
 import WishList from '../Pages/WishList';
 
 function AppRoutes() {
@@ -17,6 +23,11 @@ function AppRoutes() {
       <Route path="/cart" element={<Cart/>} />
       <Route path="/payment" element={<CheckoutPage/>} />
       <Route path="/login" element={<AuthPage/>} />
+      <Route path="/baoHanh" element={<BaoHanh/>} />
+      <Route path="/faq" element={<FAQ/>} />
+      <Route path="/aboutUs" element={<AboutUs/>} />
+      <Route path="/contact" element={<Contact/>} />
+      <Route path="/doiTra" element={<DoiTra/>} />
       <Route path="/wishList" element={<WishList/>} />
     </Routes>
   );
