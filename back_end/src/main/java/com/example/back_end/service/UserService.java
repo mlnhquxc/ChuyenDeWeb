@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -39,31 +38,50 @@ public class UserService {
     private UserRepository userRepository;
     @Autowired
     private RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     @Autowired
     private UserMapper userMapper;
     @NonFinal
     @Value("${jwt.signer-key}")
     protected String SIGNER_KEY;
+
     public User createRequest(UserCreationRequest request) {
         if(userRepository.existsByUsername(request.getUsername())){
             throw new AppException(ErrorCode.USER_EXISTED);
         }
+        
+        // Validate email
+        if (request.getEmail() == null || request.getEmail().isEmpty()) {
+            throw new RuntimeException("Email is required");
+        }
+        
         System.out.println("Email before mapping: " + request.getEmail());
         String encryptedPS= passwordEncoder.encode(request.getPassword());
         request.setPassword(encryptedPS);
         User user = userMapper.toUser(request);
         System.out.println("Email after mapping: " + user.getEmail());
+        
+        // Check if email was properly mapped
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+            user.setEmail(request.getEmail());
+        }
+        
         HashSet<Role> roles = new HashSet<>();
-        Role userRole = roleRepository.save(Role.builder()
-                .name(PredefinedRole.USER_ROLE)
-                .description("User role")
-                .build());
+        
+        // Find existing USER role instead of creating a new one
+        Role userRole = roleRepository.findById(PredefinedRole.USER_ROLE)
+                .orElseGet(() -> roleRepository.save(Role.builder()
+                        .name(PredefinedRole.USER_ROLE)
+                        .description("User role")
+                        .build()));
+                        
         roles.add(userRole);
         user.setRoles(roles);
 
         return userRepository.save(user);
     }
+
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
         var token = request.getToken();
 
@@ -80,26 +98,25 @@ public class UserService {
         log.info("In method at User");
         return userRepository.findAll();
     }
-    public User getUserById(Integer id) {
-        return userRepository.findUserById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + id))
-                ;
+
+    public User findById(Integer id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
+
     public AuthenticationResponse login (String email, String password){
         var user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_EXISTED));
-        boolean authenticated =passwordEncoder.matches(password,user.getPassword());
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        boolean authenticated = passwordEncoder.matches(password, user.getPassword());
         if(!authenticated){
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
         var token = generateToken(user);
 
-
         return AuthenticationResponse.builder().token(token).authenticated(true).build();
-
-
     }
+
     private String generateToken(User user){
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         System.out.println(buildScope(user));
@@ -119,7 +136,7 @@ public class UserService {
             jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
             return jwsObject.serialize();
         } catch (JOSEException e) {
-            System.out.println("Can't get toten"+e);
+            System.out.println("Can't get token"+e);
             throw new RuntimeException(e);
         }
     }
@@ -131,6 +148,4 @@ public class UserService {
         }
         return stringJoiner.toString();
     }
-
-
 }

@@ -8,29 +8,61 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.HashMap;
+import java.util.Map;
 
-@ControllerAdvice
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.FieldError;
+
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    ResponseEntity<ApiResponse> handlingRuntimeException (MethodArgumentNotValidException exception){
-        ApiResponse apiResponse = new ApiResponse();
-        ErrorCode invalidPassword = ErrorCode.INVALID_PASSWORD;
-        apiResponse.setCode(invalidPassword.getCode());
-        apiResponse.setMessage(invalidPassword.getMessage());
-        return ResponseEntity.badRequest().body(apiResponse);
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ApiResponse<Object>> handleAppException(AppException ex) {
+        ApiResponse<Object> response = new ApiResponse<>();
+        response.setCode(ex.getErrorCode().getCode());
+        response.setMessage(ex.getErrorCode().getMessage());
+        return new ResponseEntity<>(response, ex.getErrorCode().getStatusCode());
     }
-    @ExceptionHandler(value = AppException.class)
-    ResponseEntity<ApiResponse> handlingValidationException (AppException exception){
-        ApiResponse apiResponse = new ApiResponse();
-        ErrorCode errorCode = exception.getErrorCode();
-        apiResponse.setCode(errorCode.getCode());
-        apiResponse.setMessage(errorCode.getMessage());
-        apiResponse.setResult(errorCode.getStatusCode());
-        return ResponseEntity.badRequest().body(apiResponse);
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        
+        ApiResponse<Map<String, String>> response = new ApiResponse<>();
+        response.setCode(1007);
+        response.setMessage("Validation failed");
+        response.setResult(errors);
+        
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+    
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleConstraintViolationException(ConstraintViolationException ex) {
+        ApiResponse<Object> response = new ApiResponse<>();
+        response.setCode(1007);
+        response.setMessage("Validation failed: " + ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Object>> handleGenericException(Exception ex) {
+        ApiResponse<Object> response = new ApiResponse<>();
+        response.setCode(1000);
+        response.setMessage("An unexpected error occurred: " + ex.getMessage());
+        ex.printStackTrace(); // Log the full stack trace
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         Throwable rootCause = getRootCause(ex);
@@ -56,6 +88,4 @@ public class GlobalExceptionHandler {
         }
         return throwable;
     }
-
-
 }

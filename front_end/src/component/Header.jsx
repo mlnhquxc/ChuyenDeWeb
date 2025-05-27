@@ -62,11 +62,11 @@ const Header = () => {
     { name: "Shop", link: "/shop", hasDropdown: true },
     { name: "Pages", link: "#", hasDropdown: true },
     { name: "Blog", link: "#" },
-    { name: "Contact", link: "#" },
+    { name: "Contact", link: "/contact" },
   ];
 
   return (
-     <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md">
+    <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md">
     {/* <header className={`w-full ${isSticky ? "fixed top-0 shadow-lg bg-white" : ""}`}> */}
       {/* Top Bar */}
       <div className="bg-gray-100 py-2 hidden md:block">
@@ -74,7 +74,7 @@ const Header = () => {
           <div className="flex items-center space-x-4 text-sm text-gray-600">
             <div className="flex items-center">
               <MdEmail className="mr-2" />
-              <span>info@example.com</span>
+              <span>Nagis@gmail.com</span>
             </div>
             <div className="flex items-center">
               <MdPhone className="mr-2" />
@@ -93,7 +93,7 @@ const Header = () => {
                 <option value="en">English</option>
                 <option value="es">Vietnamese</option>
               </select>
-              <button className="text-sm text-gray-600 hover:text-red-600">Login</button>
+              <button onClick={() => navigate('/login')} className="text-sm text-gray-600 hover:text-red-600">Login</button>
             </div>
           </div>
         </div>
