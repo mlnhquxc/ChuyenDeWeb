@@ -9,13 +9,30 @@ const authService = {
       console.log('Login response:', response.data);
       
       if (response.data.result) {
-        localStorage.setItem('token', response.data.result.token);
-        localStorage.setItem('user', JSON.stringify(response.data.result.user));
+        const { token, user } = response.data.result;
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
         return response.data.result;
       }
       throw new Error(response.data.message || 'Login failed');
     } catch (error) {
       console.error('Login error:', error);
+      if (error.response?.status === 403) {
+        try {
+          const refreshResponse = await this.refreshToken();
+          if (refreshResponse) {
+            const retryResponse = await axiosInstance.post(ENDPOINTS.AUTH.LOGIN, credentials);
+            if (retryResponse.data.result) {
+              const { token, user } = retryResponse.data.result;
+              localStorage.setItem('token', token);
+              localStorage.setItem('user', JSON.stringify(user));
+              return retryResponse.data.result;
+            }
+          }
+        } catch (refreshError) {
+          console.error('Token refresh failed:', refreshError);
+        }
+      }
       throw error;
     }
   },
@@ -35,8 +52,9 @@ const authService = {
       console.log('Register response:', response.data);
       
       if (response.data.result) {
-        localStorage.setItem('token', response.data.result.token);
-        localStorage.setItem('user', JSON.stringify(response.data.result.user));
+        const { token, user } = response.data.result;
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
         return response.data.result;
       }
       throw new Error(response.data.message || 'Registration failed');
@@ -60,14 +78,26 @@ const authService = {
 
   async refreshToken() {
     try {
-      const response = await axiosInstance.post(ENDPOINTS.AUTH.REFRESH_TOKEN);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
+
+      const response = await axiosInstance.post(ENDPOINTS.AUTH.REFRESH_TOKEN, null, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
       if (response.data.result) {
-        localStorage.setItem('token', response.data.result.token);
+        const newToken = response.data.result.token;
+        localStorage.setItem('token', newToken);
         return response.data.result;
       }
       throw new Error('Token refresh failed');
     } catch (error) {
       console.error('Token refresh error:', error);
+      this.logout();
       throw error;
     }
   },

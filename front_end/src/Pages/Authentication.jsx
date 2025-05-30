@@ -135,8 +135,18 @@ const AuthPage = () => {
         console.log('Registration response:', response);
         
         if (response && response.authenticated) {
-          console.log('Registration successful, redirecting to home');
-          navigate('/');
+          console.log('Registration successful, switching to login form');
+          setAuthState('login');
+          setFormData(prev => ({
+            ...prev,
+            email: formData.email,
+            password: '',
+            confirmPassword: '',
+            fullName: '',
+            phone: '',
+            termsAccepted: false
+          }));
+          setErrors({});
         } else {
           console.log('Registration failed - not authenticated');
           setErrors({
