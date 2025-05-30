@@ -1,14 +1,48 @@
-import React, { useState, useEffect } from "react";
-import { FiSearch, FiShoppingCart, FiHeart, FiMenu, FiX , FiMic} from "react-icons/fi";
+import React, { useState, useEffect, useRef } from "react";
+import { FiSearch, FiShoppingCart, FiHeart, FiMenu, FiX , FiMic, FiUser, FiSettings, FiLogOut} from "react-icons/fi";
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { MdEmail, MdPhone, MdKeyboardArrowDown } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-
+import { useAuth } from "../context/AuthContext";
 
 const Header = () => {
+  const { user, logout, isAuthenticated } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
+  const userMenuRef = useRef(null);
+  const navigate = useNavigate();
+
+  // Theo dõi thay đổi của user state
+  useEffect(() => {
+    console.log('Header - User state changed:', { user, isAuthenticated });
+  }, [user, isAuthenticated]);
+
+  // Force re-render when auth state changes
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log('Header - User authenticated, updating UI');
+    }
+  }, [isAuthenticated, user]);
+
+  const handleLogout = async () => {
+    try {
+      console.log('Header: Initiating logout...');
+      await logout();
+      console.log('Header: Logout successful, navigating to login');
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error('Header: Logout error:', error);
+      // Even if logout fails, navigate to login page
+      navigate('/login', { replace: true });
+    }
+  };
+
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
   //Tìm kiếm giọng nói
   const [isListening, setIsListening] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,7 +80,6 @@ const Header = () => {
   }
   };
   //
-  const navigate = useNavigate(); 
   const cartClick = () => {
     navigate('/cart'); // Chuyển sang trang /cart
   };
@@ -55,8 +88,6 @@ const Header = () => {
     navigate('/wishlist'); // Chuyển sang trang /wishlist
   };
 
-
-
   const menuItems = [
     { name: "Home", link: "/" },
     { name: "Shop", link: "/shop", hasDropdown: true },
@@ -64,6 +95,42 @@ const Header = () => {
     { name: "Blog", link: "#" },
     { name: "Contact", link: "/contact" },
   ];
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleUserMenuClick = () => {
+    setIsUserMenuOpen(!isUserMenuOpen);
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+    setIsUserMenuOpen(false);
+  };
+
+  const handleOrdersClick = () => {
+    navigate('/orders');
+    setIsUserMenuOpen(false);
+  };
+
+  const handleWishlistClick = () => {
+    navigate('/wishlist');
+    setIsUserMenuOpen(false);
+  };
+
+  const handleSettingsClick = () => {
+    navigate('/settings');
+    setIsUserMenuOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md">
@@ -93,7 +160,76 @@ const Header = () => {
                 <option value="en">English</option>
                 <option value="es">Vietnamese</option>
               </select>
-              <button onClick={() => navigate('/login')} className="text-sm text-gray-600 hover:text-red-600">Login</button>
+              {isAuthenticated && user ? (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={handleUserMenuClick}
+                    className="flex items-center space-x-2 focus:outline-none"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                      {user?.avatar ? (
+                        <img
+                          src={user.avatar}
+                          alt="User avatar"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <FiUser className="w-5 h-5 text-gray-500" />
+                      )}
+                    </div>
+                    <span className="text-sm text-gray-600">{user?.fullname || user?.username}</span>
+                    <MdKeyboardArrowDown className={`transform transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                      <button
+                        onClick={handleProfileClick}
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                      >
+                        <FiUser className="mr-2" />
+                        Profile
+                      </button>
+                      <button
+                        onClick={handleOrdersClick}
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                      >
+                        <FiShoppingCart className="mr-2" />
+                        Orders
+                      </button>
+                      <button
+                        onClick={handleWishlistClick}
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                      >
+                        <FiHeart className="mr-2" />
+                        Wishlist
+                      </button>
+                      <button
+                        onClick={handleSettingsClick}
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                      >
+                        <FiSettings className="mr-2" />
+                        Settings
+                      </button>
+                      <div className="border-t border-gray-100"></div>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                      >
+                        <FiLogOut className="mr-2" />
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button 
+                  onClick={handleLogin}
+                  className="text-sm text-gray-600 hover:text-red-600"
+                >
+                  Login
+                </button>
+              )}
             </div>
           </div>
         </div>

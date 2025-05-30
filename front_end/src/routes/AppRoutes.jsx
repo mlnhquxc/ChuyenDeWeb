@@ -1,36 +1,64 @@
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Home from '../Pages/HomePage';
+import HomePage from '../Pages/HomePage';
 import Store from '../Pages/Store';
 import ProductDetail from '../Pages/ProductDetail';
-import Cart from '../Pages/Cart'
-import CheckoutPage from '../Pages/Payment'
-import AuthPage from '../Pages/Authentication'
-
-import BaoHanh from '../Pages/baoHanh'
-import DoiTra from '../Pages/doiTra'
-import FAQ from '../Pages/FAQ'
-import Contact from '../Pages/Contact'
-import AboutUs from '../Pages/aboutUs'
+import AboutUs from '../Pages/aboutUs';
+import Contact from '../Pages/Contact';
+import FAQ from '../Pages/FAQ';
+import BaoHanh from '../Pages/baoHanh';
+import DoiTra from '../Pages/doiTra';
+import AuthPage from '../Pages/Authentication';
+import Cart from '../Pages/Cart';
 import WishList from '../Pages/WishList';
+import Profile from '../Pages/Profile';
+import Orders from '../Pages/Orders';
+import PrivateRoute from '../components/PrivateRoute';
 
-function AppRoutes() {
-  
+const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<HomePage />} />
       <Route path="/shop" element={<Store />} />
-      <Route path="/product_detail" element={<ProductDetail />} />
-      <Route path="/cart" element={<Cart/>} />
-      <Route path="/payment" element={<CheckoutPage/>} />
-      <Route path="/login" element={<AuthPage/>} />
-      <Route path="/baoHanh" element={<BaoHanh/>} />
-      <Route path="/faq" element={<FAQ/>} />
-      <Route path="/aboutUs" element={<AboutUs/>} />
-      <Route path="/contact" element={<Contact/>} />
-      <Route path="/doiTra" element={<DoiTra/>} />
-      <Route path="/wishList" element={<WishList/>} />
+      <Route path="/products/:id" element={<ProductDetail />} />
+      <Route path="/about" element={<AboutUs />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/login" element={<AuthPage />} />
+      <Route path="/register" element={<AuthPage />} />
+      <Route
+        path="/cart"
+        element={
+          <PrivateRoute>
+            <Cart />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/wishlist"
+        element={
+          <PrivateRoute>
+            <WishList />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <PrivateRoute>
+            <Profile />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/orders"
+        element={
+          <PrivateRoute>
+            <Orders />
+          </PrivateRoute>
+        }
+      />
     </Routes>
   );
-}
+};
 
 export default AppRoutes;
