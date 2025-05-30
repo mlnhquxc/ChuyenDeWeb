@@ -141,7 +141,7 @@ public class UserService implements UserDetailsService {
             var user = userRepository.findByEmail(email)
                     .orElseThrow(() -> {
                         log.error("User not found with email: {}", email);
-                        return new AppException(ErrorCode.USER_NOT_FOUND);
+                        return new AppException(ErrorCode.USER_NOT_EXISTED);
                     });
             
             if (!passwordEncoder.matches(password, user.getPassword())) {
@@ -322,7 +322,7 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
