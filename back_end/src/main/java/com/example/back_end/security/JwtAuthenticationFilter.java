@@ -1,5 +1,6 @@
 package com.example.back_end.security;
 
+import com.example.back_end.exception.JwtAuthenticationException;
 import com.example.back_end.service.JwtService;
 import com.example.back_end.service.UserService;
 import com.nimbusds.jose.JOSEException;
@@ -35,7 +36,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             String token = authHeader.substring(7);
-            String email = jwtService.validateToken(token);
+            String email = null;
+            try {
+                email = jwtService.validateToken(token);
+            } catch (ParseException | JOSEException | JwtAuthenticationException e) {
+                logger.error("Invalid JWT token", e);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 try {
@@ -50,11 +58,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 } catch (Exception e) {
                     logger.error("Cannot set user authentication: {}", e.getMessage());
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("User not found or token is invalid");
                     return;
                 }
             }
-        } catch (ParseException | JOSEException e) {
-            logger.error("Invalid JWT token: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Authentication error", e);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
