@@ -17,18 +17,30 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         
-        // Allow specific origins including Postman
-        config.setAllowedOriginPatterns(Collections.singletonList("*"));
+        // Allow specific origin
+        config.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
         
-        // Allow specific headers
-        config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
+        // Allow all headers
+        config.setAllowedHeaders(Arrays.asList(
+            "Origin",
+            "Content-Type",
+            "Accept",
+            "Authorization",
+            "X-Requested-With",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers"
+        ));
         
-        // Allow specific methods
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Allow all methods
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         
         // Allow credentials
         config.setAllowCredentials(true);
         
+        // Set max age for preflight requests
+        config.setMaxAge(3600L);
+        
+        // Apply to all paths
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }

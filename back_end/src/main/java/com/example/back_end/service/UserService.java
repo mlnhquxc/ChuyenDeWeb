@@ -17,15 +17,20 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import lombok.experimental.NonFinal;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -33,53 +38,79 @@ import java.util.*;
 
 @Service
 @Slf4j
-public class UserService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private UserMapper userMapper;
-    @NonFinal
+@RequiredArgsConstructor
+public class UserService implements UserDetailsService {
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
+    private final JwtService jwtService;
+
     @Value("${jwt.signer-key}")
-    protected String SIGNER_KEY;
+    private String SIGNER_KEY;
 
     public User createRequest(UserCreationRequest request) {
-        if(userRepository.existsByUsername(request.getUsername())){
+        log.info("Creating new user with email: {}", request.getEmail());
+        
+        // Validate username
+        if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
+            log.error("Username is empty");
+            throw new AppException(ErrorCode.INVALID_USERNAME);
+        }
+        if (userRepository.existsByUsername(request.getUsername())) {
+            log.error("Username already exists: {}", request.getUsername());
             throw new AppException(ErrorCode.USER_EXISTED);
         }
         
         // Validate email
-        if (request.getEmail() == null || request.getEmail().isEmpty()) {
-            throw new RuntimeException("Email is required");
+        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            log.error("Email is empty");
+            throw new AppException(ErrorCode.INVALID_EMAIL);
+        }
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            log.error("Email already exists: {}", request.getEmail());
+            throw new AppException(ErrorCode.USER_EXISTED);
         }
         
-        System.out.println("Email before mapping: " + request.getEmail());
-        String encryptedPS= passwordEncoder.encode(request.getPassword());
-        request.setPassword(encryptedPS);
-        User user = userMapper.toUser(request);
-        System.out.println("Email after mapping: " + user.getEmail());
-        
-        // Check if email was properly mapped
-        if (user.getEmail() == null || user.getEmail().isEmpty()) {
-            user.setEmail(request.getEmail());
+        // Validate password
+        if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+            log.error("Password is empty");
+            throw new AppException(ErrorCode.INVALID_PASSWORD);
+        }
+        if (request.getPassword().length() < 6) {
+            log.error("Password is too short");
+            throw new AppException(ErrorCode.PASSWORD_TOO_SHORT);
         }
         
-        HashSet<Role> roles = new HashSet<>();
+        // Validate fullname
+        if (request.getFullname() == null || request.getFullname().trim().isEmpty()) {
+            log.error("Fullname is empty");
+            throw new AppException(ErrorCode.INVALID_FULLNAME);
+        }
         
-        // Find existing USER role instead of creating a new one
-        Role userRole = roleRepository.findById(PredefinedRole.USER_ROLE)
-                .orElseGet(() -> roleRepository.save(Role.builder()
-                        .name(PredefinedRole.USER_ROLE)
-                        .description("User role")
-                        .build()));
-                        
-        roles.add(userRole);
-        user.setRoles(roles);
+        try {
+            String encryptedPS = passwordEncoder.encode(request.getPassword());
+            request.setPassword(encryptedPS);
+            
+            User user = userMapper.toUser(request);
+            user.setActive(true);
+            
+            HashSet<Role> roles = new HashSet<>();
+            Role userRole = roleRepository.findById(PredefinedRole.USER_ROLE)
+                    .orElseGet(() -> roleRepository.save(Role.builder()
+                            .name(PredefinedRole.USER_ROLE)
+                            .description("User role")
+                            .build()));
+            roles.add(userRole);
+            user.setRoles(roles);
 
-        return userRepository.save(user);
+            User savedUser = userRepository.save(user);
+            log.info("User created successfully with id: {}", savedUser.getId());
+            return savedUser;
+        } catch (Exception e) {
+            log.error("Error creating user: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
     }
 
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
@@ -104,48 +135,201 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
 
-    public AuthenticationResponse login (String email, String password){
-        var user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        boolean authenticated = passwordEncoder.matches(password, user.getPassword());
-        if(!authenticated){
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+    public AuthenticationResponse login(String email, String password) {
+        log.info("Attempting login for email: {}", email);
+        try {
+            var user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> {
+                        log.error("User not found with email: {}", email);
+                        return new AppException(ErrorCode.USER_NOT_FOUND);
+                    });
+            
+            if (!passwordEncoder.matches(password, user.getPassword())) {
+                log.error("Invalid password for user: {}", email);
+                throw new AppException(ErrorCode.INVALID_PASSWORD);
+            }
+
+            String scope = buildScope(user);
+            String token = jwtService.generateToken(user.getEmail(), scope);
+            var userResponse = userMapper.toUserResponse(user);
+
+            log.info("Login successful for user: {}", email);
+            return AuthenticationResponse.builder()
+                    .token(token)
+                    .authenticated(true)
+                    .user(userResponse)
+                    .build();
+        } catch (AppException e) {
+            log.error("Login failed: {}", e.getErrorCode().getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error during login: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
-
-        var token = generateToken(user);
-
-        return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
 
-    private String generateToken(User user){
-        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
-        System.out.println(buildScope(user));
+    public UserMapper getUserMapper() {
+        return userMapper;
+    }
 
-        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getUsername())
-                .issuer("CDWED.com")
-                .issueTime(new Date())
-                .expirationTime(new Date(
-                        Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
-                ))
-                .claim("scope",buildScope(user))
-                .build();
-        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
-        JWSObject jwsObject = new JWSObject(header,payload);
+    public String generateToken(User user) {
         try {
+            JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+            JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                    .subject(user.getUsername())
+                    .issuer("CDWED.com")
+                    .issueTime(new Date())
+                    .expirationTime(new Date(
+                            Instant.now().plus(24, ChronoUnit.HOURS).toEpochMilli()
+                    ))
+                    .claim("scope", buildScope(user))
+                    .build();
+
+            Payload payload = new Payload(jwtClaimsSet.toJSONObject());
+            JWSObject jwsObject = new JWSObject(header, payload);
             jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
             return jwsObject.serialize();
         } catch (JOSEException e) {
-            System.out.println("Can't get token"+e);
-            throw new RuntimeException(e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
 
-    private String buildScope(User user){
-        StringJoiner stringJoiner = new StringJoiner(" "); // dùng khoảng trắng ngăn cách scope
-        if(!CollectionUtils.isEmpty(user.getRoles())) {
-            user.getRoles().forEach(role -> stringJoiner.add(role.getName())); // Lấy tên role
+    private String buildScope(User user) {
+        StringJoiner stringJoiner = new StringJoiner(" ");
+        if (!CollectionUtils.isEmpty(user.getRoles())) {
+            user.getRoles().forEach(role -> stringJoiner.add(role.getName()));
         }
         return stringJoiner.toString();
+    }
+
+    public AuthenticationResponse refreshToken(String token) {
+        try {
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+
+            String email = jwtService.validateToken(token);
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            String scope = buildScope(user);
+            String newToken = jwtService.generateToken(user.getEmail(), scope);
+
+            return AuthenticationResponse.builder()
+                    .token(newToken)
+                    .authenticated(true)
+                    .user(userMapper.toUserResponse(user))
+                    .build();
+        } catch (ParseException | JOSEException e) {
+            throw new RuntimeException("Invalid token");
+        }
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
+
+    public User updateProfile(String email, UserCreationRequest request) {
+        User user = findByEmail(email);
+        
+        if (request.getUsername() != null && !request.getUsername().equals(user.getUsername())) {
+            if (userRepository.existsByUsername(request.getUsername())) {
+                throw new AppException(ErrorCode.USER_EXISTED);
+            }
+            user.setUsername(request.getUsername());
+        }
+        
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                throw new AppException(ErrorCode.USER_EXISTED);
+            }
+            user.setEmail(request.getEmail());
+        }
+        
+        if (request.getFullname() != null) {
+            user.setFullname(request.getFullname());
+        }
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+        if (request.getAddress() != null) {
+            user.setAddress(request.getAddress());
+        }
+        
+        return userRepository.save(user);
+    }
+
+    public void changePassword(String email, String oldPassword, String newPassword) {
+        User user = findByEmail(email);
+        
+        // Verify old password
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        
+        // Update password
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    public String uploadAvatar(String email, MultipartFile file) {
+        User user = findByEmail(email);
+        
+        try {
+            // Generate unique filename
+            String originalFilename = file.getOriginalFilename();
+            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String filename = UUID.randomUUID().toString() + extension;
+            
+            // Save file to filesystem
+            String uploadDir = "uploads/avatars/";
+            File dir = new File(uploadDir);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            
+            File destFile = new File(dir.getAbsolutePath() + File.separator + filename);
+            file.transferTo(destFile);
+            
+            // Update user avatar URL
+            String avatarUrl = "/uploads/avatars/" + filename;
+            user.setAvatar(avatarUrl);
+            userRepository.save(user);
+            
+            return avatarUrl;
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+    }
+
+    public String validateToken(String token) throws ParseException, JOSEException {
+        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+        SignedJWT signedJWT = SignedJWT.parse(token);
+        
+        if (!signedJWT.verify(verifier)) {
+            throw new RuntimeException("Invalid token");
+        }
+
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        if (expiryTime.before(new Date())) {
+            throw new RuntimeException("Token expired");
+        }
+
+        return signedJWT.getJWTClaimsSet().getSubject();
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password(user.getPassword())
+                .roles(user.getRoles().stream()
+                        .map(role -> role.getName().replace("ROLE_", ""))
+                        .toArray(String[]::new))
+                .build();
     }
 }

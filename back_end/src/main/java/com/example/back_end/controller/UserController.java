@@ -11,12 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 @Slf4j
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
     @Autowired
     private UserService userService;
@@ -35,4 +37,32 @@ public class UserController {
         return userService.getUsers(); }
     @GetMapping("/{userId}")
     User getUserById(@PathVariable int userId) { return userService.findById(userId); }
+
+    @GetMapping("/profile")
+    ApiResponse<User> getProfile() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var user = userService.findByEmail(authentication.getName());
+        return ApiResponse.<User>builder().result(user).build();
+    }
+
+    @PutMapping("/update")
+    ApiResponse<User> updateProfile(@RequestBody UserCreationRequest request) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var user = userService.updateProfile(authentication.getName(), request);
+        return ApiResponse.<User>builder().result(user).build();
+    }
+
+    @PutMapping("/change-password")
+    ApiResponse<Void> changePassword(@RequestBody Map<String, String> passwords) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        userService.changePassword(authentication.getName(), passwords.get("oldPassword"), passwords.get("newPassword"));
+        return ApiResponse.<Void>builder().build();
+    }
+
+    @PostMapping("/upload-avatar")
+    ApiResponse<String> uploadAvatar(@RequestParam("avatar") MultipartFile file) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var avatarUrl = userService.uploadAvatar(authentication.getName(), file);
+        return ApiResponse.<String>builder().result(avatarUrl).build();
+    }
 }

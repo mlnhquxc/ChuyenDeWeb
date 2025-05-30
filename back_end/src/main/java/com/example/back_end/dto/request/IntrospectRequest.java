@@ -1,13 +1,8 @@
 package com.example.back_end.dto.request;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.Data;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class IntrospectRequest {
-    String token;
+    private String token;
 }

@@ -17,6 +17,11 @@ public enum ErrorCode {
     UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
+    FILE_UPLOAD_FAILED(1009, "Failed to upload file", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_USERNAME(1003, "Username must not be empty", HttpStatus.BAD_REQUEST),
+    INVALID_EMAIL(1004, "Email must not be empty", HttpStatus.BAD_REQUEST),
+    PASSWORD_TOO_SHORT(1006, "Password must be at least 6 characters", HttpStatus.BAD_REQUEST),
+    INVALID_FULLNAME(1007, "Fullname must not be empty", HttpStatus.BAD_REQUEST),
     ;
 
     private final int code;

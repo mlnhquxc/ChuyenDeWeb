@@ -34,6 +34,9 @@ public class User {
     @Column(name = "phone", nullable = false, length = 20)
     private String phone;
 
+    @Column(name = "address")
+    private String address;
+
     @Column(name = "avatar", length = 45)
     private String avatar;
 
