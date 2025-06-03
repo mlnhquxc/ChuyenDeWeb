@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 } catch (Exception e) {
-                    logger.error("Cannot set user authentication: {}", e.getMessage());
+                    logger.error("Cannot set user authentication", e);
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.getWriter().write("User not found or token is invalid");
                     return;

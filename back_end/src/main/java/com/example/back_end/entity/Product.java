@@ -47,4 +47,7 @@ public class Product {
 
     @OneToMany(mappedBy = "product")
     private List<OrderDetail> orderDetails;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private java.util.List<ProductImage> productImages;
 } 

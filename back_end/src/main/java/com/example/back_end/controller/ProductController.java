@@ -1,57 +1,58 @@
 package com.example.back_end.controller;
 
-import com.example.back_end.entity.Product;
+import com.example.back_end.dto.ProductDTO;
+import com.example.back_end.dto.ProductDetailDTO;
 import com.example.back_end.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
-    }
-
-    @GetMapping("/active")
-    public ResponseEntity<List<Product>> getActiveProducts() {
-        return ResponseEntity.ok(productService.getActiveProducts());
-    }
-
-    @GetMapping("/category/{categoryId}")
-    public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable Long categoryId) {
-        return ResponseEntity.ok(productService.getProductsByCategory(categoryId));
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<List<Product>> searchProducts(@RequestParam String keyword) {
-        return ResponseEntity.ok(productService.searchProducts(keyword));
+    public ResponseEntity<Page<ProductDTO>> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(sortBy));
+        return ResponseEntity.ok(productService.getAllProducts(pageRequest));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductDTO> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        return ResponseEntity.ok(productService.createProduct(product));
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<ProductDetailDTO> getProductDetailById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductDetailById(id));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
-        return ResponseEntity.ok(productService.updateProduct(id, product));
+    @GetMapping("/category/{categoryName}")
+    public ResponseEntity<Page<ProductDTO>> getProductsByCategory(
+            @PathVariable String categoryName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(sortBy));
+        return ResponseEntity.ok(productService.getProductsByCategory(categoryName, pageRequest));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
-        return ResponseEntity.ok().build();
+    @GetMapping("/search")
+    public ResponseEntity<Page<ProductDTO>> searchProducts(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(sortBy));
+        return ResponseEntity.ok(productService.searchProducts(keyword, pageRequest));
     }
 } 
