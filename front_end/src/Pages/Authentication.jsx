@@ -49,10 +49,11 @@ const AuthPage = () => {
   const [authState, setAuthState] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
     confirmPassword: "",
     fullName: "",
+    email: "",
     phone: "",
     rememberMe: false,
     termsAccepted: false
@@ -126,7 +127,7 @@ const AuthPage = () => {
           fullname: formData.fullName,
           phone: formData.phone,
           role: "USER",
-          username: formData.email.split('@')[0],
+          username: formData.username,
           active: true
         };
         
@@ -135,18 +136,11 @@ const AuthPage = () => {
         console.log('Registration response:', response);
         
         if (response && response.authenticated) {
-          console.log('Registration successful, switching to login form');
-          setAuthState('login');
-          setFormData(prev => ({
-            ...prev,
-            email: formData.email,
-            password: '',
-            confirmPassword: '',
-            fullName: '',
-            phone: '',
-            termsAccepted: false
-          }));
-          setErrors({});
+          console.log('Registration successful, setting user data');
+          setUser(response.user);
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('user', JSON.stringify(response.user));
+          navigate('/');
         } else {
           console.log('Registration failed - not authenticated');
           setErrors({
@@ -176,26 +170,23 @@ const AuthPage = () => {
     e.preventDefault();
     console.log('Login form submitted');
     console.log('Form data:', formData);
-
     if (Object.keys(errors).length > 0) {
       console.log('Validation errors:', errors);
       return;
     }
-
     try {
       console.log('Attempting login...');
       const response = await login({
-        email: formData.email,
+        username: formData.username,
         password: formData.password
       });
       console.log('Login response:', response);
-
       if (response && response.authenticated) {
         console.log('Login successful');
         navigate('/');
       } else {
         console.log('Login failed: Not authenticated');
-        setErrors({ submit: 'Invalid email or password' });
+        setErrors({ submit: 'Invalid username or password' });
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -273,16 +264,30 @@ const AuthPage = () => {
                 </>
               )}
 
+              {authState === "register" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email address</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className={`mt-1 block w-full px-3 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                  />
+                  {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+                </div>
+              )}
+
               <div>
-                <label className="block text-sm font-medium text-gray-700">Email address</label>
+                <label className="block text-sm font-medium text-gray-700">Username</label>
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
+                  type="text"
+                  name="username"
+                  value={formData.username}
                   onChange={handleInputChange}
-                  className={`mt-1 block w-full px-3 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                  className={`mt-1 block w-full px-3 py-2 border ${errors.username ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                 />
-                {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+                {errors.username && <p className="mt-1 text-sm text-red-500">{errors.username}</p>}
               </div>
 
               <div className="relative">

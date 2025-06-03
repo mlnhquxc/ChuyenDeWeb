@@ -4,19 +4,20 @@ import { ENDPOINTS } from '../config';
 const authService = {
   async login(credentials) {
     try {
-      console.log('Login attempt with:', credentials);
+      console.log('authService - Login attempt with:', credentials);
       const response = await axiosInstance.post(ENDPOINTS.AUTH.LOGIN, credentials);
-      console.log('Login response:', response.data);
+      console.log('authService - Login response:', response.data);
       
-      if (response.data.result) {
-        const { token, user } = response.data.result;
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        return response.data.result;
+      if (response.data && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        return response.data;
       }
-      throw new Error(response.data.message || 'Login failed');
+      return null;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('authService - Login error:', error);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       if (error.response?.status === 403) {
         try {
           const refreshResponse = await this.refreshToken();
@@ -39,34 +40,19 @@ const authService = {
 
   async register(userData) {
     try {
-      console.log('=== REGISTER REQUEST START ===');
-      console.log('Request URL:', ENDPOINTS.AUTH.REGISTER);
-      console.log('Request data:', userData);
-      console.log('Request headers:', {
-        'Content-Type': 'application/json',
-        'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-      });
-      
+      console.log('authService - Register attempt with:', userData);
       const response = await axiosInstance.post(ENDPOINTS.AUTH.REGISTER, userData);
-      console.log('=== REGISTER REQUEST END ===');
-      console.log('Register response:', response.data);
+      console.log('authService - Register response:', response.data);
       
-      if (response.data.result) {
-        const { token, user } = response.data.result;
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        return response.data.result;
+      const result = response.data.result;
+      if (result && result.token) {
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+        return { ...result, authenticated: true };
       }
-      throw new Error(response.data.message || 'Registration failed');
+      return null;
     } catch (error) {
-      console.error('=== REGISTER ERROR START ===');
-      console.error('Error message:', error.message);
-      if (error.response) {
-        console.error('Response data:', error.response.data);
-        console.error('Response status:', error.response.status);
-        console.error('Response headers:', error.response.headers);
-      }
-      console.error('=== REGISTER ERROR END ===');
+      console.error('authService - Register error:', error);
       throw error;
     }
   },
@@ -103,12 +89,24 @@ const authService = {
   },
 
   isAuthenticated() {
-    return !!localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    return !!(token && user);
   },
 
   getCurrentUser() {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
+    try {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) return null;
+      return JSON.parse(userStr);
+    } catch (error) {
+      console.error('authService - Error getting current user:', error);
+      return null;
+    }
+  },
+
+  getToken() {
+    return localStorage.getItem('token');
   }
 };
 

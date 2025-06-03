@@ -11,7 +11,8 @@ export const AuthProvider = ({ children }) => {
     const initializeAuth = () => {
       try {
         const currentUser = authService.getCurrentUser();
-        if (currentUser) {
+        const token = localStorage.getItem('token');
+        if (currentUser && token) {
           console.log('AuthContext - Initializing with user:', currentUser);
           setUser(currentUser);
         } else {
@@ -29,6 +30,21 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const currentUser = authService.getCurrentUser();
+      const token = localStorage.getItem('token');
+      if (currentUser && token) {
+        setUser(currentUser);
+      } else {
+        setUser(null);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const login = async (credentials) => {
     try {
       console.log('AuthContext - Attempting login with credentials:', credentials);
@@ -38,12 +54,12 @@ export const AuthProvider = ({ children }) => {
       if (response && response.authenticated) {
         console.log('AuthContext - Setting user data:', response.user);
         setUser(response.user);
-        localStorage.setItem('user', JSON.stringify(response.user));
         return response;
       }
       return null;
     } catch (error) {
       console.error('AuthContext - Login error:', error);
+      setUser(null);
       throw error;
     }
   };
@@ -53,10 +69,10 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.register(userData);
       if (response && response.authenticated) {
         setUser(response.user);
-        localStorage.setItem('user', JSON.stringify(response.user));
       }
       return response;
     } catch (error) {
+      setUser(null);
       throw error;
     }
   };
@@ -67,12 +83,10 @@ export const AuthProvider = ({ children }) => {
       await authService.logout();
       console.log('AuthContext - Logout successful, clearing user state');
       setUser(null);
-      localStorage.removeItem('user');
       window.location.href = '/auth';
     } catch (error) {
       console.error('AuthContext - Logout error:', error);
       setUser(null);
-      localStorage.removeItem('user');
       window.location.href = '/auth';
     }
   };
