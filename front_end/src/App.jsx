@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider, AuthContext } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
 import Home from './Pages/Home';
 import Authentication from './Pages/Authentication';
 import Cart from './Pages/Cart';
@@ -10,25 +11,16 @@ import ProductDetail from './Pages/ProductDetail';
 import Category from './Pages/Category';
 import Search from './Pages/Search';
 import Profile from './Pages/Profile';
+import Shop from './Pages/Shop';
 import Header from './component/Header';
 import Footer from './component/Footer';
 
 function App() {
-  const [authState, setAuthState] = useState("login");
-  const [user, setUser] = useState(null);
-
-  const handleAuthChange = (newState, userData = null) => {
-    setAuthState(newState);
-    if (userData) {
-      setUser(userData);
-    }
-  };
-
   return (
-    <AuthContext.Provider value={{ authState, setAuthState: handleAuthChange, user, setUser }}>
-      <Router>
-        <AuthProvider>
-          <CartProvider>
+    <Router>
+      <AuthProvider>
+        <CartProvider>
+          <WishlistProvider>
             <div className="flex flex-col min-h-screen">
               <Header />
               <main className="flex-grow">
@@ -41,14 +33,15 @@ function App() {
                   <Route path="/category/:category" element={<Category />} />
                   <Route path="/search" element={<Search />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/shop" element={<Shop />} />
                 </Routes>
               </main>
               <Footer />
             </div>
-          </CartProvider>
-        </AuthProvider>
-      </Router>
-    </AuthContext.Provider>
+          </WishlistProvider>
+        </CartProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

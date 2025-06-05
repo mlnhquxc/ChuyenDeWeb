@@ -16,8 +16,10 @@ const ProductCard = ({ product }) => {
     }
   };
 
-  // Lấy ảnh đầu tiên của sản phẩm
-  const productImage = `/src/assets/images/${product.category}/${product.brand}/${product.images[0]}`;
+  // Lấy ảnh đầu tiên của sản phẩm từ danh sách imageUrls
+  const productImage = product.imageUrls && product.imageUrls.length > 0 
+    ? product.imageUrls[0] 
+    : '/src/assets/images/placeholder.jpg';
 
   return (
     <Link to={`/product/${product.id}`} className="group">
@@ -31,7 +33,7 @@ const ProductCard = ({ product }) => {
         </div>
         <div className="p-4">
           <h3 className="mb-2 text-lg font-semibold text-gray-900">{product.name}</h3>
-          <p className="mb-2 text-sm text-gray-600">{product.brand}</p>
+          <p className="mb-2 text-sm text-gray-600">{product.categoryName}</p>
           <div className="flex items-center justify-between">
             <p className="text-lg font-bold text-primary">
               {new Intl.NumberFormat('vi-VN', {

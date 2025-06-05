@@ -35,6 +35,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -50,7 +51,7 @@ public class UserService implements UserDetailsService {
     private String SIGNER_KEY;
 
     public User createRequest(UserCreationRequest request) {
-        log.info("Creating new user with email: {}", request.getEmail());
+        log.info("Creating new user with email: {} and username: {}", request.getEmail(), request.getUsername());
         
         // Validate username
         if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
@@ -105,7 +106,8 @@ public class UserService implements UserDetailsService {
             user.setRoles(roles);
 
             User savedUser = userRepository.save(user);
-            log.info("User created successfully with id: {}", savedUser.getId());
+            userRepository.flush();
+            log.info("User created successfully with id: {} and username: {}", savedUser.getId(), savedUser.getUsername());
             return savedUser;
         } catch (Exception e) {
             log.error("Error creating user: {}", e.getMessage());
@@ -135,25 +137,32 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
 
-    public AuthenticationResponse login(String email, String password) {
-        log.info("Attempting login for email: {}", email);
+    public AuthenticationResponse login(String username, String password) {
+        log.info("Attempting login for username: {}", username);
         try {
-            var user = userRepository.findByEmail(email)
+            // Log all users for debugging
+            log.info("All users in database: {}", userRepository.findAll().stream()
+                    .map(u -> String.format("username=%s, email=%s", u.getUsername(), u.getEmail()))
+                    .collect(Collectors.joining(", ")));
+
+            var user = userRepository.findByUsername(username)
                     .orElseThrow(() -> {
-                        log.error("User not found with email: {}", email);
+                        log.error("User not found with username: {}", username);
                         return new AppException(ErrorCode.USER_NOT_EXISTED);
                     });
             
+            log.info("Found user: username={}, email={}", user.getUsername(), user.getEmail());
+            
             if (!passwordEncoder.matches(password, user.getPassword())) {
-                log.error("Invalid password for user: {}", email);
+                log.error("Invalid password for user: {}", username);
                 throw new AppException(ErrorCode.INVALID_PASSWORD);
             }
-
+            
             String scope = buildScope(user);
-            String token = jwtService.generateToken(user.getEmail(), scope);
+            String token = jwtService.generateToken(user.getUsername(), scope);
             var userResponse = userMapper.toUserResponse(user);
-
-            log.info("Login successful for user: {}", email);
+            
+            log.info("Login successful for user: {}", username);
             return AuthenticationResponse.builder()
                     .token(token)
                     .authenticated(true)
@@ -320,12 +329,11 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
         return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
+                .username(user.getUsername())
                 .password(user.getPassword())
                 .roles(user.getRoles().stream()
                         .map(role -> role.getName().replace("ROLE_", ""))

@@ -20,7 +20,7 @@ import java.text.ParseException;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class AuthController {
@@ -69,10 +69,20 @@ public class AuthController {
     
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthenticationResponse>> login(@RequestBody Map<String, String> credentials) {
-        AuthenticationResponse response = userService.login(credentials.get("email"), credentials.get("password"));
-        return ResponseEntity.ok(ApiResponse.<AuthenticationResponse>builder()
-                .result(response)
-                .build());
+        log.info("Received login request for username: {}", credentials.get("username"));
+        try {
+            AuthenticationResponse response = userService.login(credentials.get("username"), credentials.get("password"));
+            log.info("Login successful for username: {}", credentials.get("username"));
+            return ResponseEntity.ok(ApiResponse.<AuthenticationResponse>builder()
+                    .result(response)
+                    .build());
+        } catch (Exception e) {
+            log.error("Login failed: {}", e.getMessage());
+            return ResponseEntity.status(401)
+                    .body(ApiResponse.<AuthenticationResponse>builder()
+                            .message(e.getMessage())
+                            .build());
+        }
     }
 
     @PostMapping("/introspect")
