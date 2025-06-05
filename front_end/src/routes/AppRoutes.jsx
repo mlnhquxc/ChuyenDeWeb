@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import HomePage from '../Pages/HomePage';
+import Home from '../Pages/Home';
 import Store from '../Pages/Store';
 import ProductDetail from '../Pages/ProductDetail';
 import AboutUs from '../Pages/aboutUs';
@@ -18,10 +18,13 @@ import PrivateRoute from '../components/PrivateRoute';
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<Home />} />
       <Route path="/shop" element={<Store />} />
       <Route path="/products/:id" element={<ProductDetail />} />
-      <Route path="/about" element={<AboutUs />} />
+      <Route path="/aboutUs" element={<AboutUs />} />
+      <Route path="/baoHanh" element={<BaoHanh />} />
+      <Route path="/doiTra" element={<DoiTra />} />
+      <Route path="/faq" element={<FAQ />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/login" element={<AuthPage />} />
       <Route path="/register" element={<AuthPage />} />
