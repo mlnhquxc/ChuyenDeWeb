@@ -6,7 +6,7 @@ const ProductCard = ({ product }) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const navigate = useNavigate();
   const handleClick = () => {
-    navigate('/product_detail');
+    navigate(`/product/${product.id}`);
   };
 
   const addToWishlist = (e) => {
@@ -17,12 +17,16 @@ const ProductCard = ({ product }) => {
   return (
     <div className="flex flex-col h-[430px] bg-white rounded-xl shadow p-0 cursor-pointer" onClick={handleClick}>
       <div className="w-full aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
-        <img src={product.image} alt={product.name} className="object-cover w-full h-full rounded-lg" />
+        <img 
+          src={product.imageUrls?.[0] || product.image} 
+          alt={product.name} 
+          className="object-cover w-full h-full rounded-lg" 
+        />
       </div>
       <div className="flex flex-col flex-1 justify-between p-4">
         <div>
           <div className="font-semibold text-lg line-clamp-2 min-h-[3rem]">{product.name}</div>
-          <div className="text-gray-500 text-sm mb-2">{product.category}</div>
+          <div className="text-gray-500 text-sm mb-2">{product.categoryName}</div>
           <div className="font-bold text-red-500 text-xl mb-2">{product.price?.toLocaleString()} đ</div>
         </div>
         <div className="flex items-center justify-between mt-4">
