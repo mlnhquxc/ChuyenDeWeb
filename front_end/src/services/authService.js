@@ -8,10 +8,11 @@ const authService = {
       const response = await axiosInstance.post(ENDPOINTS.AUTH.LOGIN, credentials);
       console.log('authService - Login response:', response.data);
       
-      if (response.data && response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        return response.data;
+      if (response.data && response.data.result) {
+        const { token, user } = response.data.result;
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        return { ...response.data.result, authenticated: true };
       }
       return null;
     } catch (error) {
@@ -27,7 +28,7 @@ const authService = {
               const { token, user } = retryResponse.data.result;
               localStorage.setItem('token', token);
               localStorage.setItem('user', JSON.stringify(user));
-              return retryResponse.data.result;
+              return { ...retryResponse.data.result, authenticated: true };
             }
           }
         } catch (refreshError) {

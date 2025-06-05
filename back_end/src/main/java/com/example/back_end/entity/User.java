@@ -43,6 +43,6 @@ public class User {
     @Column(name = "active", nullable = false)
     private Boolean active = false;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Role> roles;
 }

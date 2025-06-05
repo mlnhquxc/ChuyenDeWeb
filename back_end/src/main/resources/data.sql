@@ -1,3 +1,5 @@
+-- noinspection SqlDialectInspectionForFile
+
 -- Thêm roles nếu chưa tồn tại
 INSERT INTO roles (name, description) 
 SELECT 'ROLE_ADMIN', 'Administrator' FROM dual 

@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const initializeAuth = () => {
@@ -15,13 +16,16 @@ export const AuthProvider = ({ children }) => {
         if (currentUser && token) {
           console.log('AuthContext - Initializing with user:', currentUser);
           setUser(currentUser);
+          setIsAuthenticated(true);
         } else {
           console.log('AuthContext - No user found during initialization');
           setUser(null);
+          setIsAuthenticated(false);
         }
       } catch (error) {
         console.error('AuthContext - Error initializing auth:', error);
         setUser(null);
+        setIsAuthenticated(false);
       } finally {
         setLoading(false);
       }
@@ -36,8 +40,10 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (currentUser && token) {
         setUser(currentUser);
+        setIsAuthenticated(true);
       } else {
         setUser(null);
+        setIsAuthenticated(false);
       }
     };
 
@@ -46,20 +52,18 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (credentials) => {
+    console.log('AuthContext - Attempting login with credentials:', credentials);
     try {
-      console.log('AuthContext - Attempting login with credentials:', credentials);
       const response = await authService.login(credentials);
       console.log('AuthContext - Login response:', response);
-      
       if (response && response.authenticated) {
-        console.log('AuthContext - Setting user data:', response.user);
         setUser(response.user);
+        setIsAuthenticated(true);
         return response;
       }
       return null;
     } catch (error) {
       console.error('AuthContext - Login error:', error);
-      setUser(null);
       throw error;
     }
   };
@@ -83,10 +87,12 @@ export const AuthProvider = ({ children }) => {
       await authService.logout();
       console.log('AuthContext - Logout successful, clearing user state');
       setUser(null);
+      setIsAuthenticated(false);
       window.location.href = '/auth';
     } catch (error) {
       console.error('AuthContext - Logout error:', error);
       setUser(null);
+      setIsAuthenticated(false);
       window.location.href = '/auth';
     }
   };
@@ -103,10 +109,10 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUser,
-    isAuthenticated: !!user
+    isAuthenticated
   };
 
-  console.log('AuthContext - Current state:', { user, isAuthenticated: !!user });
+  console.log('AuthContext - Current state:', { user, isAuthenticated });
 
   return (
     <AuthContext.Provider value={value}>
