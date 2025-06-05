@@ -29,16 +29,16 @@ const WarrantyPolicy = () => {
     ];
 
     const exclusions = [
-        "Máy vỡ, cố hỏng trang sản phẩm như lúc mới mua",
-        "Máy khó nhỏ, khiếng máy mức, nâu, rỉ sét tẩu rỉ, đứt, quần hàng dạn, sạc ở Central thời kinh hợp cây nhãn màu",
-        "Phu kiện kỹ thuật thay chia số thuộc không giống máy cơ bình thường hay hay hưng xuất không đúng mùi động",
-        "Tất khóa: Máy đã rẻ đăng đăng xuất rồi rốt rỉ các ta khôi khôa máy, iCloud, Google Account, Mi Account..."
+        "Máy vỡ, móp méo, trầy xước nặng, biến dạng hoặc bị vào nước, cháy nổ do sử dụng sai cách",
+        "Máy bị can thiệp, sửa chữa bởi bên thứ ba không được ủy quyền",
+        "Phụ kiện không phải do Cellphones hoặc hãng sản xuất cung cấp kèm theo máy",
+        "Thiết bị đã bị khóa tài khoản (iCloud, Google Account, Mi Account...) mà không thể mở khóa"
     ];
 
     const additionalNotes = [
-        "Ngoài bảo hành khoa cam kết đổi mới trong 30 ngày theo theo qua thỏa thuận",
-        "(*) Để có giá thả tiện xuất té cần để khôi phẩm tôi gốp gồm, hư tiện mainboard & trong, màn hình và các linh kiện phần cứng lắp trong",
-        "Vì để đảc thái khi hưng này tôi số mãi hưng có ở tậu chữ trễn hay không thỏa mãi để kích thước tôn hem trong"
+        "Ngoài chính sách bảo hành, cam kết đổi mới trong 30 ngày đầu nếu sản phẩm bị lỗi do nhà sản xuất.",
+        "(*) Để được bảo hành, sản phẩm cần giữ nguyên tem, phiếu bảo hành, hóa đơn mua hàng và không bị can thiệp phần cứng.",
+        "Vui lòng liên hệ nhân viên Cellphones để được tư vấn chi tiết về điều kiện và thủ tục bảo hành."
     ];
 
     return (
@@ -48,12 +48,12 @@ const WarrantyPolicy = () => {
                     CHÍNH SÁCH BẢO HÀNH SẢN PHẨM
                 </h1>
                 <p className="text-center text-gray-600 text-sm mb-8">
-                    (*) Đối mới 30 ngày miễn phí
+                    (*) Đổi mới 30 ngày miễn phí
                 </p>
 
                 <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
                     <p className="text-gray-700 text-sm">
-                        Sản phẩm mua hãng tại Cellphones.com.vn, khách hàng có quyền yêu cầu với chính sách đổi mới miễn phí tôi tối 30 ngày
+                        Sản phẩm mua hàng tại Cellphones.com.vn, khách hàng có quyền yêu cầu với chính sách đổi mới miễn phí tối đa 30 ngày
                     </p>
                 </div>
 
@@ -171,7 +171,7 @@ const WarrantyPolicy = () => {
                     <div className="bg-red-50 border-l-4 border-red-400 p-4">
                         <h4 className="font-semibold text-red-800 mb-2">Điều kiện đổi lại:</h4>
                         <ul className="text-sm text-red-700 space-y-1">
-                            <li>• Sản phẩm trong tình trạng nguyên vẹt, không bảo thiết, hình dạng lúc</li>
+                            <li>• Sản phẩm trong tình trạng nguyên vẹn, không bảo thiết, hình dạng lúc</li>
                             {exclusions.map((exclusion, index) => (
                                 <li key={index}>• {exclusion}</li>
                             ))}
@@ -194,21 +194,21 @@ const WarrantyPolicy = () => {
                 {/* Warranty Information */}
                 <div className="grid md:grid-cols-2 gap-6 mb-8">
                     <div className="bg-blue-50 p-4 rounded-lg">
-                        <h3 className="font-semibold text-blue-800 mb-3">1. Điều khóa, LapTop:</h3>
+                        <h3 className="font-semibold text-blue-800 mb-3">1. Điều khoản bảo hành Laptop:</h3>
                         <p className="text-sm text-blue-700 mb-2">
-                            Các sản phẩm điện thoại Máy khách có thể bội cac TTBH chính hãng hoặc được theo máy gồm bao gồm chính hãng.
+                            Các sản phẩm điện thoại, laptop có thể bảo hành tại trung tâm bảo hành chính hãng hoặc tại Cellphones nếu được hỗ trợ.
                         </p>
                         <p className="text-sm text-blue-700">
-                            Các sẩm bảo hành khôi thỏo quy định của hưng hãng, các tiết có trong bằng sau:
+                            Sản phẩm được bảo hành theo quy định của hãng, chi tiết vui lòng tham khảo tại trung tâm bảo hành hoặc liên hệ Cellphones.
                         </p>
                     </div>
 
                     <div className="bg-green-50 p-4 rounded-lg">
-                        <h3 className="font-semibold text-green-800 mb-3">Warranty Centers:</h3>
+                        <h3 className="font-semibold text-green-800 mb-3">Trung tâm bảo hành:</h3>
                         <ul className="text-sm text-green-700 space-y-1">
-                            <li>• Trung tâm bảo hành các các hãng, quy khách có thể xem chi tiết tại: https://cellphones.com.vn/bao-hanh/apple</li>
-                            <li>• Trung thời gian quy hóa hành: sấu chữa, khách hàng sẽ được hưởng lại máy miễn chí thuật khác đã sử dụng</li>
-                            <li>• Khách hàng có thể mây 24 nhượm sau khi nhất âm tại máy chắc mình.</li>
+                            <li>• Trung tâm bảo hành các hãng, xem chi tiết tại: https://cellphones.com.vn/bao-hanh/apple</li>
+                            <li>• Thời gian xử lý bảo hành tùy theo quy định của từng hãng và tình trạng sản phẩm.</li>
+                            <li>• Khách hàng sẽ được thông báo khi sản phẩm hoàn tất bảo hành.</li>
                         </ul>
                     </div>
                 </div>
@@ -233,10 +233,10 @@ const WarrantyPolicy = () => {
                 <div className="bg-gray-100 p-4 rounded-lg text-center">
                     <p className="text-sm text-gray-700 flex items-center justify-center gap-2">
                         <Phone className="w-4 h-4" />
-                        Điệm chi tiết TTBH chính hãng
+                        Liên hệ chi tiết trung tâm bảo hành chính hãng
                     </p>
                     <p className="text-xs text-gray-600 mt-1">
-                        Click vào đổi âm đã ớt
+                        Vui lòng liên hệ tổng đài hoặc truy cập website để biết thêm thông tin.
                     </p>
                 </div>
             </div>

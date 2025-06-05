@@ -1,8 +1,8 @@
 import '../assets/styles/App.css';
-import Header from '../component/Header';
-import Footer from '../component/Footer';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import AppRoutes from '../routes/AppRoutes.jsx'
-import AppLayout from '../component/AppLayout.jsx';
+import AppLayout from '../components/AppLayout.jsx';
 import { BrowserRouter as Router } from "react-router-dom";
 import { AuthProvider } from '../context/AuthContext';
 import { WishlistProvider } from '../context/WishlistContext';
