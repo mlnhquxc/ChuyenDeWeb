@@ -11,6 +11,7 @@ import tv1 from "../assets/images/tivi/ss_44/ss_43_1.png";
 import tv2 from "../assets/images/tivi/ss_44/ss_43_2.png";
 import tainghe1 from "../assets/images/phukien/tainghe/tainghe_1.png";
 import tainghe2 from "../assets/images/phukien/tainghe/tainghe_2.png";
+import ImageSlider from '../component/ImageSlider';
 
 const HomePage = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -111,13 +112,16 @@ const HomePage = () => {
 
       {/* Hero Section */}
       <section className="relative h-[600px] overflow-hidden">
-        <img
+        {/* <img
           src="https://images.unsplash.com/photo-1550009158-9ebf69173e03"
           alt="Tech Hero Banner"
           className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="text-center text-white">
+        /> */}
+        <div className="w-full h-full object-cover m-0">
+          <ImageSlider />
+        </div>
+        <div className="absolute inset-0 bg-opacity-50 flex items-center justify-center">
+          <div className="text-center text-yellow">
             <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
               Tech Innovation
             </h1>
@@ -152,7 +156,7 @@ const HomePage = () => {
                 alt={category.name}
                 className="w-full h-64 object-cover transform group-hover:scale-110 transition duration-500"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+              <div className="absolute inset-0 bg-opacity-40 flex items-center justify-center">
                 <h3 className="text-white text-2xl font-semibold">{category.name}</h3>
               </div>
             </div>
