@@ -11,6 +11,7 @@ const Shop = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [filters, setFilters] = useState({
     category: "",
     sortBy: "id"
@@ -29,21 +30,54 @@ const Shop = () => {
   };
 
   const loadProducts = async () => {
-    try {2
+    try {
       setLoading(true);
-      const response = await productService.getAllProducts2(
-        currentPage,
-        8,
-        filters.sortBy,
-        filters.category
-      );
-      console.log(response);
-      setProducts(response.content);
-      setTotalPages(response.totalPages);
-      setError(null);
+      let response;
+      
+      if (searchKeyword.trim()) {
+        // Nếu có từ khóa tìm kiếm, sử dụng API search
+        response = await productService.searchProducts(
+          searchKeyword,
+          currentPage,
+          8,
+          filters.sortBy
+        );
+      } else {
+        // Nếu không có từ khóa, sử dụng API lọc theo category
+        console.log('Loading products with filters:', {
+          page: currentPage,
+          size: 8,
+          sortBy: filters.sortBy,
+          category: filters.category
+        });
+        
+        response = await productService.getAllProducts2(
+          currentPage,
+          8,
+          filters.sortBy,
+          filters.category
+        );
+      }
+      
+      console.log('API Response:', response);
+      
+      if (response && Array.isArray(response.content)) {
+        setProducts(response.content);
+        setTotalPages(response.totalPages || 1);
+        setError(null);
+      } else if (response && Array.isArray(response)) {
+        setProducts(response);
+        setTotalPages(1);
+        setError(null);
+      } else {
+        console.error('Invalid response format:', response);
+        throw new Error('Invalid response format');
+      }
     } catch (err) {
-      setError("Không thể tải danh sách sản phẩm. Vui lòng thử lại sau.");
       console.error("Error loading products:", err);
+      setError("Không thể tải danh sách sản phẩm. Vui lòng thử lại sau.");
+      setProducts([]);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }
@@ -51,18 +85,27 @@ const Shop = () => {
 
   useEffect(() => {
     loadProducts();
-  }, [currentPage, filters]);
+  }, [currentPage, filters, searchKeyword]);
 
   const handleFilterChange = (filterType, value) => {
+    console.log('Filter changed:', { type: filterType, value });
     setFilters(prev => ({
       ...prev,
       [filterType]: value
     }));
-    setCurrentPage(0); // Reset về trang đầu tiên khi thay đổi bộ lọc
+    setCurrentPage(0);
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setCurrentPage(0);
+    loadProducts();
   };
 
   const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
+    if (newPage >= 0 && newPage < totalPages) {
+      setCurrentPage(newPage);
+    }
   };
 
   return (
@@ -72,6 +115,20 @@ const Shop = () => {
           {/* Sidebar Filters */}
           <div className="w-64 bg-white p-4 rounded-lg shadow-lg">
             <h3 className="text-xl font-bold mb-4">Bộ lọc sản phẩm</h3>
+
+            {/* Search Box */}
+            <form onSubmit={handleSearch} className="mb-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  placeholder="Tìm kiếm sản phẩm..."
+                  className="w-full p-2 pl-10 border rounded"
+                />
+                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              </div>
+            </form>
 
             <div className="space-y-4">
               <div>
@@ -115,6 +172,12 @@ const Shop = () => {
               </div>
             ) : error ? (
               <div className="text-red-500 text-center py-8">{error}</div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-8">
+                {searchKeyword ? 
+                  `Không tìm thấy sản phẩm nào với từ khóa "${searchKeyword}"` : 
+                  "Không tìm thấy sản phẩm nào"}
+              </div>
             ) : (
               <>
                 <AnimatePresence mode="wait">
@@ -127,7 +190,7 @@ const Shop = () => {
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
                   >
                     {products.map(product => (
-                      <div key={product.id} className="w-full h-full flex">
+                      <div key={product?.id || Math.random()} className="w-full h-full flex">
                         <ProductCard product={product} />
                       </div>
                     ))}
@@ -135,25 +198,27 @@ const Shop = () => {
                 </AnimatePresence>
 
                 {/* Pagination */}
-                <div className="flex justify-center mt-8 space-x-2">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 0}
-                    className="px-4 py-2 border rounded disabled:opacity-50"
-                  >
-                    Trước
-                  </button>
-                  <span className="px-4 py-2">
-                    Trang {currentPage + 1} / {totalPages}
-                  </span>
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages - 1}
-                    className="px-4 py-2 border rounded disabled:opacity-50"
-                  >
-                    Sau
-                  </button>
-                </div>
+                {totalPages > 1 && (
+                  <div className="flex justify-center mt-8 space-x-2">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 0}
+                      className="px-4 py-2 border rounded disabled:opacity-50"
+                    >
+                      Trước
+                    </button>
+                    <span className="px-4 py-2">
+                      Trang {currentPage + 1} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages - 1}
+                      className="px-4 py-2 border rounded disabled:opacity-50"
+                    >
+                      Sau
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </div>
