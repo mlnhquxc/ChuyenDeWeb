@@ -14,6 +14,17 @@ export const productService = {
             throw error;
         }
     },
+getAllProducts2: async (page = 0, size = 10, sortBy = 'id', category = "") => {
+        try {
+            const response = await axios.get(`${API_URL}/products/store`, {
+                params: { page, size, sortBy, category }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching products:', error);
+            throw error;
+        }
+    },
 
     getProductById: async (id) => {
         try {
