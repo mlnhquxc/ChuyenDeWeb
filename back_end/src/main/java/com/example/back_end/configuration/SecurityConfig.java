@@ -35,6 +35,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                .requestMatchers("/api/users/profile").authenticated()
+                .requestMatchers("/api/users/update").authenticated()
+                .requestMatchers("/api/users/change-password").authenticated()
+                .requestMatchers("/api/users/upload-avatar").authenticated()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

@@ -19,6 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class UserController {
     @Autowired
     private UserService userService;
@@ -30,22 +31,26 @@ public class UserController {
         return response;
     }
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     List<User> getUsers() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         log.info("Username: {}",authentication.getName());
         authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
         return userService.getUsers(); }
     @GetMapping("/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     User getUserById(@PathVariable int userId) { return userService.findById(userId); }
 
     @GetMapping("/profile")
+    @PreAuthorize("isAuthenticated()")
     ApiResponse<User> getProfile() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        var user = userService.findByEmail(authentication.getName());
+        var user = userService.findByUsername(authentication.getName());
         return ApiResponse.<User>builder().result(user).build();
     }
 
     @PutMapping("/update")
+    @PreAuthorize("isAuthenticated()")
     ApiResponse<User> updateProfile(@RequestBody UserCreationRequest request) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var user = userService.updateProfile(authentication.getName(), request);
@@ -53,6 +58,7 @@ public class UserController {
     }
 
     @PutMapping("/change-password")
+    @PreAuthorize("isAuthenticated()")
     ApiResponse<Void> changePassword(@RequestBody Map<String, String> passwords) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         userService.changePassword(authentication.getName(), passwords.get("oldPassword"), passwords.get("newPassword"));
@@ -60,6 +66,7 @@ public class UserController {
     }
 
     @PostMapping("/upload-avatar")
+    @PreAuthorize("isAuthenticated()")
     ApiResponse<String> uploadAvatar(@RequestParam("avatar") MultipartFile file) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var avatarUrl = userService.uploadAvatar(authentication.getName(), file);

@@ -239,33 +239,16 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
     }
 
-    public User updateProfile(String email, UserCreationRequest request) {
-        User user = findByEmail(email);
-        
-        if (request.getUsername() != null && !request.getUsername().equals(user.getUsername())) {
-            if (userRepository.existsByUsername(request.getUsername())) {
-                throw new AppException(ErrorCode.USER_EXISTED);
-            }
-            user.setUsername(request.getUsername());
-        }
-        
-        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
-            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-                throw new AppException(ErrorCode.USER_EXISTED);
-            }
-            user.setEmail(request.getEmail());
-        }
-        
-        if (request.getFullname() != null) {
-            user.setFullname(request.getFullname());
-        }
-        if (request.getPhone() != null) {
-            user.setPhone(request.getPhone());
-        }
-        if (request.getAddress() != null) {
-            user.setAddress(request.getAddress());
-        }
-        
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
+
+    public User updateProfile(String username, UserCreationRequest request) {
+        var user = findByUsername(username);
+        user.setFullname(request.getFullname());
+        user.setPhone(request.getPhone());
+        user.setAddress(request.getAddress());
         return userRepository.save(user);
     }
 
