@@ -14,11 +14,15 @@ export const AuthProvider = ({ children }) => {
         const currentUser = authService.getCurrentUser();
         const token = localStorage.getItem('token');
         if (currentUser && token) {
-          console.log('AuthContext - Initializing with user:', currentUser);
+          if (process.env.NODE_ENV !== 'production') {
+              console.log('AuthContext - Initializing with user:', currentUser);
+          }
           setUser(currentUser);
           setIsAuthenticated(true);
         } else {
-          console.log('AuthContext - No user found during initialization');
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('AuthContext - No user found during initialization');
+          }
           setUser(null);
           setIsAuthenticated(false);
         }
@@ -52,10 +56,14 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (credentials) => {
-    console.log('AuthContext - Attempting login with credentials:', credentials);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('AuthContext - Attempting login with credentials:', credentials);
+    }
     try {
       const response = await authService.login(credentials);
-      console.log('AuthContext - Login response:', response);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('AuthContext - Login response:', response);
+      }  
       if (response && response.authenticated) {
         setUser(response.user);
         setIsAuthenticated(true);
@@ -63,7 +71,7 @@ export const AuthProvider = ({ children }) => {
       }
       return null;
     } catch (error) {
-      console.error('AuthContext - Login error:', error);
+      console.error('AuthContext - Login error:', error.message || 'Unknown error');
       throw error;
     }
   };
@@ -83,14 +91,18 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      console.log('AuthContext - Attempting logout...');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('AuthContext - Attempting logout...');
+      }
       await authService.logout();
-      console.log('AuthContext - Logout successful, clearing user state');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('AuthContext - Logout successful, clearing user state');
+      }
       setUser(null);
       setIsAuthenticated(false);
       window.location.href = '/auth';
     } catch (error) {
-      console.error('AuthContext - Logout error:', error);
+      console.error('AuthContext - Logout error:', error.message || 'Unknown error');
       setUser(null);
       setIsAuthenticated(false);
       window.location.href = '/auth';
@@ -112,7 +124,9 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated
   };
 
-  console.log('AuthContext - Current state:', { user, isAuthenticated });
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('AuthContext - Current state:', { user, isAuthenticated });
+  }
 
   return (
     <AuthContext.Provider value={value}>

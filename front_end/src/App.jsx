@@ -12,8 +12,8 @@ import Category from './Pages/Category';
 import Search from './Pages/Search';
 import Profile from './Pages/Profile';
 import Shop from './Pages/Shop';
-import Header from './component/Header';
-import Footer from './component/Footer';
+import Header from './components/Header';
+import Footer from './components/Footer';
 
 function App() {
   return (

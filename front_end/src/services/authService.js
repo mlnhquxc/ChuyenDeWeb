@@ -4,9 +4,13 @@ import { ENDPOINTS } from '../config';
 const authService = {
   async login(credentials) {
     try {
-      console.log('authService - Login attempt with:', credentials);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Login attempt with:', credentials);
+      }
       const response = await axiosInstance.post(ENDPOINTS.AUTH.LOGIN, credentials);
-      console.log('authService - Login response:', response.data);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Login response:', response.data);
+      }
       
       if (response.data && response.data.result) {
         const { token, user } = response.data.result;
@@ -16,9 +20,19 @@ const authService = {
       }
       return null;
     } catch (error) {
-      console.error('authService - Login error:', error);
+      // Clear any existing auth data on error
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+
+      // Log error details in development only
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('authService - Login error:', error);
+      } else {
+        // In production, log minimal information
+        console.error('Login failed:', error.message || 'Unknown error');
+      }      
+
+      // Handle token expiration
       if (error.response?.status === 403) {
         try {
           const refreshResponse = await this.refreshToken();
@@ -32,18 +46,27 @@ const authService = {
             }
           }
         } catch (refreshError) {
-          console.error('Token refresh failed:', refreshError);
+          if (process.env.NODE_ENV !== 'production') {
+            console.error('Token refresh failed:', refreshError);
+          }
         }
       }
+      // Enhance error with user-friendly message
+      const errorMessage = error.response?.data?.message || 'Login failed. Please check your credentials and try again.';
+      error.userMessage = errorMessage;
       throw error;
     }
   },
 
   async register(userData) {
     try {
-      console.log('authService - Register attempt with:', userData);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Register attempt with:', userData);
+      }
       const response = await axiosInstance.post(ENDPOINTS.AUTH.REGISTER, userData);
-      console.log('authService - Register response:', response.data);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Register response:', response.data);
+      }
       
       const result = response.data.result;
       if (result && result.token) {
@@ -53,7 +76,15 @@ const authService = {
       }
       return null;
     } catch (error) {
-      console.error('authService - Register error:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('authService - Register error:', error);
+      } else {
+        console.error('Registration failed:', error.message || 'Unknown error');
+      }
+      
+      // Enhance error with user-friendly message
+      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
+      error.userMessage = errorMessage;
       throw error;
     }
   },

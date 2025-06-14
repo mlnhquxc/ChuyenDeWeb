@@ -11,7 +11,7 @@ import tv1 from "../assets/images/tivi/ss_44/ss_43_1.png";
 import tv2 from "../assets/images/tivi/ss_44/ss_43_2.png";
 import tainghe1 from "../assets/images/phukien/tainghe/tainghe_1.png";
 import tainghe2 from "../assets/images/phukien/tainghe/tainghe_2.png";
-import ImageSlider from '../component/ImageSlider';
+import ImageSlider from '../components/ImageSlider';
 
 const HomePage = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
