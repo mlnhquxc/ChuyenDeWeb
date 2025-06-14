@@ -1,10 +1,11 @@
 package com.example.back_end.controller;
 
+import com.example.back_end.dto.UserDTO;
 import com.example.back_end.dto.request.UserCreationRequest;
 import com.example.back_end.dto.response.ApiResponse;
 import com.example.back_end.entity.User;
+import com.example.back_end.mapper.CustomUserMapper;
 import com.example.back_end.service.UserService;
-import com.nimbusds.jose.proc.SecurityContext;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,46 +16,88 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
-@Slf4j
+import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@CrossOrigin(origins = "*")
 public class UserController {
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private CustomUserMapper userMapper;
 
     @PostMapping("/createUser")
-    ApiResponse<User> createUser(@RequestBody @Valid UserCreationRequest request){
-        ApiResponse<User> response = new ApiResponse<>();
-        response.setResult(userService.createRequest(request));
-        return response;
+    ApiResponse<UserDTO> createUser(@RequestBody @Valid UserCreationRequest request){
+        User user = userService.createRequest(request);
+        UserDTO userDTO = userMapper.toUserDTO(user);
+        return ApiResponse.<UserDTO>builder()
+                .code(200)
+                .message("User created successfully")
+                .result(userDTO)
+                .build();
     }
+    
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    List<User> getUsers() {
+    ApiResponse<List<UserDTO>> getUsers() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.info("Username: {}",authentication.getName());
+        log.info("Username: {}", authentication.getName());
         authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
-        return userService.getUsers(); }
+        
+        List<User> users = userService.getUsers();
+        List<UserDTO> userDTOs = users.stream()
+                .map(userMapper::toUserDTO)
+                .collect(Collectors.toList());
+        
+        return ApiResponse.<List<UserDTO>>builder()
+                .code(200)
+                .message("Users retrieved successfully")
+                .result(userDTOs)
+                .build();
+    }
+    
     @GetMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
-    User getUserById(@PathVariable int userId) { return userService.findById(userId); }
+    ApiResponse<UserDTO> getUserById(@PathVariable int userId) {
+        User user = userService.findById(userId);
+        UserDTO userDTO = userMapper.toUserDTO(user);
+        
+        return ApiResponse.<UserDTO>builder()
+                .code(200)
+                .message("User retrieved successfully")
+                .result(userDTO)
+                .build();
+    }
 
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
-    ApiResponse<User> getProfile() {
+    ApiResponse<UserDTO> getProfile() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var user = userService.findByUsername(authentication.getName());
-        return ApiResponse.<User>builder().result(user).build();
+        UserDTO userDTO = userMapper.toUserDTO(user);
+        
+        return ApiResponse.<UserDTO>builder()
+                .code(200)
+                .message("Profile retrieved successfully")
+                .result(userDTO)
+                .build();
     }
 
     @PutMapping("/update")
     @PreAuthorize("isAuthenticated()")
-    ApiResponse<User> updateProfile(@RequestBody UserCreationRequest request) {
+    ApiResponse<UserDTO> updateProfile(@RequestBody UserCreationRequest request) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var user = userService.updateProfile(authentication.getName(), request);
-        return ApiResponse.<User>builder().result(user).build();
+        UserDTO userDTO = userMapper.toUserDTO(user);
+        
+        return ApiResponse.<UserDTO>builder()
+                .code(200)
+                .message("Profile updated successfully")
+                .result(userDTO)
+                .build();
     }
 
     @PutMapping("/change-password")
@@ -62,7 +105,12 @@ public class UserController {
     ApiResponse<Void> changePassword(@RequestBody Map<String, String> passwords) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         userService.changePassword(authentication.getName(), passwords.get("oldPassword"), passwords.get("newPassword"));
-        return ApiResponse.<Void>builder().build();
+        
+        return ApiResponse.<Void>builder()
+                .code(200)
+                .message("Password changed successfully")
+                .result(null)
+                .build();
     }
 
     @PostMapping("/upload-avatar")
@@ -70,6 +118,11 @@ public class UserController {
     ApiResponse<String> uploadAvatar(@RequestParam("avatar") MultipartFile file) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var avatarUrl = userService.uploadAvatar(authentication.getName(), file);
-        return ApiResponse.<String>builder().result(avatarUrl).build();
+        
+        return ApiResponse.<String>builder()
+                .code(200)
+                .message("Avatar uploaded successfully")
+                .result(avatarUrl)
+                .build();
     }
 }

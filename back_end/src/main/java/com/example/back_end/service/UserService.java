@@ -5,6 +5,7 @@ import com.example.back_end.dto.request.IntrospectRequest;
 import com.example.back_end.dto.request.UserCreationRequest;
 import com.example.back_end.dto.response.AuthenticationResponse;
 import com.example.back_end.dto.response.IntrospectResponse;
+import com.example.back_end.dto.response.UserResponse;
 import com.example.back_end.entity.Role;
 import com.example.back_end.entity.User;
 import com.example.back_end.exception.AppException;
@@ -28,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +51,9 @@ public class UserService implements UserDetailsService {
 
     @Value("${jwt.signer-key}")
     private String SIGNER_KEY;
+
+    @Autowired
+    private TokenStorageService tokenStorageService;
 
     public User createRequest(UserCreationRequest request) {
         log.info("Creating new user with email: {} and username: {}", request.getEmail(), request.getUsername());
@@ -116,14 +121,20 @@ public class UserService implements UserDetailsService {
     }
 
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
-        var token = request.getToken();
-
-        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
-        SignedJWT signedJWT = SignedJWT.parse(token);
-        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        var verified = signedJWT.verify(verifier);
-
-        return IntrospectResponse.builder().valid(verified && expiryTime.after(new Date())).build();
+        String token = request.getToken();
+        try {
+            String username = validateToken(token);
+            boolean isActive = tokenStorageService.isTokenValid(username, token);
+            if (isActive) {
+                User user = findByUsername(username);
+                UserResponse userResponse = userMapper.toUserResponse(user);
+                return IntrospectResponse.builder().valid(true).user(userResponse).build();
+            } else {
+                return IntrospectResponse.builder().valid(false).build();
+            }
+        } catch (Exception e) {
+            return IntrospectResponse.builder().valid(false).build();
+        }
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
