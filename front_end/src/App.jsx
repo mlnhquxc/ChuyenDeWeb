@@ -14,37 +14,34 @@ import Profile from './Pages/Profile';
 import Shop from './Pages/Shop';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import WishlistPage from './components/Wishlist/WishlistPage';
-import CartPage from './components/Cart/CartPage';
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <div className="flex flex-col min-h-screen">
-              <Header />
-              <main className="flex-grow">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/auth" element={<Authentication />} />
-                  <Route path="/cart" element={<CartPage />} />
-                  <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/category/:category" element={<Category />} />
-                  <Route path="/search" element={<Search />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/shop" element={<Shop />} />
-                  <Route path="/wishlist" element={<WishlistPage />} />
-                </Routes>
-              </main>
-              <Footer />
-            </div>
-          </WishlistProvider>
-        </CartProvider>
-      </AuthProvider>
-    </Router>
+      <Router>
+        <AuthProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <div className="flex flex-col min-h-screen">
+                <Header />
+                <main className="flex-grow">
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/auth" element={<Authentication />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/product/:id" element={<ProductDetail />} />
+                    <Route path="/category/:category" element={<Category />} />
+                    <Route path="/search" element={<Search />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/shop" element={<Shop />} />
+                  </Routes>
+                </main>
+                <Footer />
+              </div>
+            </WishlistProvider>
+          </CartProvider>
+        </AuthProvider>
+      </Router>
   );
 }
 

@@ -21,9 +21,9 @@ const userService = {
   updateProfile: async (userData) => {
     try {
       const response = await axios.put(
-        `${API_URL}${ENDPOINTS.USER.UPDATE_PROFILE}`,
-        userData,
-        { headers: getAuthHeader() }
+          `${API_URL}${ENDPOINTS.USER.UPDATE_PROFILE}`,
+          userData,
+          { headers: getAuthHeader() }
       );
       return response.data;
     } catch (error) {
@@ -34,9 +34,9 @@ const userService = {
   changePassword: async (passwordData) => {
     try {
       const response = await axios.put(
-        `${API_URL}${ENDPOINTS.USER.CHANGE_PASSWORD}`,
-        passwordData,
-        { headers: getAuthHeader() }
+          `${API_URL}${ENDPOINTS.USER.CHANGE_PASSWORD}`,
+          passwordData,
+          { headers: getAuthHeader() }
       );
       return response.data;
     } catch (error) {
@@ -50,14 +50,14 @@ const userService = {
       formData.append('avatar', file);
 
       const response = await axios.post(
-        `${API_URL}${ENDPOINTS.USER.UPLOAD_AVATAR}`,
-        formData,
-        {
-          headers: {
-            ...getAuthHeader(),
-            'Content-Type': 'multipart/form-data',
-          },
-        }
+          `${API_URL}${ENDPOINTS.USER.UPLOAD_AVATAR}`,
+          formData,
+          {
+            headers: {
+              ...getAuthHeader(),
+              'Content-Type': 'multipart/form-data',
+            },
+          }
       );
       return response.data;
     } catch (error) {
@@ -79,8 +79,8 @@ const userService = {
   getOrderDetail: async (orderId) => {
     try {
       const response = await axios.get(
-        `${API_URL}${ENDPOINTS.ORDER.DETAIL(orderId)}`,
-        { headers: getAuthHeader() }
+          `${API_URL}${ENDPOINTS.ORDER.DETAIL(orderId)}`,
+          { headers: getAuthHeader() }
       );
       return response.data;
     } catch (error) {
@@ -91,9 +91,9 @@ const userService = {
   createOrder: async (orderData) => {
     try {
       const response = await axios.post(
-        `${API_URL}${ENDPOINTS.ORDER.CREATE}`,
-        orderData,
-        { headers: getAuthHeader() }
+          `${API_URL}${ENDPOINTS.ORDER.CREATE}`,
+          orderData,
+          { headers: getAuthHeader() }
       );
       return response.data;
     } catch (error) {
@@ -104,9 +104,9 @@ const userService = {
   cancelOrder: async (orderId) => {
     try {
       const response = await axios.put(
-        `${API_URL}${ENDPOINTS.ORDER.CANCEL(orderId)}`,
-        {},
-        { headers: getAuthHeader() }
+          `${API_URL}${ENDPOINTS.ORDER.CANCEL(orderId)}`,
+          {},
+          { headers: getAuthHeader() }
       );
       return response.data;
     } catch (error) {

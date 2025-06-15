@@ -21,8 +21,8 @@ const Shop = () => {
     categories: ["Laptops", "Smartphones", "TVs", "Accessories"],
     sortOptions: [
       { value: "id,asc", label: "Mới nhất" },
-      { value: "id,desc", label: "Cũ nhất" }, 
-      { value: "name,asc", label: "Tên A-Z" }, 
+      { value: "id,desc", label: "Cũ nhất" },
+      { value: "name,asc", label: "Tên A-Z" },
       { value: "name,desc", label: "Tên Z-A" },
       { value: "price,asc", label: "Giá thấp đến cao" },
       { value: "price,desc", label: "Giá cao đến thấp" }
@@ -30,54 +30,21 @@ const Shop = () => {
   };
 
   const loadProducts = async () => {
-    try {
+    try {2
       setLoading(true);
-      let response;
-      
-      if (searchKeyword.trim()) {
-        // Nếu có từ khóa tìm kiếm, sử dụng API search
-        response = await productService.searchProducts(
-          searchKeyword,
-          currentPage,
-          8,
-          filters.sortBy
-        );
-      } else {
-        // Nếu không có từ khóa, sử dụng API lọc theo category
-        console.log('Loading products with filters:', {
-          page: currentPage,
-          size: 8,
-          sortBy: filters.sortBy,
-          category: filters.category
-        });
-        
-        response = await productService.getAllProducts2(
+      const response = await productService.getAllProducts2(
           currentPage,
           8,
           filters.sortBy,
           filters.category
-        );
-      }
-      
-      console.log('API Response:', response);
-      
-      if (response && Array.isArray(response.content)) {
-        setProducts(response.content);
-        setTotalPages(response.totalPages || 1);
-        setError(null);
-      } else if (response && Array.isArray(response)) {
-        setProducts(response);
-        setTotalPages(1);
-        setError(null);
-      } else {
-        console.error('Invalid response format:', response);
-        throw new Error('Invalid response format');
-      }
+      );
+      console.log(response);
+      setProducts(response.content);
+      setTotalPages(response.totalPages);
+      setError(null);
     } catch (err) {
-      console.error("Error loading products:", err);
       setError("Không thể tải danh sách sản phẩm. Vui lòng thử lại sau.");
-      setProducts([]);
-      setTotalPages(0);
+      console.error("Error loading products:", err);
     } finally {
       setLoading(false);
     }
@@ -85,146 +52,115 @@ const Shop = () => {
 
   useEffect(() => {
     loadProducts();
-  }, [currentPage, filters, searchKeyword]);
+  }, [currentPage, filters]);
 
   const handleFilterChange = (filterType, value) => {
-    console.log('Filter changed:', { type: filterType, value });
     setFilters(prev => ({
       ...prev,
       [filterType]: value
     }));
-    setCurrentPage(0);
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setCurrentPage(0);
-    loadProducts();
+    setCurrentPage(0); // Reset về trang đầu tiên khi thay đổi bộ lọc
   };
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 0 && newPage < totalPages) {
-      setCurrentPage(newPage);
-    }
+    setCurrentPage(newPage);
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 py-16">
-        <div className="flex gap-8">
-          {/* Sidebar Filters */}
-          <div className="w-64 bg-white p-4 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold mb-4">Bộ lọc sản phẩm</h3>
+      <div className="min-h-screen bg-white">
+        <div className="container mx-auto px-4 py-16">
+          <div className="flex gap-8">
+            {/* Sidebar Filters */}
+            <div className="w-64 bg-white p-4 rounded-lg shadow-lg">
+              <h3 className="text-xl font-bold mb-4">Bộ lọc sản phẩm</h3>
 
-            {/* Search Box */}
-            <form onSubmit={handleSearch} className="mb-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  placeholder="Tìm kiếm sản phẩm..."
-                  className="w-full p-2 pl-10 border rounded"
-                />
-                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              </div>
-            </form>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-2">Danh mục</h4>
+                  <select
+                      className="w-full p-2 border rounded"
+                      onChange={(e) => handleFilterChange("category", e.target.value)}
+                      value={filters.category}
+                  >
+                    <option value="">Tất cả</option>
+                    {filterOptions.categories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
 
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold mb-2">Danh mục</h4>
-                <select
-                  className="w-full p-2 border rounded"
-                  onChange={(e) => handleFilterChange("category", e.target.value)}
-                  value={filters.category}
-                >
-                  <option value="">Tất cả</option>
-                  {filterOptions.categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <h4 className="font-semibold mb-2">Sắp xếp theo</h4>
-                <select
-                  className="w-full p-2 border rounded"
-                  onChange={(e) => handleFilterChange("sortBy", e.target.value)}
-                  value={filters.sortBy}
-                >
-                  {filterOptions.sortOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                <div>
+                  <h4 className="font-semibold mb-2">Sắp xếp theo</h4>
+                  <select
+                      className="w-full p-2 border rounded"
+                      onChange={(e) => handleFilterChange("sortBy", e.target.value)}
+                      value={filters.sortBy}
+                  >
+                    {filterOptions.sortOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Main Content */}
-          <div className="flex-1">
-            <h2 className="text-3xl font-bold mb-8">Sản phẩm</h2>
+            {/* Main Content */}
+            <div className="flex-1">
+              <h2 className="text-3xl font-bold mb-8">Sản phẩm</h2>
 
-            {loading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-              </div>
-            ) : error ? (
-              <div className="text-red-500 text-center py-8">{error}</div>
-            ) : products.length === 0 ? (
-              <div className="text-center py-8">
-                {searchKeyword ? 
-                  `Không tìm thấy sản phẩm nào với từ khóa "${searchKeyword}"` : 
-                  "Không tìm thấy sản phẩm nào"}
-              </div>
-            ) : (
-              <>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentPage}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -30 }}
-                    transition={{ duration: 0.3 }}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-                  >
-                    {products.map(product => (
-                      <div key={product?.id || Math.random()} className="w-full h-full flex">
-                        <ProductCard product={product} />
-                      </div>
-                    ))}
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex justify-center mt-8 space-x-2">
-                    <button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 0}
-                      className="px-4 py-2 border rounded disabled:opacity-50"
-                    >
-                      Trước
-                    </button>
-                    <span className="px-4 py-2">
-                      Trang {currentPage + 1} / {totalPages}
-                    </span>
-                    <button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages - 1}
-                      className="px-4 py-2 border rounded disabled:opacity-50"
-                    >
-                      Sau
-                    </button>
+              {loading ? (
+                  <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                   </div>
-                )}
-              </>
-            )}
+              ) : error ? (
+                  <div className="text-red-500 text-center py-8">{error}</div>
+              ) : (
+                  <>
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                          key={currentPage}
+                          initial={{ opacity: 0, y: 30 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -30 }}
+                          transition={{ duration: 0.3 }}
+                          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                      >
+                        {products.map(product => (
+                            <div key={product.id} className="w-full h-full flex">
+                              <ProductCard product={product} />
+                            </div>
+                        ))}
+                      </motion.div>
+                    </AnimatePresence>
+
+                    {/* Pagination */}
+                    <div className="flex justify-center mt-8 space-x-2">
+                      <button
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 0}
+                          className="px-4 py-2 border rounded disabled:opacity-50"
+                      >
+                        Trước
+                      </button>
+                      <span className="px-4 py-2">
+                    Trang {currentPage + 1} / {totalPages}
+                  </span>
+                      <button
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages - 1}
+                          className="px-4 py-2 border rounded disabled:opacity-50"
+                      >
+                        Sau
+                      </button>
+                    </div>
+                  </>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

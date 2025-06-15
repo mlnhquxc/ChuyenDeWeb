@@ -17,24 +17,24 @@ export const productService = {
     getAllProducts2: async (page = 0, size = 10, sortBy = 'id', category = "") => {
         try {
             let url = `${API_URL}/products`;
-            
+
             // Nếu có category, sử dụng endpoint category
             if (category) {
                 url = `${API_URL}/products/category/${category}`;
             }
-            
+
             const response = await axios.get(url, {
-                params: { 
-                    page, 
-                    size, 
+                params: {
+                    page,
+                    size,
                     sortBy
                 }
             });
-            
+
             if (!response.data) {
                 throw new Error('No data received from server');
             }
-            
+
             return response.data;
         } catch (error) {
             console.error('Error fetching products:', error.response?.data || error.message);

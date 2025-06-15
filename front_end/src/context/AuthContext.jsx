@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
         const token = localStorage.getItem('token');
         if (currentUser && token) {
           if (process.env.NODE_ENV !== 'production') {
-              console.log('AuthContext - Initializing with user:', currentUser);
+            console.log('AuthContext - Initializing with user:', currentUser);
           }
           setUser(currentUser);
           setIsAuthenticated(true);
@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.login(credentials);
       if (process.env.NODE_ENV !== 'production') {
         console.log('AuthContext - Login response:', response);
-      }  
+      }
       if (response && response.authenticated) {
         setUser(response.user);
         setIsAuthenticated(true);
@@ -129,9 +129,9 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
+      <AuthContext.Provider value={value}>
+        {!loading && children}
+      </AuthContext.Provider>
   );
 };
 

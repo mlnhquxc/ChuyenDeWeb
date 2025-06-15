@@ -9,36 +9,42 @@ const authService = {
       }
       const response = await axiosInstance.post(ENDPOINTS.AUTH.LOGIN, credentials);
       if (process.env.NODE_ENV !== 'production') {
-        console.log('authService - Login response:', response.data);
+        console.log('authService - Login response:', response);
       }
+
+      if (!response || !response.data) {
+        throw new Error('Invalid response from server');
+      }
+
+      if (!response.data.result) {
+        throw new Error('Invalid response format from server');
+      }
+
+      const { token, user } = response.data.result;
       
-      if (response.data && response.data.result) {
-        const { token, user } = response.data.result;
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        return { ...response.data.result, authenticated: true };
+      if (!token || !user) {
+        throw new Error('Missing token or user data');
       }
-      return null;
+
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      return { ...response.data.result, authenticated: true };
     } catch (error) {
-      // Clear any existing auth data on error
       localStorage.removeItem('token');
       localStorage.removeItem('user');
 
-      // Log error details in development only
       if (process.env.NODE_ENV !== 'production') {
         console.error('authService - Login error:', error);
       } else {
-        // In production, log minimal information
         console.error('Login failed:', error.message || 'Unknown error');
-      }      
+      }
 
-      // Handle token expiration
       if (error.response?.status === 403) {
         try {
           const refreshResponse = await this.refreshToken();
           if (refreshResponse) {
             const retryResponse = await axiosInstance.post(ENDPOINTS.AUTH.LOGIN, credentials);
-            if (retryResponse.data.result) {
+            if (retryResponse?.data?.result) {
               const { token, user } = retryResponse.data.result;
               localStorage.setItem('token', token);
               localStorage.setItem('user', JSON.stringify(user));
@@ -51,8 +57,7 @@ const authService = {
           }
         }
       }
-      // Enhance error with user-friendly message
-      const errorMessage = error.response?.data?.message || 'Login failed. Please check your credentials and try again.';
+      const errorMessage = error.response?.data?.message || error.message || 'Login failed. Please check your credentials and try again.';
       error.userMessage = errorMessage;
       throw error;
     }
@@ -67,7 +72,7 @@ const authService = {
       if (process.env.NODE_ENV !== 'production') {
         console.log('authService - Register response:', response.data);
       }
-      
+
       const result = response.data.result;
       if (result && result.token) {
         localStorage.setItem('token', result.token);
@@ -81,8 +86,7 @@ const authService = {
       } else {
         console.error('Registration failed:', error.message || 'Unknown error');
       }
-      
-      // Enhance error with user-friendly message
+
       const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
       error.userMessage = errorMessage;
       throw error;

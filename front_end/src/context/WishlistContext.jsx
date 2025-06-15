@@ -53,8 +53,8 @@ export const WishlistProvider = ({ children }) => {
   };
 
   return (
-    <WishlistContext.Provider value={value}>
-      {children}
-    </WishlistContext.Provider>
+      <WishlistContext.Provider value={value}>
+        {children}
+      </WishlistContext.Provider>
   );
 }; 
