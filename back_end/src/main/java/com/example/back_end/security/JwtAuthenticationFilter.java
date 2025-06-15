@@ -2,6 +2,7 @@ package com.example.back_end.security;
 
 import com.example.back_end.exception.JwtAuthenticationException;
 import com.example.back_end.service.JwtService;
+import com.example.back_end.service.TokenStorageService;
 import com.example.back_end.service.UserService;
 import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.FilterChain;
@@ -24,6 +25,7 @@ import java.text.ParseException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserService userService;
     private final JwtService jwtService;
+    private final TokenStorageService tokenStorageService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -36,18 +38,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             String token = authHeader.substring(7);
-            String email = null;
+            String username = null;
             try {
-                email = jwtService.validateToken(token);
+                username = jwtService.validateToken(token);
             } catch (ParseException | JOSEException | JwtAuthenticationException e) {
                 logger.error("Invalid JWT token", e);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
 
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 try {
-                    UserDetails userDetails = userService.loadUserByUsername(email);
+                    // Kiểm tra token có tồn tại trong storage không
+                    if (!tokenStorageService.isTokenValid(username, token)) {
+                        logger.error("Token not found in active sessions");
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        return;
+                    }
+
+                    UserDetails userDetails = userService.loadUserByUsername(username);
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,

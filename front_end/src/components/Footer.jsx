@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiX, FiHeart, FiMail ,FiChevronLeft, FiChevronRight} from "react-icons/fi";
 
 const Footer = ()=> {
-    return (
-        <footer className="bg-gray-800 text-white py-12">
+  return (
+      <footer className="bg-gray-800 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
@@ -34,9 +34,9 @@ const Footer = ()=> {
               <h3 className="text-xl font-bold mb-4">Newsletter</h3>
               <div className="flex">
                 <input
-                  type="email"
-                  placeholder="Your email"
-                  className="px-4 py-2 w-full rounded-l focus:outline-none text-gray-900 bg-white"
+                    type="email"
+                    placeholder="Your email"
+                    className="px-4 py-2 w-full rounded-l focus:outline-none text-gray-900 bg-white"
                 />
                 <button className="bg-green-500 px-4 py-2 rounded-r hover:bg-green-600">
                   <FiMail className="h-5 w-5" />
@@ -51,6 +51,6 @@ const Footer = ()=> {
           </div>
         </div>
       </footer>
-    )
+  )
 }
 export default Footer;

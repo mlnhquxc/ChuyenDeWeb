@@ -37,6 +37,7 @@ public class Product {
     private Category category;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean active = true;
 
     @OneToMany(mappedBy = "product")
@@ -44,10 +45,13 @@ public class Product {
 
     @OneToMany(mappedBy = "product")
     private List<CartItem> cartItems;
+    
+    @OneToMany(mappedBy = "product")
+    private List<WishlistItem> wishlistItems;
 
     @OneToMany(mappedBy = "product")
     private List<OrderDetail> orderDetails;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private java.util.List<ProductImage> productImages;
 } 

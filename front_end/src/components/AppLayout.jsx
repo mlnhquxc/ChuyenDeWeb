@@ -10,11 +10,11 @@ function AppLayout() {
   const hideHeaderFooter = location.pathname === "";
 
   return (
-    <>
-      {!hideHeaderFooter && <Header />}
-      <AppRoutes />
-      {!hideHeaderFooter && <Footer />}
-    </>
+      <>
+        {!hideHeaderFooter && <Header />}
+        <AppRoutes />
+        {!hideHeaderFooter && <Footer />}
+      </>
   );
 }
 export default AppLayout;

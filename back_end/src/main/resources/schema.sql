@@ -62,6 +62,24 @@ CREATE TABLE IF NOT EXISTS cart_items (
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
+-- Tạo bảng wishlists
+CREATE TABLE IF NOT EXISTS wishlists (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- Tạo bảng wishlist_items
+CREATE TABLE IF NOT EXISTS wishlist_items (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    wishlist_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    added_date DATETIME NOT NULL,
+    FOREIGN KEY (wishlist_id) REFERENCES wishlists(id),
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    UNIQUE KEY unique_wishlist_product (wishlist_id, product_id)
+);
+
 -- Tạo bảng orders
 CREATE TABLE IF NOT EXISTS orders (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,

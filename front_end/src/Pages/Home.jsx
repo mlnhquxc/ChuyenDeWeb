@@ -11,7 +11,7 @@ import tv1 from "../assets/images/tivi/ss_44/ss_43_1.png";
 import tv2 from "../assets/images/tivi/ss_44/ss_43_2.png";
 import tainghe1 from "../assets/images/phukien/tainghe/tainghe_1.png";
 import tainghe2 from "../assets/images/phukien/tainghe/tainghe_2.png";
-import ImageSlider from '../component/ImageSlider';
+import ImageSlider from '../components/ImageSlider';
 
 const HomePage = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -33,9 +33,9 @@ const HomePage = () => {
     if(currentCategoryIndex < categories.length -4){
       setCurrentCategoryIndex(prev => prev + 1);
     }
-  console.log("currentCategoryIndex : right");
+    console.log("currentCategoryIndex : right");
   };
-  
+
   const prevCategory = () => {
     if (currentCategoryIndex > 0) {
       setCurrentCategoryIndex(prev => prev - 1);
@@ -95,93 +95,93 @@ const HomePage = () => {
   ];
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? "dark bg-gray-900 text-white" : "bg-white text-gray-900"}`}>
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-white dark:bg-gray-800 md:hidden">
-          <div className="flex flex-col p-4 space-y-4">
-            <a href="#" className="text-lg">Home</a>
-            <a href="#" className="text-lg">Products</a>
-            <a href="#" className="text-lg">Categories</a>
-            <a href="#" className="text-lg">Deals</a>
-            <a href="#" className="text-lg">Support</a>
-            <a href="#" className="text-lg">Contact</a>
-          </div>
-        </div>
-      )}
+      <div className={`min-h-screen ${isDarkMode ? "dark bg-gray-900 text-white" : "bg-white text-gray-900"}`}>
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+            <div className="fixed inset-0 z-40 bg-white dark:bg-gray-800 md:hidden">
+              <div className="flex flex-col p-4 space-y-4">
+                <a href="#" className="text-lg">Home</a>
+                <a href="#" className="text-lg">Products</a>
+                <a href="#" className="text-lg">Categories</a>
+                <a href="#" className="text-lg">Deals</a>
+                <a href="#" className="text-lg">Support</a>
+                <a href="#" className="text-lg">Contact</a>
+              </div>
+            </div>
+        )}
 
-      {/* Hero Section */}
-      <section className="relative h-[600px] overflow-hidden">
-        {/* <img
+        {/* Hero Section */}
+        <section className="relative h-[600px] overflow-hidden">
+          {/* <img
           src="https://images.unsplash.com/photo-1550009158-9ebf69173e03"
           alt="Tech Hero Banner"
           className="w-full h-full object-cover"
         /> */}
-        <div className="w-full h-full object-cover m-0">
-          <ImageSlider />
-        </div>
-        <div className="absolute inset-0 bg-opacity-50 flex items-center justify-center">
-          <div className="text-center text-yellow">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
-              Tech Innovation
-            </h1>
-            <p className="text-xl mb-8 animate-fade-in-delay">
-              Discover the latest in technology and innovation
-            </p>
-            <button className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300">
-              Explore Now
+          <div className="w-full h-full object-cover m-0">
+            <ImageSlider />
+          </div>
+          <div className="absolute inset-0 bg-opacity-50 flex items-center justify-center">
+            <div className="text-center text-yellow">
+              <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
+                Tech Innovation
+              </h1>
+              <p className="text-xl mb-8 animate-fade-in-delay">
+                Discover the latest in technology and innovation
+              </p>
+              <button className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300">
+                Explore Now
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Categories */}
+        <section className="container mx-auto px-4 py-16">
+          <h2 className="text-3xl font-bold text-center mb-12">Popular Categories</h2>
+          <div className="relative">
+            <button
+                onClick={prevCategory}
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <FiChevronLeft className="h-6 w-6" />
+            </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {categories.slice(currentCategoryIndex,currentCategoryIndex+4).map((category, index) => (
+                  <div
+                      key={index}
+                      className="relative overflow-hidden rounded-lg group cursor-pointer"
+                  >
+                    <img
+                        src={category.image}
+                        alt={category.name}
+                        className="w-full h-64 object-cover transform group-hover:scale-110 transition duration-500"
+                    />
+                    <div className="absolute inset-0 bg-opacity-40 flex items-center justify-center">
+                      <h3 className="text-white text-2xl font-semibold">{category.name}</h3>
+                    </div>
+                  </div>
+              ))}
+            </div>
+            <button
+                onClick={nextCategory}
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <FiChevronRight className="h-6 w-6" />
             </button>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Categories */}
-      <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Popular Categories</h2>
-        <div className="relative">
-          <button 
-            onClick={prevCategory}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <FiChevronLeft className="h-6 w-6" />
-          </button>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {categories.slice(currentCategoryIndex,currentCategoryIndex+4).map((category, index) => (
-            <div
-              key={index}
-              className="relative overflow-hidden rounded-lg group cursor-pointer"
-            >
-              <img
-                src={category.image}
-                alt={category.name}
-                className="w-full h-64 object-cover transform group-hover:scale-110 transition duration-500"
-              />
-              <div className="absolute inset-0 bg-opacity-40 flex items-center justify-center">
-                <h3 className="text-white text-2xl font-semibold">{category.name}</h3>
-              </div>
-            </div>
-          ))}
+        {/* Featured Products */}
+        <section className="container mx-auto px-4 py-16 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+          <h2 className="text-3xl font-bold dark:text-white text-center mb-12">Featured Products</h2>
+          <div className="grid grid-cols-1 dark:text-white md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {products.map((product, index) => (
+                <ProductCard key={index} product={product}/>
+            ))}
           </div>
-          <button 
-            onClick={nextCategory}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <FiChevronRight className="h-6 w-6" />
-          </button>
-        </div>
-      </section>
+        </section>
 
-      {/* Featured Products */}
-      <section className="container mx-auto px-4 py-16 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
-        <h2 className="text-3xl font-bold dark:text-white text-center mb-12">Featured Products</h2>
-        <div className="grid grid-cols-1 dark:text-white md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.map((product, index) => (
-            <ProductCard key={index} product={product}/>
-          ))}
-        </div>
-      </section>
-      
-    </div>
+      </div>
   );
 };
 

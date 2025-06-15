@@ -16,52 +16,52 @@ import Orders from '../Pages/Orders';
 import PrivateRoute from '../components/PrivateRoute';
 
 const AppRoutes = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/shop" element={<Store />} />
-      <Route path="/products/:id" element={<ProductDetail />} />
-      <Route path="/aboutUs" element={<AboutUs />} />
-      <Route path="/baoHanh" element={<BaoHanh />} />
-      <Route path="/doiTra" element={<DoiTra />} />
-      <Route path="/faq" element={<FAQ />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/login" element={<AuthPage />} />
-      <Route path="/register" element={<AuthPage />} />
-      <Route
-        path="/cart"
-        element={
-          <PrivateRoute>
-            <Cart />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/wishlist"
-        element={
-          <PrivateRoute>
-            <WishList />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <PrivateRoute>
-            <Profile />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/orders"
-        element={
-          <PrivateRoute>
-            <Orders />
-          </PrivateRoute>
-        }
-      />
-    </Routes>
-  );
+    return (
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/shop" element={<Store />} />
+            <Route path="/products/:id" element={<ProductDetail />} />
+            <Route path="/aboutUs" element={<AboutUs />} />
+            <Route path="/baoHanh" element={<BaoHanh />} />
+            <Route path="/doiTra" element={<DoiTra />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<AuthPage />} />
+            <Route path="/register" element={<AuthPage />} />
+            <Route
+                path="/cart"
+                element={
+                    <PrivateRoute>
+                        <Cart />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/wishlist"
+                element={
+                    <PrivateRoute>
+                        <WishList />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/profile"
+                element={
+                    <PrivateRoute>
+                        <Profile />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/orders"
+                element={
+                    <PrivateRoute>
+                        <Orders />
+                    </PrivateRoute>
+                }
+            />
+        </Routes>
+    );
 };
 
 export default AppRoutes;

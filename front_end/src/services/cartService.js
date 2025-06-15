@@ -21,9 +21,9 @@ const cartService = {
   addToCart: async (productId, quantity) => {
     try {
       const response = await axios.post(
-        `${API_URL}/cart/add`,
-        { productId, quantity },
-        { headers: getAuthHeader() }
+          `${API_URL}/cart/add`,
+          { productId, quantity },
+          { headers: getAuthHeader() }
       );
       return response.data;
     } catch (error) {
@@ -34,9 +34,9 @@ const cartService = {
   updateCartItem: async (cartItemId, quantity) => {
     try {
       const response = await axios.put(
-        `${API_URL}/cart/update/${cartItemId}`,
-        { quantity },
-        { headers: getAuthHeader() }
+          `${API_URL}/cart/update/${cartItemId}`,
+          { quantity },
+          { headers: getAuthHeader() }
       );
       return response.data;
     } catch (error) {
@@ -69,9 +69,9 @@ const cartService = {
   addToWishlist: async (productId) => {
     try {
       const response = await axios.post(
-        `${API_URL}/wishlist/add`,
-        { productId },
-        { headers: getAuthHeader() }
+          `${API_URL}/wishlist/add`,
+          { productId },
+          { headers: getAuthHeader() }
       );
       return response.data;
     } catch (error) {
