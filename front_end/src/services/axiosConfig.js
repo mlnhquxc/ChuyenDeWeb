@@ -13,7 +13,7 @@ const axiosInstance = axios.create({
         'Content-Type': 'application/json',
     },
     withCredentials: true,
-    timeout: 10000 // Add a reasonable timeout
+    timeout: 10000
 });
 
 let isRefreshing = false;
@@ -42,7 +42,7 @@ axiosInstance.interceptors.request.use(
             console.log('=== REQUEST END ===');
         }
 
-        const token = localStorage.getItem('token');
+        const token = authService.getToken();
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -69,7 +69,9 @@ axiosInstance.interceptors.response.use(
         if (process.env.NODE_ENV !== 'production') {
             console.error('=== ERROR START ===');
         }
+
         const originalRequest = error.config;
+
         // No retry if the request already failed after a retry or doesn't have a config
         if (!originalRequest || originalRequest._retry) {
             return Promise.reject(error);
@@ -81,8 +83,8 @@ axiosInstance.interceptors.response.use(
                 console.error('Response status:', error.response.status);
             }
 
-            // Handle 403 Forbidden error
-            if ((error.response.status === 401 || error.response.status === 403) && !originalRequest._retry) {
+            // Handle 401 Unauthorized error
+            if (error.response.status === 401 && !originalRequest._retry) {
                 // If already refreshing, queue this request
                 if (isRefreshing) {
                     try {
@@ -92,11 +94,6 @@ axiosInstance.interceptors.response.use(
                         originalRequest.headers.Authorization = `Bearer ${token}`;
                         return axiosInstance(originalRequest);
                     } catch (err) {
-                        // If token refresh failed for a queued request, redirect to login
-                        if (err.response?.status === 401 || err.response?.status === 403) {
-                            authService.logout();
-                            window.location.href = '/auth';
-                        }
                         return Promise.reject(err);
                     }
                 }
@@ -108,11 +105,10 @@ axiosInstance.interceptors.response.use(
                 try {
                     // Attempt to refresh the token
                     const response = await authService.refreshToken();
-                    if (!response || !response.token) {
+                    if (!response || !response.accessToken) {
                         throw new Error('Token refresh failed - no token returned');
                     }
-                    const newToken = response.token;
-                    localStorage.setItem('token', newToken);
+                    const newToken = response.accessToken;
 
                     // Process any queued requests with the new token
                     processQueue(null, newToken);
@@ -129,19 +125,23 @@ axiosInstance.interceptors.response.use(
                     isRefreshing = false;
                 }
             }
+
+            // Handle 403 Forbidden error
+            if (error.response.status === 403) {
+                authService.logout();
+                window.location.href = '/auth';
+                return Promise.reject(error);
+            }
         } else if (error.request) {
             // The request was made but no response was received
             console.error('Network error - no response received');
-
-            // Add a user-friendly message
             error.userMessage = 'Network error. Please check your connection and try again.';
         } else {
             // Something happened in setting up the request that triggered an Error
             console.error('Error:', error.message || 'Unknown error');
-
-            // Add a user-friendly message
             error.userMessage = 'An unexpected error occurred. Please try again.';
         }
+
         if (process.env.NODE_ENV !== 'production') {
             console.error('=== ERROR END ===');
         }

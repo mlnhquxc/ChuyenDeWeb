@@ -11,18 +11,20 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = () => {
       try {
+        console.log('AuthContext - Initializing authentication...');
         const currentUser = authService.getCurrentUser();
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('accessToken');
+        
+        console.log('AuthContext - Token exists:', !!token);
+        console.log('AuthContext - User exists:', !!currentUser);
+        
         if (currentUser && token) {
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('AuthContext - Initializing with user:', currentUser);
-          }
+          console.log('AuthContext - Initializing with user:', currentUser);
+          console.log('AuthContext - Token:', token.substring(0, 10) + '...');
           setUser(currentUser);
           setIsAuthenticated(true);
         } else {
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('AuthContext - No user found during initialization');
-          }
+          console.log('AuthContext - No user or token found during initialization');
           setUser(null);
           setIsAuthenticated(false);
         }
@@ -41,7 +43,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const handleStorageChange = () => {
       const currentUser = authService.getCurrentUser();
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken');
       if (currentUser && token) {
         setUser(currentUser);
         setIsAuthenticated(true);

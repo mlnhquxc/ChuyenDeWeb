@@ -108,6 +108,36 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/refresh-token")
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> refreshToken(@RequestHeader("Authorization") String token) {
+        try {
+            log.info("Received refresh token request");
+            
+            // Extract username from old token first
+            String oldToken = token.startsWith("Bearer ") ? token.substring(7) : token;
+            String email = userService.validateToken(oldToken);
+            com.example.back_end.entity.User user = userService.findByEmail(email);
+            
+            AuthenticationResponse response = userService.refreshToken(token);
+            
+            // Update token in storage using username
+            tokenStorageService.storeToken(user.getUsername(), response.getToken());
+            
+            log.info("Token refresh successful for user: {}", user.getUsername());
+            return ResponseEntity.ok(ApiResponse.<AuthenticationResponse>builder()
+                    .code(0)
+                    .result(response)
+                    .build());
+        } catch (Exception e) {
+            log.error("Token refresh failed: {}", e.getMessage());
+            return ResponseEntity.status(401)
+                    .body(ApiResponse.<AuthenticationResponse>builder()
+                            .code(401)
+                            .message("Token refresh failed")
+                            .build());
+        }
+    }
+
     @PostMapping("/introspect")
     public ResponseEntity<ApiResponse<IntrospectResponse>> introspect(@RequestBody IntrospectRequest request) throws ParseException, JOSEException {
         IntrospectResponse response = userService.introspect(request);

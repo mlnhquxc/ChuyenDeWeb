@@ -14,6 +14,8 @@ import Profile from './Pages/Profile';
 import Shop from './Pages/Shop';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import Store from './Pages/Store';
+import Wishlist from './Pages/WishList';
 
 function App() {
   return (
@@ -26,6 +28,7 @@ function App() {
                 <main className="flex-grow">
                   <Routes>
                     <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Authentication />} />
                     <Route path="/auth" element={<Authentication />} />
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/checkout" element={<Checkout />} />
@@ -34,6 +37,8 @@ function App() {
                     <Route path="/search" element={<Search />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/shop" element={<Shop />} />
+                    <Route path="/store" element={<Store />} />
+                    <Route path="/wishlist" element={<Wishlist />} />
                   </Routes>
                 </main>
                 <Footer />

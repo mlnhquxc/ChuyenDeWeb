@@ -6,30 +6,38 @@ const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  const [cart, setCart] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
+  const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('CartContext - Authentication state changed:', isAuthenticated);
     if (isAuthenticated) {
-      loadCartAndWishlist();
+      console.log('CartContext - User is authenticated, loading cart...');
+      loadCart();
     } else {
-      setCart([]);
-      setWishlist([]);
+      console.log('CartContext - User is not authenticated, clearing cart...');
+      setCart(null);
       setLoading(false);
     }
   }, [isAuthenticated]);
 
-  const loadCartAndWishlist = async () => {
+  const loadCart = async () => {
     try {
-      const [cartData, wishlistData] = await Promise.all([
-        cartService.getCart(),
-        cartService.getWishlist()
-      ]);
-      setCart(cartData.result || []);
-      setWishlist(wishlistData.result || []);
+      console.log('CartContext - Loading cart...');
+      setLoading(true);
+      const cartData = await cartService.getCart();
+      console.log('CartContext - Cart data received:', cartData);
+      
+      if (cartData && cartData.result) {
+        console.log('CartContext - Setting cart with data:', cartData.result);
+        setCart(cartData.result);
+      } else {
+        console.warn('CartContext - No cart data in response:', cartData);
+        setCart(null);
+      }
     } catch (error) {
-      console.error('Error loading cart and wishlist:', error);
+      console.error('CartContext - Error loading cart:', error);
+      setCart(null);
     } finally {
       setLoading(false);
     }
@@ -37,70 +45,73 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (productId, quantity = 1) => {
     try {
+      setLoading(true);
       const response = await cartService.addToCart(productId, quantity);
       setCart(response.result);
       return response;
     } catch (error) {
+      console.error('Error adding to cart:', error);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const updateCartItem = async (cartItemId, quantity) => {
     try {
+      setLoading(true);
       const response = await cartService.updateCartItem(cartItemId, quantity);
       setCart(response.result);
       return response;
     } catch (error) {
+      console.error('Error updating cart item:', error);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const removeFromCart = async (cartItemId) => {
+  const removeFromCart = async (productId) => {
     try {
-      const response = await cartService.removeFromCart(cartItemId);
+      setLoading(true);
+      const response = await cartService.removeFromCart(productId);
       setCart(response.result);
       return response;
     } catch (error) {
+      console.error('Error removing from cart:', error);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const addToWishlist = async (productId) => {
+  const clearCart = async () => {
     try {
-      const response = await cartService.addToWishlist(productId);
-      setWishlist(response.result);
-      return response;
+      setLoading(true);
+      await cartService.clearCart();
+      setCart(null);
     } catch (error) {
+      console.error('Error clearing cart:', error);
       throw error;
-    }
-  };
-
-  const removeFromWishlist = async (productId) => {
-    try {
-      const response = await cartService.removeFromWishlist(productId);
-      setWishlist(response.result);
-      return response;
-    } catch (error) {
-      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const value = {
     cart,
-    wishlist,
     loading,
     addToCart,
     updateCartItem,
     removeFromCart,
-    addToWishlist,
-    removeFromWishlist,
-    refreshCartAndWishlist: loadCartAndWishlist
+    clearCart,
+    refreshCart: loadCart
   };
 
   return (
-      <CartContext.Provider value={value}>
-        {children}
-      </CartContext.Provider>
+    <CartContext.Provider value={value}>
+      {children}
+    </CartContext.Provider>
   );
 };
 
