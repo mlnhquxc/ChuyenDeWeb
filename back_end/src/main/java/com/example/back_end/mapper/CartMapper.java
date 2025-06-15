@@ -50,11 +50,16 @@ public class CartMapper {
         BigDecimal subtotal = cartItem.getProduct().getPrice()
             .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
 
+        // Lấy ảnh đầu tiên từ danh sách ảnh của sản phẩm
+        String productImage = cartItem.getProduct().getProductImages().isEmpty() 
+            ? cartItem.getProduct().getImage() // Fallback to old image field if no product images
+            : cartItem.getProduct().getProductImages().get(0).getImageUrl();
+
         return CartItemDTO.builder()
             .id(cartItem.getId())
             .productId(cartItem.getProduct().getId())
             .productName(cartItem.getProduct().getName())
-            .productImage(cartItem.getProduct().getImage())
+            .productImage(productImage)
             .productPrice(cartItem.getProduct().getPrice())
             .quantity(cartItem.getQuantity())
             .subtotal(subtotal)
