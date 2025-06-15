@@ -17,7 +17,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class CartController {
     private final CartService cartService;
     private final UserService userService;
@@ -39,9 +39,26 @@ public class CartController {
     public ResponseEntity<ApiResponse<CartDTO>> addToCart(
             @AuthenticationPrincipal User userPrincipal,
             @RequestBody Map<String, Object> requestBody) {
+        if (!requestBody.containsKey("productId") || !requestBody.containsKey("quantity")) {
+            return ResponseEntity.badRequest().body(ApiResponse.<CartDTO>builder()
+                    .code(400)
+                    .message("Product ID and quantity are required")
+                    .result(null)
+                    .build());
+        }
+
         com.example.back_end.entity.User user = userService.findByUsername(userPrincipal.getUsername());
         Long productId = Long.valueOf(requestBody.get("productId").toString());
         Integer quantity = Integer.valueOf(requestBody.get("quantity").toString());
+        
+        if (quantity <= 0) {
+            return ResponseEntity.badRequest().body(ApiResponse.<CartDTO>builder()
+                    .code(400)
+                    .message("Quantity must be greater than 0")
+                    .result(null)
+                    .build());
+        }
+
         Cart cart = cartService.addToCart(user.getId(), productId, quantity);
         CartDTO cartDTO = cartMapper.toCartDTO(cart);
         return ResponseEntity.ok(ApiResponse.<CartDTO>builder()
@@ -51,55 +68,30 @@ public class CartController {
                 .build());
     }
 
-    @PutMapping("/update/{cartItemId}")
-    public ResponseEntity<ApiResponse<CartDTO>> updateCartItemQuantity(
-            @AuthenticationPrincipal User userPrincipal,
-            @PathVariable Long cartItemId,
-            @RequestBody Map<String, Object> requestBody) {
-        com.example.back_end.entity.User user = userService.findByUsername(userPrincipal.getUsername());
-        Integer quantity = Integer.valueOf(requestBody.get("quantity").toString());
-        Cart cart = cartService.updateCartItemQuantity(user.getId(), cartItemId, quantity);
-        CartDTO cartDTO = cartMapper.toCartDTO(cart);
-        return ResponseEntity.ok(ApiResponse.<CartDTO>builder()
-                .code(200)
-                .message("Cart item updated")
-                .result(cartDTO)
-                .build());
-    }
-    
     @PutMapping("/update")
     public ResponseEntity<ApiResponse<CartDTO>> updateCartItem(
             @AuthenticationPrincipal User userPrincipal,
             @RequestBody Map<String, Object> requestBody) {
+        if (!requestBody.containsKey("cartItemId") || !requestBody.containsKey("quantity")) {
+            return ResponseEntity.badRequest().body(ApiResponse.<CartDTO>builder()
+                    .code(400)
+                    .message("Cart item ID and quantity are required")
+                    .result(null)
+                    .build());
+        }
+
         com.example.back_end.entity.User user = userService.findByUsername(userPrincipal.getUsername());
-        
-        // Check if cartItemId is provided in the request body
-        Long cartItemId = null;
-        if (requestBody.containsKey("cartItemId") && requestBody.get("cartItemId") != null) {
-            cartItemId = Long.valueOf(requestBody.get("cartItemId").toString());
-        } else if (requestBody.containsKey("id") && requestBody.get("id") != null) {
-            // Try alternative field name
-            cartItemId = Long.valueOf(requestBody.get("id").toString());
-        } else {
+        Long cartItemId = Long.valueOf(requestBody.get("cartItemId").toString());
+        Integer quantity = Integer.valueOf(requestBody.get("quantity").toString());
+
+        if (quantity <= 0) {
             return ResponseEntity.badRequest().body(ApiResponse.<CartDTO>builder()
                     .code(400)
-                    .message("Cart item ID is required")
+                    .message("Quantity must be greater than 0")
                     .result(null)
                     .build());
         }
-        
-        // Check if quantity is provided in the request body
-        Integer quantity = null;
-        if (requestBody.containsKey("quantity") && requestBody.get("quantity") != null) {
-            quantity = Integer.valueOf(requestBody.get("quantity").toString());
-        } else {
-            return ResponseEntity.badRequest().body(ApiResponse.<CartDTO>builder()
-                    .code(400)
-                    .message("Quantity is required")
-                    .result(null)
-                    .build());
-        }
-        
+
         Cart cart = cartService.updateCartItemQuantityById(user.getId(), cartItemId, quantity);
         CartDTO cartDTO = cartMapper.toCartDTO(cart);
         return ResponseEntity.ok(ApiResponse.<CartDTO>builder()

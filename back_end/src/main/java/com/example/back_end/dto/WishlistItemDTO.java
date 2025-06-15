@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -16,6 +16,5 @@ public class WishlistItemDTO {
     private Long productId;
     private String productName;
     private String productImage;
-    private Double productPrice;
-    private LocalDateTime addedDate;
+    private BigDecimal productPrice;
 }

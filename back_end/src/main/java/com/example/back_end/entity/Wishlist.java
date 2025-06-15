@@ -26,18 +26,13 @@ public class Wishlist {
     @Builder.Default
     private List<WishlistItem> wishlistItems = new ArrayList<>();
 
-    // Helper methods
     public void addItem(WishlistItem item) {
         wishlistItems.add(item);
-        if (item != null) {
-            item.setWishlist(this);
-        }
+        item.setWishlist(this);
     }
 
     public void removeItem(WishlistItem item) {
         wishlistItems.remove(item);
-        if (item != null) {
-            item.setWishlist(null);
-        }
+        item.setWishlist(null);
     }
 }

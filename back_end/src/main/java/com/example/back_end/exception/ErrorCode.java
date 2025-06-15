@@ -35,6 +35,7 @@ public enum ErrorCode {
     // Wishlist related errors
     WISHLIST_NOT_FOUND(4000, "Wishlist not found", HttpStatus.NOT_FOUND),
     WISHLIST_ITEM_NOT_FOUND(4001, "Wishlist item not found", HttpStatus.NOT_FOUND),
+    PRODUCT_ALREADY_IN_WISHLIST(4002, "Product is already in wishlist", HttpStatus.BAD_REQUEST),
     ;
 
     private final int code;

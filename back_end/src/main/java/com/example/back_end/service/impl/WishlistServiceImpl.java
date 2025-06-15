@@ -115,20 +115,31 @@ public class WishlistServiceImpl implements WishlistService {
 
     private WishlistDTO convertToDTO(Wishlist wishlist) {
         List<WishlistItemDTO> itemDTOs = wishlist.getWishlistItems().stream()
-                .map(item -> WishlistItemDTO.builder()
-                        .id(item.getId())
-                        .productId(item.getProduct().getId())
-                        .productName(item.getProduct().getName())
-                        .productImage(item.getProduct().getImage())
-                        .productPrice(item.getProduct().getPrice().doubleValue())
-                        .addedDate(item.getAddedDate())
-                        .build())
+                .map(item -> {
+                    // Get the first product image URL, or use the simple image field as fallback
+                    String productImage = null;
+                    if (item.getProduct().getProductImages() != null && !item.getProduct().getProductImages().isEmpty()) {
+                        productImage = item.getProduct().getProductImages().get(0).getImageUrl();
+                    } else if (item.getProduct().getImage() != null) {
+                        productImage = item.getProduct().getImage();
+                    }
+                    
+                    return WishlistItemDTO.builder()
+                            .id(item.getId())
+                            .productId(item.getProduct().getId())
+                            .productName(item.getProduct().getName())
+                            .productImage(productImage)
+                            .productPrice(item.getProduct().getPrice())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return WishlistDTO.builder()
                 .id(wishlist.getId())
                 .userId(wishlist.getUser().getId())
+                .username(wishlist.getUser().getUsername())
                 .items(itemDTOs)
+                .totalItems(itemDTOs.size())
                 .build();
     }
 }
