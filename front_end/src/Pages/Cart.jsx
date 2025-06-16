@@ -52,8 +52,17 @@ const Cart = () => {
         0
     );
 
-    const handleUpdateQuantity = async (itemId, newQuantity) => {
-        if (newQuantity < 1) return;
+    const handleUpdateQuantity = async (itemId, newQuantity, productId, productName) => {
+        if (newQuantity < 1) {
+            // Ask user if they want to remove the item when quantity would be 0
+            const confirmDelete = window.confirm(
+                `Bạn đang giảm số lượng "${productName}" xuống 0.\n\nBạn có muốn xóa sản phẩm này khỏi giỏ hàng không?`
+            );
+            if (confirmDelete) {
+                await handleRemoveItem(productId);
+            }
+            return;
+        }
         
         try {
             setUpdatingItems(prev => ({ ...prev, [itemId]: true }));
@@ -111,15 +120,18 @@ const Cart = () => {
                                     </p>
                                     <div className="mt-2 flex items-center">
                                         <button
-                                            onClick={() => handleUpdateQuantity(itemId, Math.max(1, item.quantity - 1))}
-                                            className="px-2 py-1 border rounded-md hover:bg-gray-100 disabled:opacity-50"
+                                            onClick={() => handleUpdateQuantity(itemId, item.quantity - 1, productId, productName)}
+                                            className={`px-2 py-1 border rounded-md hover:bg-gray-100 disabled:opacity-50 ${
+                                                item.quantity === 1 ? 'border-red-300 text-red-600 hover:bg-red-50' : ''
+                                            }`}
                                             disabled={updatingItems[itemId]}
+                                            title={item.quantity === 1 ? 'Nhấn để xóa sản phẩm khỏi giỏ hàng' : 'Giảm số lượng'}
                                         >
                                             -
                                         </button>
                                         <span className="mx-4">{item.quantity}</span>
                                         <button
-                                            onClick={() => handleUpdateQuantity(itemId, item.quantity + 1)}
+                                            onClick={() => handleUpdateQuantity(itemId, item.quantity + 1, productId, productName)}
                                             className="px-2 py-1 border rounded-md hover:bg-gray-100 disabled:opacity-50"
                                             disabled={updatingItems[itemId]}
                                         >

@@ -1,10 +1,13 @@
-package com.example.back_end.service;
+package com.example.back_end.service.impl;
 
 import com.example.back_end.constant.OrderStatus;
 import com.example.back_end.dto.request.CreateOrderRequest;
 import com.example.back_end.entity.*;
 import com.example.back_end.repositories.OrderRepository;
 import com.example.back_end.repositories.ProductRepository;
+import com.example.back_end.service.CartService;
+import com.example.back_end.service.IOrderService;
+import com.example.back_end.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -14,12 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
-public class OrderService implements IOrderService {
+public class OrderServiceImpl implements IOrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final CartService cartService;
@@ -33,19 +39,18 @@ public class OrderService implements IOrderService {
     @Override
     public Page<Order> getOrdersByUsername(String username, Pageable pageable) {
         User user = userService.findByUsername(username);
-        return orderRepository.findByUserId(user.getId(), pageable);
+        return orderRepository.findByUserIdOrderByOrderDateDesc(user.getId(), pageable);
     }
 
     @Override
     public List<Order> getOrdersByStatus(String status) {
-        OrderStatus orderStatus = OrderStatus.fromString(status);
-        return orderRepository.findByStatus(orderStatus);
+        return orderRepository.findByStatus(OrderStatus.fromString(status));
     }
 
     @Override
     public Order getOrderById(Long id) {
         return orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
     }
 
     @Override
@@ -111,17 +116,26 @@ public class OrderService implements IOrderService {
         if (cart.getCartItems().isEmpty()) {
             throw new RuntimeException("Cart is empty");
         }
-        
+
+        BigDecimal subtotal = calculateTotalAmount(cart);
+        BigDecimal shippingFee = request.getShippingFee() != null ? request.getShippingFee() : BigDecimal.ZERO;
+        BigDecimal discountAmount = request.getDiscountAmount() != null ? request.getDiscountAmount() : BigDecimal.ZERO;
+        BigDecimal totalAmount = subtotal.add(shippingFee).subtract(discountAmount);
+
         Order order = Order.builder()
                 .user(user)
                 .orderDate(LocalDateTime.now())
                 .status(OrderStatus.PENDING)
                 .shippingAddress(request.getShippingAddress())
+                .billingAddress(request.getBillingAddress())
                 .phone(request.getPhone())
-                .customerName(user.getFullname())
-                .email(user.getEmail())
+                .email(request.getEmail() != null ? request.getEmail() : user.getEmail())
+                .customerName(request.getCustomerName())
                 .paymentMethod(request.getPaymentMethod())
-                .totalAmount(calculateTotalAmount(cart))
+                .totalAmount(totalAmount)
+                .shippingFee(shippingFee)
+                .discountAmount(discountAmount)
+                .notes(request.getNotes())
                 .orderDetails(new ArrayList<>())
                 .build();
 
@@ -148,15 +162,20 @@ public class OrderService implements IOrderService {
         // Clear the cart after order is created
         cartService.clearCart(user.getId());
 
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        log.info("Order created successfully: {}", savedOrder.getOrderNumber());
+        
+        return savedOrder;
     }
 
     @Override
     @Transactional
     public Order updateOrderStatus(Long id, String status) {
         Order order = getOrderById(id);
-        OrderStatus orderStatus = OrderStatus.fromString(status);
-        order.updateStatus(orderStatus);
+        OrderStatus newStatus = OrderStatus.fromString(status);
+        order.updateStatus(newStatus);
+        
+        log.info("Order {} status updated to {}", order.getOrderNumber(), newStatus);
         return orderRepository.save(order);
     }
 
@@ -166,27 +185,27 @@ public class OrderService implements IOrderService {
         Order order = getOrderById(id);
         User user = userService.findByUsername(username);
         
-        // Check if the order belongs to the user or if the user is an admin
-        if (!order.getUser().getId().equals(user.getId()) && 
-            !user.getRoles().stream().anyMatch(role -> role.getName().equals("ROLE_ADMIN"))) {
-            throw new RuntimeException("You are not authorized to cancel this order");
+        // Check if user owns this order or is admin
+        if (!order.getUser().getId().equals(user.getId())) {
+            // Check if user is admin (you might want to implement role checking here)
+            throw new RuntimeException("You don't have permission to cancel this order");
         }
         
-        // Check if the order can be cancelled
         if (!order.canBeCancelled()) {
-            throw new RuntimeException("Order cannot be cancelled in its current status");
+            throw new RuntimeException("Order cannot be cancelled in current status: " + order.getStatus());
         }
-        
-        order.updateStatus(OrderStatus.CANCELLED);
-        order.setCancellationReason(reason);
-        
-        // Return items to inventory
+
+        // Restore product stock
         for (OrderDetail detail : order.getOrderDetails()) {
             Product product = detail.getProduct();
             product.setStock(product.getStock() + detail.getQuantity());
             productRepository.save(product);
         }
+
+        order.updateStatus(OrderStatus.CANCELLED);
+        order.setCancellationReason(reason);
         
+        log.info("Order {} cancelled by user {}", order.getOrderNumber(), username);
         return orderRepository.save(order);
     }
 
@@ -196,37 +215,41 @@ public class OrderService implements IOrderService {
         Order order = getOrderById(id);
         order.setTrackingNumber(trackingNumber);
         
-        // If tracking number is set, update status to SHIPPED if it's in PROCESSING
-        if (order.getStatus() == OrderStatus.PROCESSING) {
+        // If order is not shipped yet, update status to shipped
+        if (order.getStatus() == OrderStatus.PROCESSING || order.getStatus() == OrderStatus.CONFIRMED) {
             order.updateStatus(OrderStatus.SHIPPED);
         }
         
+        log.info("Tracking number {} added to order {}", trackingNumber, order.getOrderNumber());
         return orderRepository.save(order);
     }
 
     @Override
     public Map<String, Object> getOrderStatistics() {
-        Map<String, Object> statistics = new HashMap<>();
+        Map<String, Object> stats = new HashMap<>();
         
-        // Count orders by status
+        // Total orders
+        long totalOrders = orderRepository.count();
+        stats.put("totalOrders", totalOrders);
+        
+        // Orders by status
         Map<String, Long> ordersByStatus = new HashMap<>();
         for (OrderStatus status : OrderStatus.values()) {
             long count = orderRepository.countByStatus(status);
             ordersByStatus.put(status.name(), count);
         }
-        statistics.put("ordersByStatus", ordersByStatus);
+        stats.put("ordersByStatus", ordersByStatus);
         
         // Total revenue
-        BigDecimal totalRevenue = orderRepository.findByStatus(OrderStatus.DELIVERED).stream()
-                .map(Order::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        statistics.put("totalRevenue", totalRevenue);
+        BigDecimal totalRevenue = orderRepository.calculateTotalRevenue();
+        stats.put("totalRevenue", totalRevenue != null ? totalRevenue : BigDecimal.ZERO);
         
-        // Total orders
-        long totalOrders = orderRepository.count();
-        statistics.put("totalOrders", totalOrders);
+        // Recent orders (last 30 days)
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+        long recentOrders = orderRepository.countByOrderDateAfter(thirtyDaysAgo);
+        stats.put("recentOrders", recentOrders);
         
-        return statistics;
+        return stats;
     }
 
     private BigDecimal calculateTotalAmount(Cart cart) {
@@ -234,4 +257,4 @@ public class OrderService implements IOrderService {
                 .map(item -> item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
-} 
+}

@@ -2,8 +2,11 @@ package com.example.back_end.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -21,18 +24,47 @@ public class Product {
     @Column(nullable = false)
     private String name;
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "LONGTEXT")
     private String description;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT")
+    private String shortDescription;
+
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal originalPrice;
 
     @Column(nullable = false)
     private Integer stock;
 
     private String image;
 
-    @ManyToOne
+    private String brand;
+
+    private String model;
+
+    @Column(precision = 8, scale = 2)
+    private BigDecimal weight;
+
+    private String dimensions;
+
+    private String color;
+
+    private String material;
+
+    @Column(name = "warranty_period")
+    @Builder.Default
+    private Integer warrantyPeriod = 12; // months
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String specifications;
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String features;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
 
@@ -40,18 +72,55 @@ public class Product {
     @Builder.Default
     private Boolean active = true;
 
-    @OneToMany(mappedBy = "product")
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<Review> reviews;
 
-    @OneToMany(mappedBy = "product")
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<CartItem> cartItems;
     
-    @OneToMany(mappedBy = "product")
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<WishlistItem> wishlistItems;
 
-    @OneToMany(mappedBy = "product")
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     private List<OrderDetail> orderDetails;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private java.util.List<ProductImage> productImages;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductImage> productImages;
+
+    // Helper methods
+    public BigDecimal getDiscountPercentage() {
+        if (originalPrice != null && originalPrice.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal discount = originalPrice.subtract(price);
+            return discount.divide(originalPrice, 4, BigDecimal.ROUND_HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+        }
+        return BigDecimal.ZERO;
+    }
+
+    public boolean isOnSale() {
+        return originalPrice != null && originalPrice.compareTo(price) > 0;
+    }
+
+    public boolean isInStock() {
+        return stock != null && stock > 0;
+    }
+
+    public String getPrimaryImageUrl() {
+        if (productImages != null && !productImages.isEmpty()) {
+            return productImages.stream()
+                    .filter(ProductImage::getIsPrimary)
+                    .findFirst()
+                    .map(ProductImage::getImageUrl)
+                    .orElse(productImages.get(0).getImageUrl());
+        }
+        return image;
+    }
 } 

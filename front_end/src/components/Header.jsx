@@ -36,8 +36,9 @@ const Header = () => {
     
     if (!cart) {
       setCartCount(0);
-    } else if (cart.cartItems && Array.isArray(cart.cartItems)) {
-      setCartCount(cart.cartItems.length);
+    } else if (cart.items && Array.isArray(cart.items)) {
+      // Count number of unique products (not total quantity)
+      setCartCount(cart.items.length);
     } else if (Array.isArray(cart)) {
       setCartCount(cart.length);
     } else {
