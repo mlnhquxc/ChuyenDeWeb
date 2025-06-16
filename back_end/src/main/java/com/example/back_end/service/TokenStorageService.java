@@ -31,12 +31,33 @@ public class TokenStorageService {
     public boolean isTokenValid(String username, String token) {
         String storedToken = activeTokens.get(username);
         boolean isValid = storedToken != null && storedToken.equals(token);
+        
         log.info("Token validation for user {}: {} (stored: {}, provided: {})", 
                 username, isValid, storedToken != null, token != null);
+        
+        if (storedToken != null && token != null && !isValid) {
+            log.debug("Token mismatch - stored length: {}, provided length: {}", 
+                    storedToken.length(), token.length());
+            log.debug("Stored token starts with: {}", 
+                    storedToken.length() > 20 ? storedToken.substring(0, 20) + "..." : storedToken);
+            log.debug("Provided token starts with: {}", 
+                    token.length() > 20 ? token.substring(0, 20) + "..." : token);
+        }
+        
         return isValid;
     }
     
     public int getActiveTokenCount() {
         return activeTokens.size();
+    }
+    
+    public void debugActiveTokens() {
+        log.info("Active tokens count: {}", activeTokens.size());
+        for (Map.Entry<String, String> entry : activeTokens.entrySet()) {
+            String token = entry.getValue();
+            log.info("User: {}, Token preview: {}", 
+                    entry.getKey(), 
+                    token.length() > 20 ? token.substring(0, 20) + "..." : token);
+        }
     }
 } 

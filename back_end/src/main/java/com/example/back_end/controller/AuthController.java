@@ -113,17 +113,12 @@ public class AuthController {
         try {
             log.info("Received refresh token request");
             
-            // Extract username from old token first
-            String oldToken = token.startsWith("Bearer ") ? token.substring(7) : token;
-            String email = userService.validateToken(oldToken);
-            com.example.back_end.entity.User user = userService.findByEmail(email);
-            
             AuthenticationResponse response = userService.refreshToken(token);
             
-            // Update token in storage using username
-            tokenStorageService.storeToken(user.getUsername(), response.getToken());
+            // Update token in storage using username from the response
+            tokenStorageService.storeToken(response.getUser().getUsername(), response.getToken());
             
-            log.info("Token refresh successful for user: {}", user.getUsername());
+            log.info("Token refresh successful for user: {}", response.getUser().getUsername());
             return ResponseEntity.ok(ApiResponse.<AuthenticationResponse>builder()
                     .code(0)
                     .result(response)

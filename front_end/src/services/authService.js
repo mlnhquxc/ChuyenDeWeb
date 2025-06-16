@@ -1,7 +1,7 @@
 import axiosInstance from './axiosConfig';
 import { ENDPOINTS } from '../config';
 
-const TOKEN_KEY = 'accessToken';
+const TOKEN_KEY = 'token';
 const USER_KEY = 'user';
 
 const authService = {
@@ -107,6 +107,29 @@ const authService = {
     localStorage.removeItem(USER_KEY);
   },
 
+  // Clear expired tokens and force fresh login
+  clearExpiredTokens() {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) return;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000;
+      
+      if (payload.exp && payload.exp < currentTime) {
+        console.log('Clearing expired token');
+        this.logout();
+        return true; // Token was expired and cleared
+      }
+    } catch (error) {
+      console.error('Error checking token expiration:', error);
+      this.logout();
+      return true; // Token was invalid and cleared
+    }
+    
+    return false; // Token is still valid
+  },
+
   async refreshToken() {
     try {
       const token = localStorage.getItem(TOKEN_KEY);
@@ -136,7 +159,29 @@ const authService = {
   isAuthenticated() {
     const token = localStorage.getItem(TOKEN_KEY);
     const user = localStorage.getItem(USER_KEY);
-    return !!(token && user);
+    
+    if (!token || !user) {
+      return false;
+    }
+    
+    // Check if token is expired (basic check)
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000;
+      
+      if (payload.exp && payload.exp < currentTime) {
+        console.log('Token has expired, clearing storage');
+        this.logout();
+        return false;
+      }
+    } catch (error) {
+      console.error('Error checking token expiration:', error);
+      // If we can't parse the token, consider it invalid
+      this.logout();
+      return false;
+    }
+    
+    return true;
   },
 
   getCurrentUser() {

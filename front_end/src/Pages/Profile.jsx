@@ -1,13 +1,17 @@
 import React, {useState, useEffect} from 'react';
-import {FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt} from 'react-icons/fa';
+import {FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaSignOutAlt} from 'react-icons/fa';
 import {toast} from 'react-toastify';
 import userService from '../services/userService';
+import authService from '../services/authService';
 import {useAuth} from '../context/AuthContext';
+import {useNavigate} from 'react-router-dom';
 
 const Profile = () => {
     const {user, updateUser} = useAuth();
+    const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -21,6 +25,7 @@ const Profile = () => {
 
     const loadUserProfile = async () => {
         setLoading(true);
+        setError(null);
         try {
             const response = await userService.getProfile();
             if (response.result) {
@@ -32,10 +37,22 @@ const Profile = () => {
                 });
             }
         } catch (error) {
-            toast.error('Failed to load profile');
+            console.error('Profile load error:', error);
+            setError('Failed to load profile. Your session may have expired.');
+            if (error.response?.status === 401) {
+                toast.error('Session expired. Please login again.');
+            } else {
+                toast.error('Failed to load profile');
+            }
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleForceLogin = () => {
+        authService.logout();
+        toast.info('Please login again');
+        navigate('/auth');
     };
 
     const handleChange = (e) => {
@@ -93,6 +110,25 @@ const Profile = () => {
         return (
             <div className="flex justify-center items-center min-h-screen">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="container mx-auto px-4 py-8">
+                <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+                    <div className="text-center">
+                        <div className="text-red-500 text-lg mb-4">{error}</div>
+                        <button
+                            onClick={handleForceLogin}
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 mx-auto"
+                        >
+                            <FaSignOutAlt />
+                            Login Again
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }
