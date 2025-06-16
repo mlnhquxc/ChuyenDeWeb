@@ -94,13 +94,13 @@ const HomePage = () => {
           <div className="absolute inset-0 bg-opacity-50 flex items-center justify-center">
             <div className="text-center text-yellow">
               <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
-                Tech Innovation
+                Công Nghệ Đổi Mới
               </h1>
               <p className="text-xl mb-8 animate-fade-in-delay">
-                Discover the latest in technology and innovation
+                Khám phá những công nghệ mới nhất và sáng tạo
               </p>
               <button className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300">
-                Explore Now
+                Khám Phá Ngay
               </button>
             </div>
           </div>
@@ -108,7 +108,7 @@ const HomePage = () => {
 
         {/* Categories */}
         <section className="container mx-auto px-4 py-16">
-          <h2 className="text-3xl font-bold text-center mb-12">Popular Categories</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">Danh Mục Phổ Biến</h2>
           <div className="relative">
             <button
                 onClick={prevCategory}
@@ -145,7 +145,7 @@ const HomePage = () => {
 
         {/* Featured Products */}
         <section className="container mx-auto px-4 py-16 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
-          <h2 className="text-3xl font-bold dark:text-white text-center mb-12">Featured Products</h2>
+          <h2 className="text-3xl font-bold dark:text-white text-center mb-12">Sản Phẩm Nổi Bật</h2>
           
           {loading ? (
             <div className="flex justify-center items-center h-64">

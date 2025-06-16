@@ -158,11 +158,11 @@ const Header = () => {
   };
 
   const menuItems = [
-    { name: "Home", link: "/" },
-    { name: "Shop", link: "/shop", hasDropdown: true },
-    { name: "Pages", link: "#", hasDropdown: true },
+    { name: "Trang chủ", link: "/" },
+    { name: "Cửa hàng", link: "/shop", hasDropdown: true },
+    { name: "Trang", link: "#", hasDropdown: true },
     { name: "Blog", link: "#" },
-    { name: "Contact", link: "/contact" },
+    { name: "Liên hệ", link: "/contact" },
   ];
 
   // Close user menu when clicking outside
@@ -226,8 +226,8 @@ const Header = () => {
               </div>
               <div className="flex items-center space-x-4">
                 <select className="bg-transparent text-sm text-gray-600 focus:outline-none">
-                  <option value="en">English</option>
-                  <option value="es">Vietnamese</option>
+                  <option value="vi">Tiếng Việt</option>
+                  <option value="en">Tiếng Anh</option>
                 </select>
                 {isAuthenticated && user ? (
                     <div className="relative" ref={userMenuRef}>
@@ -257,28 +257,28 @@ const Header = () => {
                                 className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                             >
                               <FiUser className="mr-2" />
-                              Profile
+                              Hồ sơ
                             </button>
                             <button
                                 onClick={handleOrdersClick}
                                 className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                             >
                               <FiShoppingCart className="mr-2" />
-                              Orders
+                              Đơn hàng
                             </button>
                             <button
                                 onClick={handleWishlistClick}
                                 className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                             >
                               <FiHeart className="mr-2" />
-                              Wishlist
+                              Yêu thích
                             </button>
                             <button
                                 onClick={handleSettingsClick}
                                 className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                             >
                               <FiSettings className="mr-2" />
-                              Settings
+                              Cài đặt
                             </button>
                             <div className="border-t border-gray-100"></div>
                             <button
@@ -286,7 +286,7 @@ const Header = () => {
                                 className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
                             >
                               <FiLogOut className="mr-2" />
-                              Logout
+                              Đăng xuất
                             </button>
                           </div>
                       )}
@@ -296,7 +296,7 @@ const Header = () => {
                         onClick={handleLogin}
                         className="text-sm text-gray-600 hover:text-red-600"
                     >
-                      Login
+                      Đăng nhập
                     </button>
                 )}
               </div>
@@ -333,9 +333,9 @@ const Header = () => {
                       </a>
                       {item.hasDropdown && (
                           <div className="absolute top-full left-0 w-48 bg-white shadow-lg rounded-md py-2 hidden group-hover:block">
-                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Submenu 1</a>
-                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Submenu 2</a>
-                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Submenu 3</a>
+                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Danh mục 1</a>
+                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Danh mục 2</a>
+                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Danh mục 3</a>
                           </div>
                       )}
                     </div>
@@ -350,7 +350,7 @@ const Header = () => {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      placeholder="Search products..."
+                      placeholder="Tìm kiếm sản phẩm..."
                       className="w-40 lg:w-80 px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:border-red-500"
                   />
                   <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex">
