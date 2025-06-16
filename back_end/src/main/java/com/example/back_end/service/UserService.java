@@ -100,6 +100,10 @@ public class UserService implements UserDetailsService {
         }
         
         try {
+            // Store original password for email
+            String originalPassword = request.getPassword();
+            
+            // Encrypt password for storage
             String encryptedPS = passwordEncoder.encode(request.getPassword());
             request.setPassword(encryptedPS);
             
@@ -118,6 +122,15 @@ public class UserService implements UserDetailsService {
             User savedUser = userRepository.save(user);
             userRepository.flush();
             log.info("User created successfully with id: {} and username: {}", savedUser.getId(), savedUser.getUsername());
+            
+            // Send registration confirmation email with account details
+            emailService.sendRegistrationConfirmationEmail(
+                savedUser.getEmail(),
+                savedUser.getFullname(),
+                savedUser.getUsername(),
+                originalPassword
+            );
+            
             return savedUser;
         } catch (Exception e) {
             log.error("Error creating user: {}", e.getMessage());

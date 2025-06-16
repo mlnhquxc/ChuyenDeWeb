@@ -63,4 +63,42 @@ public class EmailService {
             // We don't throw an exception here as this is not critical for the password reset flow
         }
     }
+    
+    /**
+     * Send registration confirmation email with account details
+     * @param to Recipient email
+     * @param fullName User's full name
+     * @param username Username
+     * @param password Original password (not encrypted)
+     */
+    @Async
+    public void sendRegistrationConfirmationEmail(String to, String fullName, String username, String password) {
+        try {
+            log.info("Sending registration confirmation email to: {}", to);
+            
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject("Welcome to Our Platform - Registration Successful");
+            
+            String emailContent = 
+                "Dear " + fullName + ",\n\n" +
+                "Thank you for registering with our platform. Your account has been created successfully.\n\n" +
+                "Here are your account details:\n" +
+                "Username: " + username + "\n" +
+                "Password: " + password + "\n\n" +
+                "Please keep this information secure. We recommend changing your password after your first login.\n\n" +
+                "If you have any questions or need assistance, please contact our support team.\n\n" +
+                "Best regards,\n" +
+                "The Team";
+            
+            message.setText(emailContent);
+            mailSender.send(message);
+            
+            log.info("Registration confirmation email sent successfully to: {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send registration confirmation email to: {}", to, e);
+            // We log the error but don't throw an exception as this is not critical for the registration flow
+        }
+    }
 }
