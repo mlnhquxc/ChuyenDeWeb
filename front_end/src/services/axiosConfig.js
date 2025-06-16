@@ -13,8 +13,23 @@ const axiosInstance = axios.create({
         'Content-Type': 'application/json',
     },
     withCredentials: true,
-    timeout: 10000 // Add a reasonable timeout
+    timeout: 10000
+
 });
+
+// Add request interceptor
+axiosInstance.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 let isRefreshing = false;
 let failedQueue = [];
@@ -30,89 +45,39 @@ const processQueue = (error, token = null) => {
     failedQueue = [];
 };
 
-// Request interceptor
-axiosInstance.interceptors.request.use(
-    (config) => {
-        if (process.env.NODE_ENV !== 'production') {
-            console.log('=== REQUEST START ===');
-            console.log('Request URL:', config.url);
-            console.log('Request method:', config.method);
-            console.log('Request data:', config.data);
-            console.log('Request headers:', config.headers);
-            console.log('=== REQUEST END ===');
-        }
-
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        console.error('Request error:', error.message || 'Unknown error');
-        return Promise.reject(error);
-    }
-);
-
-// Response interceptor
+// Add response interceptor
 axiosInstance.interceptors.response.use(
-    (response) => {
-        if (process.env.NODE_ENV !== 'production') {
-            console.log('=== RESPONSE START ===');
-            console.log('Response status:', response.status);
-            console.log('Response data:', response.data);
-            console.log('=== RESPONSE END ===');
-        }
-        return response;
-    },
+    (response) => response,
     async (error) => {
-        if (process.env.NODE_ENV !== 'production') {
-            console.error('=== ERROR START ===');
-        }
         const originalRequest = error.config;
-        // No retry if the request already failed after a retry or doesn't have a config
-        if (!originalRequest || originalRequest._retry) {
-            return Promise.reject(error);
-        }
 
         if (error.response) {
-            if (process.env.NODE_ENV !== 'production') {
-                console.error('Response error:', error.response.data);
-                console.error('Response status:', error.response.status);
-            }
-
-            // Handle 403 Forbidden error
-            if ((error.response.status === 401 || error.response.status === 403) && !originalRequest._retry) {
-                // If already refreshing, queue this request
+            // Handle 401 Unauthorized error
+            if (error.response.status === 401 && !originalRequest._retry) {
                 if (isRefreshing) {
-                    try {
-                        const token = await new Promise((resolve, reject) => {
-                            failedQueue.push({resolve, reject});
+                    // If token refresh is in progress, queue the request
+                    return new Promise((resolve, reject) => {
+                        failedQueue.push({ resolve, reject });
+                    })
+                        .then(token => {
+                            originalRequest.headers.Authorization = `Bearer ${token}`;
+                            return axiosInstance(originalRequest);
+                        })
+                        .catch(err => {
+                            return Promise.reject(err);
                         });
-                        originalRequest.headers.Authorization = `Bearer ${token}`;
-                        return axiosInstance(originalRequest);
-                    } catch (err) {
-                        // If token refresh failed for a queued request, redirect to login
-                        if (err.response?.status === 401 || err.response?.status === 403) {
-                            authService.logout();
-                            window.location.href = '/auth';
-                        }
-                        return Promise.reject(err);
-                    }
                 }
 
-                // Mark this request as retried to prevent infinite loops
                 originalRequest._retry = true;
                 isRefreshing = true;
 
                 try {
                     // Attempt to refresh the token
                     const response = await authService.refreshToken();
-                    if (!response || !response.token) {
+                    if (!response || !response.accessToken) {
                         throw new Error('Token refresh failed - no token returned');
                     }
-                    const newToken = response.token;
-                    localStorage.setItem('token', newToken);
+                    const newToken = response.accessToken;
 
                     // Process any queued requests with the new token
                     processQueue(null, newToken);
@@ -129,21 +94,13 @@ axiosInstance.interceptors.response.use(
                     isRefreshing = false;
                 }
             }
-        } else if (error.request) {
-            // The request was made but no response was received
-            console.error('Network error - no response received');
 
-            // Add a user-friendly message
-            error.userMessage = 'Network error. Please check your connection and try again.';
-        } else {
-            // Something happened in setting up the request that triggered an Error
-            console.error('Error:', error.message || 'Unknown error');
-
-            // Add a user-friendly message
-            error.userMessage = 'An unexpected error occurred. Please try again.';
-        }
-        if (process.env.NODE_ENV !== 'production') {
-            console.error('=== ERROR END ===');
+            // Handle 403 Forbidden error
+            if (error.response.status === 403) {
+                authService.logout();
+                window.location.href = '/auth';
+                return Promise.reject(error);
+            }
         }
         return Promise.reject(error);
     }

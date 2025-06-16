@@ -228,12 +228,13 @@ public class UserService implements UserDetailsService {
                 token = token.substring(7);
             }
 
-            String email = jwtService.validateToken(token);
+            // Use the new refreshToken method that can handle expired tokens
+            String newToken = jwtService.refreshToken(token);
+            
+            // Extract email from the new token to get user info
+            String email = jwtService.validateToken(newToken);
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
-
-            String scope = buildScope(user);
-            String newToken = jwtService.generateToken(user.getEmail(), scope);
 
             return AuthenticationResponse.builder()
                     .token(newToken)
@@ -241,7 +242,8 @@ public class UserService implements UserDetailsService {
                     .user(userMapper.toUserResponse(user))
                     .build();
         } catch (ParseException | JOSEException e) {
-            throw new RuntimeException("Invalid token");
+            log.error("Token refresh failed", e);
+            throw new RuntimeException("Invalid token for refresh");
         }
     }
 

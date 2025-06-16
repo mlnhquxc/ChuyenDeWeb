@@ -4,9 +4,13 @@ import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from "react-icons/f
 import { MdEmail, MdPhone, MdKeyboardArrowDown } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 
 const Header = () => {
   const { user, logout, isAuthenticated } = useAuth();
+  const { cart } = useCart();
+  const { wishlist } = useWishlist();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
@@ -25,6 +29,39 @@ const Header = () => {
       console.log('Header - User authenticated, updating UI');
     }
   }, [isAuthenticated, user]);
+  
+  // Update cart count
+  useEffect(() => {
+    console.log('Cart updated:', cart);
+    
+    if (!cart) {
+      setCartCount(0);
+    } else if (cart.items && Array.isArray(cart.items)) {
+      // Count number of unique products (not total quantity)
+      setCartCount(cart.items.length);
+    } else if (Array.isArray(cart)) {
+      setCartCount(cart.length);
+    } else {
+      setCartCount(0);
+    }
+  }, [cart]);
+  
+  // Update wishlist count
+  useEffect(() => {
+    console.log('Wishlist updated:', wishlist);
+    
+    if (!wishlist) {
+      setWishlistCount(0);
+    } else if (wishlist.wishlistItems && Array.isArray(wishlist.wishlistItems)) {
+      setWishlistCount(wishlist.wishlistItems.length);
+    } else if (wishlist.items && Array.isArray(wishlist.items)) {
+      setWishlistCount(wishlist.items.length);
+    } else if (Array.isArray(wishlist)) {
+      setWishlistCount(wishlist.length);
+    } else {
+      setWishlistCount(0);
+    }
+  }, [wishlist]);
 
   const handleLogout = async () => {
     try {

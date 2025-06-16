@@ -31,8 +31,8 @@ export const ENDPOINTS = {
   CART: {
     GET: '/cart',
     ADD: '/cart/add',
-    UPDATE: (id) => `/cart/update/${id}`,
-    REMOVE: (id) => `/cart/remove/${id}`,
+    UPDATE: '/cart/update',
+    REMOVE: (productId) => `/cart/remove/${productId}`,
     CLEAR: '/cart/clear',
   },
 
@@ -40,7 +40,7 @@ export const ENDPOINTS = {
   WISHLIST: {
     GET: '/wishlist',
     ADD: '/wishlist/add',
-    REMOVE: (id) => `/wishlist/remove/${id}`,
+    REMOVE: (productId) => `/wishlist/remove/${productId}`,
     CLEAR: '/wishlist/clear',
   },
 
@@ -51,13 +51,4 @@ export const ENDPOINTS = {
     CREATE: '/orders/create',
     CANCEL: (id) => `/orders/${id}/cancel`,
   },
-};
-
-// Axios default configuration
-export const axiosConfig = {
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 10000, // 10 seconds
 };

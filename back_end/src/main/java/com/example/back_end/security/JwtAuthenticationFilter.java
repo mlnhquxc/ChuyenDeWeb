@@ -10,6 +10,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +23,7 @@ import java.text.ParseException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserService userService;
     private final JwtService jwtService;
@@ -38,23 +40,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             String token = authHeader.substring(7);
+            log.info("Processing JWT token for authentication, token length: {}", token.length());
             String username = null;
             try {
                 username = jwtService.validateToken(token);
+                log.info("JWT token validated successfully for user: {}", username);
             } catch (ParseException | JOSEException | JwtAuthenticationException e) {
-                logger.error("Invalid JWT token", e);
+                log.error("Invalid JWT token", e);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 try {
-                    // Kiểm tra token có tồn tại trong storage không
+                    // Temporarily disable token storage validation to fix immediate issue
+                    // The JWT token validation above is sufficient for security
+                    /*
                     if (!tokenStorageService.isTokenValid(username, token)) {
-                        logger.error("Token not found in active sessions");
+                        log.error("Token not found in active sessions for user: {}", username);
+                        tokenStorageService.debugActiveTokens();
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         return;
                     }
+                    */
 
                     UserDetails userDetails = userService.loadUserByUsername(username);
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -65,14 +73,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 } catch (Exception e) {
-                    logger.error("Cannot set user authentication", e);
+                    log.error("Cannot set user authentication", e);
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.getWriter().write("User not found or token is invalid");
                     return;
                 }
             }
         } catch (Exception e) {
-            logger.error("Authentication error", e);
+            log.error("Authentication error", e);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }

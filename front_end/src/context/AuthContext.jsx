@@ -11,18 +11,28 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = () => {
       try {
-        const currentUser = authService.getCurrentUser();
+        console.log('AuthContext - Initializing authentication...');
+        
+        // Kiểm tra token và user trong localStorage
         const token = localStorage.getItem('token');
-        if (currentUser && token) {
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('AuthContext - Initializing with user:', currentUser);
+        const userStr = localStorage.getItem('user');
+        
+        if (token && userStr) {
+          try {
+            const currentUser = JSON.parse(userStr);
+            console.log('AuthContext - Valid authentication found');
+            console.log('AuthContext - User:', currentUser?.username);
+            
+            setUser(currentUser);
+            setIsAuthenticated(true);
+          } catch (error) {
+            console.error('AuthContext - Error parsing user data:', error);
+            authService.logout();
+            setUser(null);
+            setIsAuthenticated(false);
           }
-          setUser(currentUser);
-          setIsAuthenticated(true);
         } else {
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('AuthContext - No user found during initialization');
-          }
+          console.log('AuthContext - No valid authentication found');
           setUser(null);
           setIsAuthenticated(false);
         }
@@ -40,11 +50,20 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const handleStorageChange = () => {
-      const currentUser = authService.getCurrentUser();
       const token = localStorage.getItem('token');
-      if (currentUser && token) {
-        setUser(currentUser);
-        setIsAuthenticated(true);
+      const userStr = localStorage.getItem('user');
+      
+      if (token && userStr) {
+        try {
+          const currentUser = JSON.parse(userStr);
+          setUser(currentUser);
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('AuthContext - Error parsing user data:', error);
+          authService.logout();
+          setUser(null);
+          setIsAuthenticated(false);
+        }
       } else {
         setUser(null);
         setIsAuthenticated(false);
@@ -81,10 +100,12 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.register(userData);
       if (response && response.authenticated) {
         setUser(response.user);
+        setIsAuthenticated(true);
       }
       return response;
     } catch (error) {
       setUser(null);
+      setIsAuthenticated(false);
       throw error;
     }
   };
@@ -128,11 +149,7 @@ export const AuthProvider = ({ children }) => {
     console.log('AuthContext - Current state:', { user, isAuthenticated });
   }
 
-  return (
-      <AuthContext.Provider value={value}>
-        {!loading && children}
-      </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

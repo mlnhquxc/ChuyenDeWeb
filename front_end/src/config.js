@@ -21,8 +21,26 @@ export const ENDPOINTS = {
     },
     ORDER: {
         LIST: '/api/orders',
+        MY_ORDERS: '/api/orders/my-orders',
         DETAIL: (id) => `/api/orders/${id}`,
+        BY_NUMBER: (orderNumber) => `/api/orders/number/${orderNumber}`,
         CREATE: '/api/orders',
-        CANCEL: (id) => `/api/orders/${id}/cancel`
+        CREATE_FROM_CART: '/api/orders/create-from-cart',
+        CANCEL: (id) => `/api/orders/${id}/cancel`,
+        UPDATE_STATUS: (id) => `/api/orders/${id}/status`,
+        UPDATE_TRACKING: (id) => `/api/orders/${id}/tracking`
+    },
+    WISHLIST: {
+        GET: '/api/wishlist',
+        ADD: '/api/wishlist/add',
+        REMOVE: (productId) => `/api/wishlist/remove/${productId}`,
+        CLEAR: '/api/wishlist/clear'
+    },
+    CART: {
+        GET: '/api/cart',
+        ADD: '/api/cart/add',
+        UPDATE: '/api/cart/update',
+        REMOVE: (productId) => `/api/cart/remove/${productId}`,
+        CLEAR: '/api/cart/clear'
     }
 };

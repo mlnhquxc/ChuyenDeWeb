@@ -1,23 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  FaLock,
-  FaCreditCard,
-  FaMoneyBillWave,
-  FaWallet,
-  FaArrowLeft,
-} from "react-icons/fa";
-import { toast } from "react-toastify";
-import ProvinceSelect from "../API/Location.jsx";
-import { useCart } from "../context/CartContext";
-import { useAuth } from "../context/AuthContext";
-import orderService from "../services/orderService";
-import userService from "../services/userService";
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { 
+  FaShoppingCart, 
+  FaCreditCard, 
+  FaMoneyBillWave, 
+  FaTag, 
+  FaTimes,
+  FaCheck,
+  FaSpinner
+} from 'react-icons/fa';
+import { SiVisa, SiMastercard, SiPaypal } from 'react-icons/si';
+import Location from '../components/Location';
+import { useCart } from '../context/CartContext';
+import paymentService from '../services/paymentService';
 
-const CheckoutPage = () => {
+const Payment = () => {
   const navigate = useNavigate();
-  const { cart, loading: cartLoading, clearCart } = useCart();
-  const { user } = useAuth();
+  const location = useLocation();
+  const { cartItems, clearCart, getTotalPrice } = useCart();
   
   const [formData, setFormData] = useState({
     fullName: "",
@@ -262,6 +263,7 @@ const CheckoutPage = () => {
                         </p>
                     )}
                   </div>
+                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Số điện thoại *
@@ -301,6 +303,7 @@ const CheckoutPage = () => {
                         </p>
                     )}
                   </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Email
@@ -322,6 +325,7 @@ const CheckoutPage = () => {
                         </p>
                     )}
                   </div>
+
                   {/* Address Fields */}
                   <ProvinceSelect
                       formData={formData}
@@ -350,6 +354,7 @@ const CheckoutPage = () => {
                         </p>
                     )}
                   </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Ghi chú giao hàng
@@ -621,4 +626,4 @@ const CheckoutPage = () => {
   );
 };
 
-export default CheckoutPage;
+export default Payment;

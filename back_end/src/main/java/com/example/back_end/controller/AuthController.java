@@ -106,6 +106,30 @@ public class AuthController {
                             .message("Logout failed")
                             .build());
         }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<ApiResponse<AuthenticationResponse>> refreshToken(@RequestHeader("Authorization") String token) {
+        try {
+            log.info("Received refresh token request");
+            
+            AuthenticationResponse response = userService.refreshToken(token);
+            
+            // Update token in storage using username from the response
+            tokenStorageService.storeToken(response.getUser().getUsername(), response.getToken());
+            
+            log.info("Token refresh successful for user: {}", response.getUser().getUsername());
+            return ResponseEntity.ok(ApiResponse.<AuthenticationResponse>builder()
+                    .code(0)
+                    .result(response)
+                    .build());
+        } catch (Exception e) {
+            log.error("Token refresh failed: {}", e.getMessage());
+            return ResponseEntity.status(401)
+                    .body(ApiResponse.<AuthenticationResponse>builder()
+                            .code(401)
+                            .message("Token refresh failed")
+                            .build());
+        }
     }
 
     @PostMapping("/introspect")

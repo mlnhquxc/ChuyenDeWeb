@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { FiHeart, FiShoppingCart, FiMinus, FiPlus } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { productService } from "../services/productService";
 import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [currentImage, setCurrentImage] = useState(0);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
+  
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -32,27 +40,72 @@ const ProductDetail = () => {
     loadProduct();
   }, [id]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    
     if (quantity > product.stock) {
       alert("Số lượng sản phẩm trong kho không đủ");
       return;
     }
-    // TODO: Implement add to cart functionality
+    
+    try {
+      setIsAddingToCart(true);
+      await addToCart(product.id, quantity);
+      alert("Sản phẩm đã được thêm vào giỏ hàng");
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Có lỗi xảy ra khi thêm vào giỏ hàng");
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    
     if (quantity > product.stock) {
       alert("Số lượng sản phẩm trong kho không đủ");
       return;
     }
-    // TODO: Implement buy now functionality
+    
+    try {
+      setIsAddingToCart(true);
+      await addToCart(product.id, quantity);
+      navigate("/cart");
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Có lỗi xảy ra khi thêm vào giỏ hàng");
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
-  const handleWishlistClick = () => {
-    if (isInWishlist(product.id)) {
-      removeFromWishlist(product.id);
-    } else {
-      addToWishlist(product);
+  const handleWishlistClick = async () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    
+    try {
+      setIsAddingToWishlist(true);
+      if (isInWishlist(product.id)) {
+        await removeFromWishlist(product.id);
+        alert("Sản phẩm đã được xóa khỏi danh sách yêu thích");
+      } else {
+        await addToWishlist(product.id);
+        alert("Sản phẩm đã được thêm vào danh sách yêu thích");
+      }
+    } catch (error) {
+      console.error("Error updating wishlist:", error);
+      alert("Có lỗi xảy ra khi cập nhật danh sách yêu thích");
+    } finally {
+      setIsAddingToWishlist(false);
     }
   };
 
@@ -138,19 +191,23 @@ const ProductDetail = () => {
             <div className="flex space-x-4">
               <button
                   onClick={handleAddToCart}
-                  className="flex-1 bg-green-500 text-white py-3 rounded-full hover:bg-green-600 transition"
+                  className={`flex-1 bg-green-500 text-white py-3 rounded-full hover:bg-green-600 transition flex items-center justify-center ${isAddingToCart ? 'opacity-70' : ''}`}
+                  disabled={isAddingToCart}
               >
-                <FiShoppingCart className="inline mr-2" /> Thêm vào giỏ
+                <FiShoppingCart className="mr-2" /> 
+                {isAddingToCart ? 'Đang thêm...' : 'Thêm vào giỏ'}
               </button>
               <button
                   onClick={handleBuyNow}
-                  className="flex-1 bg-black text-white py-3 rounded-full hover:bg-gray-800 transition"
+                  className={`flex-1 bg-black text-white py-3 rounded-full hover:bg-gray-800 transition ${isAddingToCart ? 'opacity-70' : ''}`}
+                  disabled={isAddingToCart}
               >
-                Mua ngay
+                {isAddingToCart ? 'Đang xử lý...' : 'Mua ngay'}
               </button>
               <button
                   onClick={handleWishlistClick}
-                  className={`p-3 rounded-full border ${isInWishlist(product.id) ? "text-red-500" : ""}`}
+                  className={`p-3 rounded-full border ${isInWishlist(product.id) ? "text-red-500" : ""} ${isAddingToWishlist ? 'opacity-70' : ''}`}
+                  disabled={isAddingToWishlist}
               >
                 <FiHeart className="w-6 h-6" />
               </button>
