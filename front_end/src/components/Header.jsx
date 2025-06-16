@@ -162,9 +162,9 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
 
   const menuItems = [
     { name: "Trang chủ", link: "/" },
-    { name: "Cửa hàng", link: "/shop", hasDropdown: true },
+    { name: "Cửa hàng", link: "/shop" },
     { name: "Trang", link: "#", hasDropdown: true },
-    { name: "Blog", link: "#" },
+    { name: "Blog", link: "/blog" },
     { name: "Liên hệ", link: "/contact" },
   ];
 

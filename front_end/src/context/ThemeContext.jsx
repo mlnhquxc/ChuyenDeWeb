@@ -7,8 +7,15 @@ const ThemeContext = createContext({
 });
 
 export const ThemeProvider = ({ children }) => {
-  // Sử dụng chế độ sáng làm mặc định
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  // Kiểm tra localStorage hoặc sử dụng chế độ sáng làm mặc định
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('darkMode');
+    // Kiểm tra xem người dùng có thiết lập dark mode trong hệ thống không
+    const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Nếu đã lưu trong localStorage thì sử dụng giá trị đó, nếu không thì kiểm tra thiết lập hệ thống
+    return savedTheme !== null ? JSON.parse(savedTheme) : prefersDarkMode;
+  });
 
   // Cập nhật class cho thẻ html khi chế độ thay đổi
   useEffect(() => {
@@ -19,6 +26,9 @@ export const ThemeProvider = ({ children }) => {
     } else {
       htmlElement.classList.remove('dark');
     }
+    
+    // Lưu trạng thái vào localStorage
+    localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
   }, [isDarkMode]);
 
   // Hàm để chuyển đổi giữa chế độ sáng và tối
