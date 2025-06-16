@@ -66,7 +66,7 @@ const HomePage = () => {
   };
 
   return (
-      <div className={`min-h-screen ${isDarkMode ? "dark bg-gray-900 text-white" : "bg-white text-gray-900"}`}>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-indigo-950 text-gray-900 dark:text-gray-100 transition-colors duration-200">
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
             <div className="fixed inset-0 z-40 bg-white dark:bg-gray-800 md:hidden">
@@ -83,23 +83,18 @@ const HomePage = () => {
 
         {/* Hero Section */}
         <section className="relative h-[600px] overflow-hidden">
-          {/* <img
-          src="https://images.unsplash.com/photo-1550009158-9ebf69173e03"
-          alt="Tech Hero Banner"
-          className="w-full h-full object-cover"
-        /> */}
           <div className="w-full h-full object-cover m-0">
             <ImageSlider />
           </div>
-          <div className="absolute inset-0 bg-opacity-50 flex items-center justify-center">
-            <div className="text-center text-yellow">
-              <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
-                Công Nghệ Đổi Mới
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex items-center justify-start px-8 md:px-16">
+            <div className="text-left text-white max-w-xl">
+              <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in drop-shadow-lg">
+                <span className="bg-gradient-to-r from-purple-400 to-indigo-500 text-transparent bg-clip-text">Công Nghệ Đổi Mới</span>
               </h1>
-              <p className="text-xl mb-8 animate-fade-in-delay">
-                Khám phá những công nghệ mới nhất và sáng tạo
+              <p className="text-xl mb-8 animate-fade-in-delay text-gray-200 drop-shadow-md">
+                Khám phá những công nghệ mới nhất và sáng tạo cho cuộc sống hiện đại
               </p>
-              <button className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300">
+              <button className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-full hover:from-purple-700 hover:to-indigo-700 transition duration-300 shadow-lg transform hover:scale-105 hover:shadow-xl">
                 Khám Phá Ngay
               </button>
             </div>
@@ -107,20 +102,29 @@ const HomePage = () => {
         </section>
 
         {/* Categories */}
-        <section className="container mx-auto px-4 py-16">
-          <h2 className="text-3xl font-bold text-center mb-12">Danh Mục Phổ Biến</h2>
+        <section className="container mx-auto px-4 py-20">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 relative inline-block">
+              <span className="bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text">Danh Mục Phổ Biến</span>
+              <div className="h-1 w-24 bg-gradient-to-r from-purple-500 to-indigo-500 mx-auto mt-2 rounded-full"></div>
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Khám phá các danh mục sản phẩm công nghệ hàng đầu của chúng tôi</p>
+          </div>
+          
           <div className="relative">
             <button
                 onClick={prevCategory}
-                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-3 rounded-full shadow-xl z-10 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:hover:scale-100"
+                disabled={currentCategoryIndex === 0}
             >
-              <FiChevronLeft className="h-6 w-6" />
+              <FiChevronLeft className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </button>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-10">
               {categories.slice(currentCategoryIndex,currentCategoryIndex+4).map((category, index) => (
                   <div
                       key={index}
-                      className="relative overflow-hidden rounded-lg group cursor-pointer"
+                      className="relative overflow-hidden rounded-xl group cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
                       onClick={() => handleCategoryClick(category)}
                   >
                     <img
@@ -128,40 +132,64 @@ const HomePage = () => {
                         alt={category.name}
                         className="w-full h-64 object-cover transform group-hover:scale-110 transition duration-500"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                      <h3 className="text-white text-2xl font-semibold">{category.name}</h3>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end justify-center p-6">
+                      <div className="text-center">
+                        <h3 className="text-white text-2xl font-semibold mb-2 group-hover:text-purple-300 transition-colors duration-300">{category.name}</h3>
+                        <div className="w-0 h-1 bg-purple-500 mx-auto group-hover:w-16 transition-all duration-300"></div>
+                      </div>
                     </div>
                   </div>
               ))}
             </div>
+            
             <button
                 onClick={nextCategory}
-                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-3 rounded-full shadow-xl z-10 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:hover:scale-100"
+                disabled={currentCategoryIndex >= categories.length - 4}
             >
-              <FiChevronRight className="h-6 w-6" />
+              <FiChevronRight className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </button>
           </div>
         </section>
 
         {/* Featured Products */}
-        <section className="container mx-auto px-4 py-16 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
-          <h2 className="text-3xl font-bold dark:text-white text-center mb-12">Sản Phẩm Nổi Bật</h2>
-          
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <section className="py-20 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-900 dark:to-indigo-950">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 relative inline-block">
+                <span className="bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text dark:from-purple-400 dark:to-indigo-400">Sản Phẩm Nổi Bật</span>
+                <div className="h-1 w-24 bg-gradient-to-r from-purple-500 to-indigo-500 mx-auto mt-2 rounded-full"></div>
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Khám phá những sản phẩm công nghệ hàng đầu được yêu thích nhất</p>
             </div>
-          ) : error ? (
-            <div className="text-red-500 text-center py-8">{error}</div>
-          ) : (
-            <div className="grid grid-cols-1 dark:text-white md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {featuredProducts.map(product => (
-                <div key={product.id} className="w-full h-full flex">
-                  <ProductCard product={product} />
-                </div>
-              ))}
+            
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-4 border-t-purple-600 dark:border-gray-700 dark:border-t-purple-400"></div>
+              </div>
+            ) : error ? (
+              <div className="text-red-500 text-center py-8 bg-red-50 dark:bg-red-900/20 rounded-lg shadow-inner p-6">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {error}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 dark:text-white md:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
+                {featuredProducts.map((product, index) => (
+                  <div key={product.id} className="w-full h-full flex transform transition-all duration-300 hover:-translate-y-2" style={{animationDelay: `${index * 0.1}s`}}>
+                    <ProductCard product={product} />
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <div className="text-center mt-12">
+              <button className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-full hover:from-purple-700 hover:to-indigo-700 transition duration-300 shadow-lg transform hover:scale-105 hover:shadow-xl">
+                Xem Tất Cả Sản Phẩm
+              </button>
             </div>
-          )}
+          </div>
         </section>
 
       </div>

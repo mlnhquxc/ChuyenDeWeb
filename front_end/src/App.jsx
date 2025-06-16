@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -19,14 +19,39 @@ import Wishlist from './Pages/WishList';
 import TokenCleaner from './components/TokenCleaner';
 
 function App() {
+  // Thêm state và logic dark mode trực tiếp vào App
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Kiểm tra localStorage để lấy trạng thái dark mode đã lưu
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme === 'dark';
+  });
+
+  // Cập nhật class cho thẻ html khi chế độ thay đổi
+  useEffect(() => {
+    const htmlElement = document.documentElement;
+    
+    if (isDarkMode) {
+      htmlElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      htmlElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  // Hàm để chuyển đổi giữa chế độ sáng và tối
+  const toggleDarkMode = () => {
+    setIsDarkMode(prevMode => !prevMode);
+  };
+
   return (
       <Router>
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
               <TokenCleaner />
-              <div className="flex flex-col min-h-screen">
-                <Header />
+              <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-indigo-950 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+                <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
                 <main className="flex-grow">
                   <Routes>
                     <Route path="/" element={<Home />} />

@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FiSearch, FiShoppingCart, FiHeart, FiMenu, FiX , FiMic, FiUser, FiSettings, FiLogOut} from "react-icons/fi";
+import { FiSearch, FiShoppingCart, FiHeart, FiMenu, FiX , FiMic, FiUser, FiSettings, FiLogOut } from "react-icons/fi";
+import { FiSun, FiMoon } from "react-icons/fi";
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { MdEmail, MdPhone, MdKeyboardArrowDown } from "react-icons/md";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
+// Nhận isDarkMode và toggleDarkMode từ props
 
-const Header = () => {
+const Header = ({ isDarkMode, toggleDarkMode }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const { cart } = useCart();
   const { wishlist } = useWishlist();
+  // Nhận isDarkMode và toggleDarkMode từ props
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
@@ -202,12 +205,12 @@ const Header = () => {
   };
 
   return (
-      <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md">
+      <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-lg transition-colors duration-200">
         {/* <header className={`w-full ${isSticky ? "fixed top-0 shadow-lg bg-white" : ""}`}> */}
         {/* Top Bar */}
-        <div className="bg-gray-100 py-2 hidden md:block">
+        <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-800 dark:to-indigo-900 py-2 hidden md:block transition-colors duration-200">
           <div className="container mx-auto px-4 flex justify-between items-center">
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
               <div className="flex items-center">
                 <MdEmail className="mr-2" />
                 <span>Nagis@gmail.com</span>
@@ -219,13 +222,13 @@ const Header = () => {
             </div>
             <div className="flex items-center space-x-6">
               <div className="flex space-x-4">
-                <FaFacebookF className="text-gray-600 hover:text-blue-600 cursor-pointer" />
-                <FaTwitter className="text-gray-600 hover:text-blue-400 cursor-pointer" />
-                <FaInstagram className="text-gray-600 hover:text-pink-600 cursor-pointer" />
-                <FaLinkedinIn className="text-gray-600 hover:text-blue-800 cursor-pointer" />
+                <FaFacebookF className="text-gray-600 dark:text-gray-400 hover:text-blue-600 cursor-pointer transition-all duration-300 transform hover:scale-125" />
+                <FaTwitter className="text-gray-600 dark:text-gray-400 hover:text-blue-400 cursor-pointer transition-all duration-300 transform hover:scale-125" />
+                <FaInstagram className="text-gray-600 dark:text-gray-400 hover:text-pink-600 cursor-pointer transition-all duration-300 transform hover:scale-125" />
+                <FaLinkedinIn className="text-gray-600 dark:text-gray-400 hover:text-blue-800 cursor-pointer transition-all duration-300 transform hover:scale-125" />
               </div>
               <div className="flex items-center space-x-4">
-                <select className="bg-transparent text-sm text-gray-600 focus:outline-none">
+                <select className="bg-transparent text-sm text-gray-600 dark:text-gray-300 focus:outline-none">
                   <option value="vi">Tiếng Việt</option>
                   <option value="en">Tiếng Anh</option>
                 </select>
@@ -305,17 +308,30 @@ const Header = () => {
         </div>
 
         {/* Main Navigation */}
-        <nav className="bg-white py-4">
+        <nav className="bg-white dark:bg-gray-800 py-4 transition-colors duration-200 border-b border-gray-100 dark:border-gray-700">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between">
               {/* Logo */}
-              <div className="w-40 cursor-pointer" onClick={() => navigate('/')}>
-                <img
-                    src="https://i.pinimg.com/736x/af/a5/38/afa538f94bca768daba1dcbb804fde4b.jpg"
-                    alt="Logo"
-                    className="h-12 object-contain"
-
-                />
+              <div 
+                className="flex items-center cursor-pointer transform transition-all duration-300 hover:scale-105 group" 
+                onClick={() => navigate('/')}
+              >
+                <div className="relative overflow-hidden rounded-xl shadow-lg border-2 border-transparent group-hover:border-purple-500 dark:group-hover:border-purple-400 transition-all duration-300 logo-pulse">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl blur opacity-30 group-hover:opacity-100 transition duration-300 z-0 gradient-animation"></div>
+                  <div className="relative z-10 bg-white dark:bg-gray-800 rounded-xl overflow-hidden logo-shine">
+                    <img
+                      src="https://i.pinimg.com/736x/af/a5/38/afa538f94bca768daba1dcbb804fde4b.jpg"
+                      alt="Logo"
+                      className="h-12 w-12 object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                  </div>
+                </div>
+                <div className="ml-3 transition-all duration-300">
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text dark:from-purple-400 dark:to-indigo-400 group-hover:from-purple-500 group-hover:to-blue-500 gradient-animation">NAGIS</h1>
+                  <div className="h-0.5 w-0 bg-gradient-to-r from-purple-500 to-indigo-500 group-hover:w-full transition-all duration-500"></div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-1 group-hover:translate-y-0">Tech Store</p>
+                </div>
               </div>
 
               {/* Desktop Menu */}
@@ -324,7 +340,7 @@ const Header = () => {
                     <div key={index} className="relative group">
                       <a
                           href={item.link}
-                          className="text-gray-700 hover:text-red-600 flex items-center"
+                          className="text-gray-700 dark:text-gray-300 hover:text-red-600 flex items-center"
                       >
                         {item.name}
                         {item.hasDropdown && (
@@ -351,7 +367,7 @@ const Header = () => {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="Tìm kiếm sản phẩm..."
-                      className="w-40 lg:w-80 px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:border-red-500"
+                      className="w-40 lg:w-80 px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:border-red-500"
                   />
                   <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex">
                     <button 
@@ -369,14 +385,23 @@ const Header = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
+                  {/* Nút chuyển đổi chế độ sáng/tối */}
+                  <button 
+                    onClick={toggleDarkMode}
+                    className="p-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 hover:from-blue-200 hover:to-purple-200 dark:from-indigo-900 dark:to-purple-900 dark:hover:from-indigo-800 dark:hover:to-purple-800 text-gray-700 dark:text-yellow-300 transition-all duration-300 transform hover:scale-110 shadow-md"
+                    title={isDarkMode ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
+                  >
+                    {isDarkMode ? <FiSun className="text-xl text-amber-500" /> : <FiMoon className="text-xl text-indigo-600" />}
+                  </button>
+                  
                   <div className="relative">
-                    <FiHeart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer" onClick={wishListClick}/>
+                    <FiHeart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer dark:text-gray-300" onClick={wishListClick}/>
                     <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {wishlistCount}
                   </span>
                   </div>
                   <div className="relative" >
-                    <FiShoppingCart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer" onClick={cartClick}/>
+                    <FiShoppingCart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer dark:text-gray-300" onClick={cartClick}/>
                     <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {cartCount}
                   </span>
