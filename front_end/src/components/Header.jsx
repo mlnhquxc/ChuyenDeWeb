@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { FiSearch, FiShoppingCart, FiHeart, FiMenu, FiX , FiMic, FiUser, FiSettings, FiLogOut} from "react-icons/fi";
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { MdEmail, MdPhone, MdKeyboardArrowDown } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
@@ -17,6 +17,7 @@ const Header = () => {
   const [wishlistCount, setWishlistCount] = useState(0);
   const userMenuRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Theo dõi thay đổi của user state
   useEffect(() => {
@@ -80,9 +81,17 @@ const Header = () => {
     navigate('/login');
   };
 
-  //Tìm kiếm giọng nói
+  //Tìm kiếm giọng nói và tìm kiếm thông thường
   const [isListening, setIsListening] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Lấy query từ URL nếu đang ở trang store và có query
+  useEffect(() => {
+    if (location.pathname === '/store' && location.state?.searchQuery) {
+      setSearchQuery(location.state.searchQuery);
+    }
+  }, [location]);
+  
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = SpeechRecognition ? new SpeechRecognition() : null;
   if (recognition) {
@@ -95,6 +104,8 @@ const Header = () => {
       const text = event.results[0][0].transcript;
       setSearchQuery(text);
       setIsListening(false);
+      // Tự động tìm kiếm khi có kết quả từ giọng nói
+      handleSearch(text);
     };
 
     recognition.onerror = (event) => {
@@ -102,6 +113,7 @@ const Header = () => {
       setIsListening(false);
     };
   }
+  
   const handleVoiceSearch = () => {
     if (!recognition) {
       alert("Speech recognition is not supported in your browser");
@@ -114,6 +126,26 @@ const Header = () => {
     } else {
       recognition.start();
       setIsListening(true);
+    }
+  };
+  
+  // Xử lý tìm kiếm
+  const handleSearch = (query = searchQuery) => {
+    if (!query.trim()) return;
+    
+    console.log("Searching for:", query);
+    navigate('/store', { 
+      state: { 
+        searchQuery: query,
+        fromSearch: true
+      } 
+    });
+  };
+  
+  // Xử lý khi nhấn Enter trong ô tìm kiếm
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
     }
   };
   //
@@ -317,19 +349,24 @@ const Header = () => {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search..."
+                      onKeyPress={handleKeyPress}
+                      placeholder="Search products..."
                       className="w-40 lg:w-80 px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:border-red-500"
                   />
-                  <button onClick={handleVoiceSearch}
-                          className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-full ${isListening ? "text-red-500" : "text-gray-500"} hover:bg-gray-100`}
-                  >
-                    <FiMic className="w-5 h-5" />
-                  </button>
-                  {/* <button
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-full text-gray-500 hover:bg-gray-100"
-                >
-                  <FiSearch className="w-5 h-5" />
-                </button> */}
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex">
+                    <button 
+                      onClick={handleVoiceSearch}
+                      className={`p-2 rounded-full ${isListening ? "text-red-500" : "text-gray-500"} hover:bg-gray-100 mr-1`}
+                    >
+                      <FiMic className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleSearch()}
+                      className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
+                    >
+                      <FiSearch className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-4">
                   <div className="relative">

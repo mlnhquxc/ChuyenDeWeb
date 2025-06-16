@@ -5,8 +5,19 @@ const API_URL = 'http://localhost:8080/api';
 export const productService = {
     getAllProducts: async (page = 0, size = 10, sortBy = 'id') => {
         try {
+            // Xử lý tham số sắp xếp
+            let sort = sortBy;
+            let direction = 'asc';
+            
+            // Kiểm tra nếu sortBy có định dạng "field,direction"
+            if (sortBy && sortBy.includes(',')) {
+                const parts = sortBy.split(',');
+                sort = parts[0]; // Trường sắp xếp (id, name, price)
+                direction = parts[1]; // Hướng sắp xếp (asc, desc)
+            }
+            
             const response = await axios.get(`${API_URL}/products`, {
-                params: { page, size, sortBy }
+                params: { page, size, sort, direction }
             });
             return response.data;
         } catch (error) {
@@ -23,11 +34,25 @@ export const productService = {
                 url = `${API_URL}/products/category/${category}`;
             }
 
+            // Xử lý tham số sắp xếp
+            let sort = sortBy;
+            let direction = 'asc';
+            
+            // Kiểm tra nếu sortBy có định dạng "field,direction"
+            if (sortBy && sortBy.includes(',')) {
+                const parts = sortBy.split(',');
+                sort = parts[0]; // Trường sắp xếp (id, name, price)
+                direction = parts[1]; // Hướng sắp xếp (asc, desc)
+            }
+
+            console.log(`Sending request with sort=${sort}, direction=${direction}`);
+
             const response = await axios.get(url, {
                 params: {
                     page,
                     size,
-                    sortBy
+                    sort: sort,
+                    direction: direction
                 }
             });
 
@@ -64,8 +89,19 @@ export const productService = {
 
     getProductsByCategory: async (categoryName, page = 0, size = 10, sortBy = 'id') => {
         try {
+            // Xử lý tham số sắp xếp
+            let sort = sortBy;
+            let direction = 'asc';
+            
+            // Kiểm tra nếu sortBy có định dạng "field,direction"
+            if (sortBy && sortBy.includes(',')) {
+                const parts = sortBy.split(',');
+                sort = parts[0]; // Trường sắp xếp (id, name, price)
+                direction = parts[1]; // Hướng sắp xếp (asc, desc)
+            }
+            
             const response = await axios.get(`${API_URL}/products/category/${categoryName}`, {
-                params: { page, size, sortBy }
+                params: { page, size, sort, direction }
             });
             return response.data;
         } catch (error) {
@@ -76,8 +112,19 @@ export const productService = {
 
     searchProducts: async (keyword, page = 0, size = 10, sortBy = 'id') => {
         try {
+            // Xử lý tham số sắp xếp
+            let sort = sortBy;
+            let direction = 'asc';
+            
+            // Kiểm tra nếu sortBy có định dạng "field,direction"
+            if (sortBy && sortBy.includes(',')) {
+                const parts = sortBy.split(',');
+                sort = parts[0]; // Trường sắp xếp (id, name, price)
+                direction = parts[1]; // Hướng sắp xếp (asc, desc)
+            }
+            
             const response = await axios.get(`${API_URL}/products/search`, {
-                params: { keyword, page, size, sortBy }
+                params: { keyword, page, size, sort, direction }
             });
             return response.data;
         } catch (error) {

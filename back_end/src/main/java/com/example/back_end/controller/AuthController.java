@@ -106,7 +106,7 @@ public class AuthController {
                             .message("Logout failed")
                             .build());
         }
-
+    }
     @PostMapping("/refresh-token")
     public ResponseEntity<ApiResponse<AuthenticationResponse>> refreshToken(@RequestHeader("Authorization") String token) {
         try {

@@ -4,16 +4,18 @@ import { FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import ProductCard from "../components/ProductCard";
 import { productService } from "../services/productService";
+import { useLocation } from "react-router-dom";
 
 const Shop = () => {
+  const location = useLocation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState(location.state?.searchQuery || "");
   const [filters, setFilters] = useState({
-    category: "",
+    category: location.state?.category || "",
     sortBy: "id"
   });
 
@@ -30,15 +32,32 @@ const Shop = () => {
   };
 
   const loadProducts = async () => {
-    try {2
+    try {
       setLoading(true);
-      const response = await productService.getAllProducts2(
+      console.log("Loading products with filters:", filters, "search:", searchKeyword);
+      
+      let response;
+      
+      // Nếu có từ khóa tìm kiếm, sử dụng API tìm kiếm
+      if (searchKeyword && searchKeyword.trim() !== "") {
+        console.log("Searching for products with keyword:", searchKeyword);
+        response = await productService.searchProducts(
+          searchKeyword,
+          currentPage,
+          8,
+          filters.sortBy
+        );
+      } else {
+        // Nếu không có từ khóa, lấy sản phẩm theo category (nếu có)
+        response = await productService.getAllProducts2(
           currentPage,
           8,
           filters.sortBy,
           filters.category
-      );
-      console.log(response);
+        );
+      }
+      
+      console.log("Products loaded:", response);
       setProducts(response.content);
       setTotalPages(response.totalPages);
       setError(null);
@@ -52,7 +71,29 @@ const Shop = () => {
 
   useEffect(() => {
     loadProducts();
-  }, [currentPage, filters]);
+  }, [currentPage, filters, searchKeyword]);
+  
+  // Khi nhận được category hoặc searchQuery từ trang khác
+  useEffect(() => {
+    if (location.state) {
+      console.log("Received state:", location.state);
+      
+      // Xử lý category
+      if (location.state.category) {
+        console.log("Category from navigation:", location.state.category);
+        setFilters(prev => ({
+          ...prev,
+          category: location.state.category
+        }));
+      }
+      
+      // Xử lý searchQuery
+      if (location.state.searchQuery) {
+        console.log("Search query from navigation:", location.state.searchQuery);
+        setSearchKeyword(location.state.searchQuery);
+      }
+    }
+  }, [location.state]);
 
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({
@@ -108,8 +149,54 @@ const Shop = () => {
 
             {/* Main Content */}
             <div className="flex-1">
-              <h2 className="text-3xl font-bold mb-8">Sản phẩm</h2>
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-3xl font-bold">Sản phẩm</h2>
+                
+                {/* Thanh tìm kiếm */}
+                <div className="relative w-full max-w-md ml-4">
+                  <input
+                    type="text"
+                    value={searchKeyword}
+                    onChange={(e) => setSearchKeyword(e.target.value)}
+                    placeholder="Tìm kiếm sản phẩm..."
+                    className="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:border-blue-500"
+                    onKeyPress={(e) => e.key === 'Enter' && loadProducts()}
+                  />
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex">
+                    {searchKeyword && (
+                      <button
+                        onClick={() => {
+                          setSearchKeyword("");
+                          // Đặt timeout để đảm bảo state đã được cập nhật trước khi gọi loadProducts
+                          setTimeout(() => loadProducts(), 0);
+                        }}
+                        className="p-2 rounded-full text-gray-500 hover:bg-gray-100 mr-1"
+                        title="Xóa tìm kiếm"
+                      >
+                        <FiX className="w-5 h-5" />
+                      </button>
+                    )}
+                    <button
+                      onClick={loadProducts}
+                      className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
+                      title="Tìm kiếm"
+                    >
+                      <FiSearch className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
 
+              {/* Hiển thị thông tin tìm kiếm nếu có */}
+              {searchKeyword && (
+                <div className="mb-4 p-2 bg-blue-50 rounded-md">
+                  <p className="text-blue-700">
+                    Kết quả tìm kiếm cho: <span className="font-semibold">"{searchKeyword}"</span>
+                    {products.length === 0 && !loading ? " - Không tìm thấy sản phẩm nào" : ""}
+                  </p>
+                </div>
+              )}
+              
               {loading ? (
                   <div className="flex justify-center items-center h-64">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

@@ -4,6 +4,7 @@ import com.example.back_end.dto.ProductDTO;
 import com.example.back_end.dto.ProductDetailDTO;
 import com.example.back_end.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
+@Slf4j
 public class ProductController {
     private final ProductService productService;
 
@@ -21,8 +23,15 @@ public class ProductController {
     public ResponseEntity<Page<ProductDTO>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy) {
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(sortBy));
+            @RequestParam(defaultValue = "id") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
+        
+        log.info("Getting all products with sort={}, direction={}", sort, direction);
+        
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? 
+                Sort.Direction.DESC : Sort.Direction.ASC;
+        
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         return ResponseEntity.ok(productService.getAllProducts(pageRequest));
     }
 
@@ -41,8 +50,16 @@ public class ProductController {
             @PathVariable String categoryName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy) {
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(sortBy));
+            @RequestParam(defaultValue = "id") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
+        
+        log.info("Getting products by category={} with sort={}, direction={}", 
+                categoryName, sort, direction);
+        
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? 
+                Sort.Direction.DESC : Sort.Direction.ASC;
+        
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         return ResponseEntity.ok(productService.getProductsByCategory(categoryName, pageRequest));
     }
 
@@ -51,8 +68,16 @@ public class ProductController {
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy) {
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(sortBy));
+            @RequestParam(defaultValue = "id") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
+        
+        log.info("Searching products with keyword={}, sort={}, direction={}", 
+                keyword, sort, direction);
+        
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("desc") ? 
+                Sort.Direction.DESC : Sort.Direction.ASC;
+        
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         return ResponseEntity.ok(productService.searchProducts(keyword, pageRequest));
     }
 } 
