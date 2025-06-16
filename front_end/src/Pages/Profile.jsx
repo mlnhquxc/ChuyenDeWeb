@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+
 import {FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaSignOutAlt} from 'react-icons/fa';
 import {toast} from 'react-toastify';
 import userService from '../services/userService';

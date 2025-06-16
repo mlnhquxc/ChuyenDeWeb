@@ -262,7 +262,6 @@ const CheckoutPage = () => {
                         </p>
                     )}
                   </div>
-                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Số điện thoại *
@@ -302,7 +301,6 @@ const CheckoutPage = () => {
                         </p>
                     )}
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Email
@@ -324,7 +322,6 @@ const CheckoutPage = () => {
                         </p>
                     )}
                   </div>
-
                   {/* Address Fields */}
                   <ProvinceSelect
                       formData={formData}
@@ -353,7 +350,6 @@ const CheckoutPage = () => {
                         </p>
                     )}
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Ghi chú giao hàng

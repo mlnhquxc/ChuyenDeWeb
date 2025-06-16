@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class TokenStorageService {
     private static final Logger log = LoggerFactory.getLogger(TokenStorageService.class);
-    
     // Lưu trữ token theo username
     private final Map<String, String> activeTokens = new ConcurrentHashMap<>();
 

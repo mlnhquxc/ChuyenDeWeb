@@ -13,6 +13,7 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { isAuthenticated } = useAuth();
+
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
@@ -74,7 +75,7 @@ const ProductCard = ({ product }) => {
       setIsAddingToWishlist(false);
     }
   };
-
+  
   const imageUrl = product.imageUrls?.[0] || product.image || '/placeholder-image.jpg';
   const productName = product.name || 'Không có tên';
   const categoryName = product.categoryName || 'Không phân loại';

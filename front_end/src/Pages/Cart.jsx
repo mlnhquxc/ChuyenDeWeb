@@ -38,7 +38,6 @@ const Cart = () => {
             </div>
         );
     }
-    
     // Get cart items based on the structure (backend returns items array)
     const cartItems = cart.items || (Array.isArray(cart) ? cart : []);
     console.log('Cart items:', cartItems);

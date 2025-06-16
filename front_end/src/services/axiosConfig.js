@@ -14,6 +14,7 @@ const axiosInstance = axios.create({
     },
     withCredentials: true,
     timeout: 10000
+
 });
 
 // Add request interceptor
@@ -101,7 +102,6 @@ axiosInstance.interceptors.response.use(
                 return Promise.reject(error);
             }
         }
-
         return Promise.reject(error);
     }
 );
