@@ -6,6 +6,9 @@ import { useNavigate } from "react-router-dom";
 import authService from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
+import ForgotPassword from "../components/ForgotPassword";
+import VerifyOTP from "../components/VerifyOTP";
+import ResetPassword from "../components/ResetPassword";
 
 const PasswordStrength = ({ password }) => {
   const getStrength = (pass) => {
@@ -45,7 +48,7 @@ const PasswordStrength = ({ password }) => {
   );
 };
 
-const LoginForm = ({ onSwitchToRegister }) => {
+const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -179,9 +182,13 @@ const LoginForm = ({ onSwitchToRegister }) => {
               </label>
             </div>
             <div className="text-sm">
-              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
+              <button 
+                type="button"
+                onClick={onForgotPassword}
+                className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              >
                 Quên mật khẩu?
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -540,16 +547,75 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
 const AuthPage = () => {
   const [authState, setAuthState] = useState("login");
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPasswordOTP, setForgotPasswordOTP] = useState("");
+
+  const handleSwitchToLogin = () => {
+    setAuthState("login");
+  };
+
+  const handleSwitchToRegister = () => {
+    setAuthState("register");
+  };
+
+  const handleForgotPassword = () => {
+    setAuthState("forgot-password");
+  };
+
+  const handleOtpSent = (email) => {
+    setForgotPasswordEmail(email);
+    setAuthState("verify-otp");
+  };
+
+  const handleOtpVerified = (email, otp) => {
+    setForgotPasswordEmail(email);
+    setForgotPasswordOTP(otp);
+    setAuthState("reset-password");
+  };
+
+  const handlePasswordReset = () => {
+    toast.success("Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập với mật khẩu mới.");
+    setAuthState("login");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-indigo-950 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-10 transition-colors duration-200">
       <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden transition-colors duration-200">
         <div className="px-6 py-8 sm:px-8 sm:py-10">
           <AnimatePresence mode="wait">
-            {authState === "login" ? (
-              <LoginForm onSwitchToRegister={() => setAuthState("register")} />
-            ) : (
-              <RegisterForm onSwitchToLogin={() => setAuthState("login")} />
+            {authState === "login" && (
+              <LoginForm 
+                onSwitchToRegister={handleSwitchToRegister} 
+                onForgotPassword={handleForgotPassword}
+              />
+            )}
+            
+            {authState === "register" && (
+              <RegisterForm onSwitchToLogin={handleSwitchToLogin} />
+            )}
+            
+            {authState === "forgot-password" && (
+              <ForgotPassword 
+                onBack={handleSwitchToLogin}
+                onOtpSent={handleOtpSent}
+              />
+            )}
+            
+            {authState === "verify-otp" && (
+              <VerifyOTP 
+                email={forgotPasswordEmail}
+                onBack={() => setAuthState("forgot-password")}
+                onVerified={handleOtpVerified}
+              />
+            )}
+            
+            {authState === "reset-password" && (
+              <ResetPassword 
+                email={forgotPasswordEmail}
+                otp={forgotPasswordOTP}
+                onBack={() => setAuthState("verify-otp")}
+                onSuccess={handlePasswordReset}
+              />
             )}
           </AnimatePresence>
         </div>

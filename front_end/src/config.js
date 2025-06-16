@@ -5,7 +5,10 @@ export const ENDPOINTS = {
         LOGIN: '/api/auth/login',
         REGISTER: '/api/auth/register',
         REFRESH_TOKEN: '/api/auth/refresh-token',
-        INTROSPECT: '/api/auth/introspect'
+        INTROSPECT: '/api/auth/introspect',
+        FORGOT_PASSWORD: '/api/auth/forgot-password',
+        VERIFY_OTP: '/api/auth/verify-otp',
+        RESET_PASSWORD: '/api/auth/reset-password'
     },
     USER: {
         PROFILE: '/api/users/profile',
