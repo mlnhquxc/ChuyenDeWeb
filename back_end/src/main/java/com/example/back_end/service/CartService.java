@@ -4,6 +4,8 @@ import com.example.back_end.entity.Cart;
 import com.example.back_end.entity.CartItem;
 import com.example.back_end.entity.Product;
 import com.example.back_end.entity.User;
+import com.example.back_end.exception.AppException;
+import com.example.back_end.exception.ErrorCode;
 import com.example.back_end.repositories.CartRepository;
 import com.example.back_end.repositories.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,9 +38,13 @@ public class CartService {
 
     @Transactional
     public Cart addToCart(Integer userId, Long productId, Integer quantity) {
+        if (quantity <= 0) {
+            throw new AppException(ErrorCode.INVALID_QUANTITY);
+        }
+        
         Cart cart = getCartByUserId(userId);
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
         CartItem existingItem = cart.getCartItems().stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
@@ -61,11 +67,31 @@ public class CartService {
 
     @Transactional
     public Cart updateCartItemQuantity(Integer userId, Long productId, Integer quantity) {
+        if (quantity <= 0) {
+            throw new AppException(ErrorCode.INVALID_QUANTITY);
+        }
+        
         Cart cart = getCartByUserId(userId);
         CartItem cartItem = cart.getCartItems().stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.ITEM_NOT_FOUND));
+
+        cartItem.setQuantity(quantity);
+        return cartRepository.save(cart);
+    }
+    
+    @Transactional
+    public Cart updateCartItemQuantityById(Integer userId, Long cartItemId, Integer quantity) {
+        if (quantity <= 0) {
+            throw new AppException(ErrorCode.INVALID_QUANTITY);
+        }
+        
+        Cart cart = getCartByUserId(userId);
+        CartItem cartItem = cart.getCartItems().stream()
+                .filter(item -> item.getId().equals(cartItemId))
+                .findFirst()
+                .orElseThrow(() -> new AppException(ErrorCode.ITEM_NOT_FOUND));
 
         cartItem.setQuantity(quantity);
         return cartRepository.save(cart);
@@ -74,7 +100,12 @@ public class CartService {
     @Transactional
     public Cart removeFromCart(Integer userId, Long productId) {
         Cart cart = getCartByUserId(userId);
-        cart.getCartItems().removeIf(item -> item.getProduct().getId().equals(productId));
+        boolean removed = cart.getCartItems().removeIf(item -> item.getProduct().getId().equals(productId));
+        
+        if (!removed) {
+            throw new AppException(ErrorCode.ITEM_NOT_FOUND);
+        }
+        
         return cartRepository.save(cart);
     }
 

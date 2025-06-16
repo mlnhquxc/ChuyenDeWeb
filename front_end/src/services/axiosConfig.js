@@ -1,113 +1,109 @@
 import axios from 'axios';
-import { API_URL } from '../config';
+import {API_URL} from '../config';
 import authService from './authService';
 
-console.log('Initializing axios with baseURL:', API_URL);
+if (process.env.NODE_ENV !== 'production') {
+    console.log('Initializing axios with baseURL:', API_URL);
+}
 
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    withCredentials: true,
+    timeout: 10000
+
 });
+
+// Add request interceptor
+axiosInstance.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    failedQueue = [];
 };
 
-// Request interceptor
-axiosInstance.interceptors.request.use(
-  (config) => {
-    console.log('=== REQUEST START ===');
-    console.log('Request URL:', config.url);
-    console.log('Request method:', config.method);
-    console.log('Request data:', config.data);
-    console.log('Request headers:', config.headers);
-    console.log('=== REQUEST END ===');
-
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    console.error('Request error:', error);
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor
+// Add response interceptor
 axiosInstance.interceptors.response.use(
-  (response) => {
-    console.log('=== RESPONSE START ===');
-    console.log('Response status:', response.status);
-    console.log('Response data:', response.data);
-    console.log('=== RESPONSE END ===');
-    return response;
-  },
-  async (error) => {
-    console.error('=== ERROR START ===');
-    const originalRequest = error.config;
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
 
-    if (error.response) {
-      console.error('Response error:', error.response.data);
-      console.error('Response status:', error.response.status);
+        if (error.response) {
+            // Handle 401 Unauthorized error
+            if (error.response.status === 401 && !originalRequest._retry) {
+                if (isRefreshing) {
+                    // If token refresh is in progress, queue the request
+                    return new Promise((resolve, reject) => {
+                        failedQueue.push({ resolve, reject });
+                    })
+                        .then(token => {
+                            originalRequest.headers.Authorization = `Bearer ${token}`;
+                            return axiosInstance(originalRequest);
+                        })
+                        .catch(err => {
+                            return Promise.reject(err);
+                        });
+                }
 
-      // Handle 403 Forbidden error
-      if (error.response.status === 403 && !originalRequest._retry) {
-        if (isRefreshing) {
-          try {
-            const token = await new Promise((resolve, reject) => {
-              failedQueue.push({ resolve, reject });
-            });
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return axiosInstance(originalRequest);
-          } catch (err) {
-            return Promise.reject(err);
-          }
+                originalRequest._retry = true;
+                isRefreshing = true;
+
+                try {
+                    // Attempt to refresh the token
+                    const response = await authService.refreshToken();
+                    if (!response || !response.accessToken) {
+                        throw new Error('Token refresh failed - no token returned');
+                    }
+                    const newToken = response.accessToken;
+
+                    // Process any queued requests with the new token
+                    processQueue(null, newToken);
+                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                    return axiosInstance(originalRequest);
+                } catch (refreshError) {
+                    // If token refresh fails, reject all queued requests
+                    processQueue(refreshError, null);
+                    // Log the user out and redirect to login page
+                    authService.logout();
+                    window.location.href = '/auth';
+                    return Promise.reject(refreshError);
+                } finally {
+                    isRefreshing = false;
+                }
+            }
+
+            // Handle 403 Forbidden error
+            if (error.response.status === 403) {
+                authService.logout();
+                window.location.href = '/auth';
+                return Promise.reject(error);
+            }
         }
-
-        originalRequest._retry = true;
-        isRefreshing = true;
-
-        try {
-          const response = await authService.refreshToken();
-          const newToken = response.token;
-          localStorage.setItem('token', newToken);
-          
-          processQueue(null, newToken);
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return axiosInstance(originalRequest);
-        } catch (refreshError) {
-          processQueue(refreshError, null);
-          authService.logout();
-          window.location.href = '/auth';
-          return Promise.reject(refreshError);
-        } finally {
-          isRefreshing = false;
-        }
-      }
-    } else if (error.request) {
-      console.error('Request error:', error.request);
-    } else {
-      console.error('Error:', error.message);
+        return Promise.reject(error);
     }
-    console.error('=== ERROR END ===');
-    return Promise.reject(error);
-  }
 );
 
 export default axiosInstance;

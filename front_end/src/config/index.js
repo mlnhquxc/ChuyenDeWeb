@@ -10,7 +10,7 @@ export const ENDPOINTS = {
     LOGOUT: '/auth/logout',
     REFRESH_TOKEN: '/auth/refresh-token',
   },
-  
+
   // User endpoints
   USER: {
     PROFILE: '/user/profile',
@@ -18,7 +18,7 @@ export const ENDPOINTS = {
     CHANGE_PASSWORD: '/user/change-password',
     UPLOAD_AVATAR: '/user/upload-avatar',
   },
-  
+
   // Product endpoints
   PRODUCT: {
     LIST: '/products',
@@ -26,7 +26,7 @@ export const ENDPOINTS = {
     SEARCH: '/products/search',
     CATEGORIES: '/products/categories',
   },
-  
+
   // Cart endpoints
   CART: {
     GET: '/cart',
@@ -35,14 +35,15 @@ export const ENDPOINTS = {
     REMOVE: (id) => `/cart/remove/${id}`,
     CLEAR: '/cart/clear',
   },
-  
+
   // Wishlist endpoints
   WISHLIST: {
     GET: '/wishlist',
     ADD: '/wishlist/add',
     REMOVE: (id) => `/wishlist/remove/${id}`,
+    CLEAR: '/wishlist/clear',
   },
-  
+
   // Order endpoints
   ORDER: {
     LIST: '/orders',

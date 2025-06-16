@@ -18,10 +18,24 @@ public enum ErrorCode {
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
     FILE_UPLOAD_FAILED(1009, "Failed to upload file", HttpStatus.INTERNAL_SERVER_ERROR),
-    INVALID_USERNAME(1003, "Username must not be empty", HttpStatus.BAD_REQUEST),
-    INVALID_EMAIL(1004, "Email must not be empty", HttpStatus.BAD_REQUEST),
-    PASSWORD_TOO_SHORT(1006, "Password must be at least 6 characters", HttpStatus.BAD_REQUEST),
-    INVALID_FULLNAME(1007, "Fullname must not be empty", HttpStatus.BAD_REQUEST),
+    INVALID_USERNAME(1010, "Username must not be empty", HttpStatus.BAD_REQUEST),
+    INVALID_EMAIL(1011, "Email must not be empty", HttpStatus.BAD_REQUEST),
+    PASSWORD_TOO_SHORT(1012, "Password must be at least 6 characters", HttpStatus.BAD_REQUEST),
+    INVALID_FULLNAME(1013, "Fullname must not be empty", HttpStatus.BAD_REQUEST),
+    
+    // Product related errors
+    PRODUCT_NOT_FOUND(2000, "Product not found", HttpStatus.NOT_FOUND),
+    
+    // Cart related errors
+    CART_NOT_FOUND(3000, "Cart not found", HttpStatus.NOT_FOUND),
+    ITEM_NOT_FOUND(3001, "Item not found", HttpStatus.NOT_FOUND),
+    INVALID_QUANTITY(3002, "Quantity must be greater than zero", HttpStatus.BAD_REQUEST),
+    UNAUTHORIZED_ACCESS(3003, "You do not have permission to access this resource", HttpStatus.FORBIDDEN),
+    
+    // Wishlist related errors
+    WISHLIST_NOT_FOUND(4000, "Wishlist not found", HttpStatus.NOT_FOUND),
+    WISHLIST_ITEM_NOT_FOUND(4001, "Wishlist item not found", HttpStatus.NOT_FOUND),
+    PRODUCT_ALREADY_IN_WISHLIST(4002, "Product is already in wishlist", HttpStatus.BAD_REQUEST),
     ;
 
     private final int code;

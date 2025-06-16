@@ -5,6 +5,7 @@ import com.example.back_end.dto.request.IntrospectRequest;
 import com.example.back_end.dto.request.UserCreationRequest;
 import com.example.back_end.dto.response.AuthenticationResponse;
 import com.example.back_end.dto.response.IntrospectResponse;
+import com.example.back_end.dto.response.UserResponse;
 import com.example.back_end.entity.Role;
 import com.example.back_end.entity.User;
 import com.example.back_end.exception.AppException;
@@ -28,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +51,9 @@ public class UserService implements UserDetailsService {
 
     @Value("${jwt.signer-key}")
     private String SIGNER_KEY;
+
+    @Autowired
+    private TokenStorageService tokenStorageService;
 
     public User createRequest(UserCreationRequest request) {
         log.info("Creating new user with email: {} and username: {}", request.getEmail(), request.getUsername());
@@ -116,14 +121,20 @@ public class UserService implements UserDetailsService {
     }
 
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
-        var token = request.getToken();
-
-        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
-        SignedJWT signedJWT = SignedJWT.parse(token);
-        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        var verified = signedJWT.verify(verifier);
-
-        return IntrospectResponse.builder().valid(verified && expiryTime.after(new Date())).build();
+        String token = request.getToken();
+        try {
+            String username = validateToken(token);
+            boolean isActive = tokenStorageService.isTokenValid(username, token);
+            if (isActive) {
+                User user = findByUsername(username);
+                UserResponse userResponse = userMapper.toUserResponse(user);
+                return IntrospectResponse.builder().valid(true).user(userResponse).build();
+            } else {
+                return IntrospectResponse.builder().valid(false).build();
+            }
+        } catch (Exception e) {
+            return IntrospectResponse.builder().valid(false).build();
+        }
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
@@ -217,12 +228,13 @@ public class UserService implements UserDetailsService {
                 token = token.substring(7);
             }
 
-            String email = jwtService.validateToken(token);
+            // Use the new refreshToken method that can handle expired tokens
+            String newToken = jwtService.refreshToken(token);
+            
+            // Extract email from the new token to get user info
+            String email = jwtService.validateToken(newToken);
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
-
-            String scope = buildScope(user);
-            String newToken = jwtService.generateToken(user.getEmail(), scope);
 
             return AuthenticationResponse.builder()
                     .token(newToken)
@@ -230,7 +242,8 @@ public class UserService implements UserDetailsService {
                     .user(userMapper.toUserResponse(user))
                     .build();
         } catch (ParseException | JOSEException e) {
-            throw new RuntimeException("Invalid token");
+            log.error("Token refresh failed", e);
+            throw new RuntimeException("Invalid token for refresh");
         }
     }
 
@@ -239,33 +252,16 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
     }
 
-    public User updateProfile(String email, UserCreationRequest request) {
-        User user = findByEmail(email);
-        
-        if (request.getUsername() != null && !request.getUsername().equals(user.getUsername())) {
-            if (userRepository.existsByUsername(request.getUsername())) {
-                throw new AppException(ErrorCode.USER_EXISTED);
-            }
-            user.setUsername(request.getUsername());
-        }
-        
-        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
-            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-                throw new AppException(ErrorCode.USER_EXISTED);
-            }
-            user.setEmail(request.getEmail());
-        }
-        
-        if (request.getFullname() != null) {
-            user.setFullname(request.getFullname());
-        }
-        if (request.getPhone() != null) {
-            user.setPhone(request.getPhone());
-        }
-        if (request.getAddress() != null) {
-            user.setAddress(request.getAddress());
-        }
-        
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+    }
+
+    public User updateProfile(String username, UserCreationRequest request) {
+        var user = findByUsername(username);
+        user.setFullname(request.getFullname());
+        user.setPhone(request.getPhone());
+        user.setAddress(request.getAddress());
         return userRepository.save(user);
     }
 

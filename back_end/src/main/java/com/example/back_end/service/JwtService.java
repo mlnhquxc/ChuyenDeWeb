@@ -29,7 +29,7 @@ public class JwtService {
                     .issuer("CDWED.com")
                     .issueTime(new Date())
                     .expirationTime(new Date(
-                            Instant.now().plus(24, ChronoUnit.HOURS).toEpochMilli()
+                            Instant.now().plus(7, ChronoUnit.DAYS).toEpochMilli()
                     ))
                     .claim("scope", scope)
                     .build();
@@ -56,7 +56,7 @@ public class JwtService {
 
             Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
             if (expiryTime.before(new Date())) {
-                log.error("Token has expired");
+                log.error("Token has expired at: {}, current time: {}", expiryTime, new Date());
                 throw new JwtAuthenticationException("Token has expired");
             }
 
@@ -66,6 +66,40 @@ public class JwtService {
             throw e;
         } catch (JOSEException e) {
             log.error("Error verifying token", e);
+            throw e;
+        }
+    }
+
+    public String refreshToken(String token) throws ParseException, JOSEException {
+        try {
+            JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            
+            if (!signedJWT.verify(verifier)) {
+                log.error("Invalid token signature for refresh");
+                throw new JwtAuthenticationException("Invalid token signature");
+            }
+
+            // Allow refresh even if token is expired (within reasonable time)
+            Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+            Date now = new Date();
+            long timeSinceExpiry = now.getTime() - expiryTime.getTime();
+            
+            // Allow refresh if token expired less than 1 day ago
+            if (timeSinceExpiry > 24 * 60 * 60 * 1000) {
+                log.error("Token expired too long ago for refresh");
+                throw new JwtAuthenticationException("Token expired too long ago");
+            }
+
+            String subject = signedJWT.getJWTClaimsSet().getSubject();
+            String scope = signedJWT.getJWTClaimsSet().getStringClaim("scope");
+            
+            return generateToken(subject, scope != null ? scope : "USER");
+        } catch (ParseException e) {
+            log.error("Error parsing token for refresh", e);
+            throw e;
+        } catch (JOSEException e) {
+            log.error("Error verifying token for refresh", e);
             throw e;
         }
     }
