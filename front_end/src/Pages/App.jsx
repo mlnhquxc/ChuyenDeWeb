@@ -7,6 +7,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { AuthProvider } from '../context/AuthContext';
 import { CartProvider } from '../context/CartContext';
 import { WishlistProvider } from '../context/WishlistContext';
+import { ThemeProvider } from '../context/ThemeContext';
 import { ToastContainer } from "react-toastify";
 
 function App() {
@@ -15,19 +16,21 @@ function App() {
             <AuthProvider>
                 <CartProvider>
                     <WishlistProvider>
-                        <AppLayout />
-                        <ToastContainer
-                            position="top-right"
-                            autoClose={3000}
-                            hideProgressBar={false}
-                            newestOnTop
-                            closeOnClick
-                            rtl={false}
-                            pauseOnFocusLoss
-                            draggable
-                            pauseOnHover
-                            theme="light"
-                        />
+                        <ThemeProvider>
+                            <AppLayout />
+                            <ToastContainer
+                                position="top-right"
+                                autoClose={3000}
+                                hideProgressBar={false}
+                                newestOnTop
+                                closeOnClick
+                                rtl={false}
+                                pauseOnFocusLoss
+                                draggable
+                                pauseOnHover
+                                theme="auto"
+                            />
+                        </ThemeProvider>
                     </WishlistProvider>
                 </CartProvider>
             </AuthProvider>

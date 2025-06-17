@@ -197,6 +197,85 @@ const authService = {
 
   getToken() {
     return localStorage.getItem(TOKEN_KEY);
+  },
+
+  async forgotPassword(email) {
+    try {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Forgot password request for:', email);
+      }
+      const response = await axiosInstance.post(ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
+      
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Forgot password response:', response.data);
+      }
+      
+      return response.data;
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('authService - Forgot password error:', error);
+      } else {
+        console.error('Forgot password request failed:', error.message || 'Unknown error');
+      }
+      
+      const errorMessage = error.response?.data?.message || 'Không thể gửi yêu cầu đặt lại mật khẩu. Vui lòng thử lại.';
+      error.userMessage = errorMessage;
+      throw error;
+    }
+  },
+
+  async verifyOTP(email, otp) {
+    try {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Verify OTP request for:', { email, otp });
+      }
+      const response = await axiosInstance.post(ENDPOINTS.AUTH.VERIFY_OTP, { email, otp });
+      
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Verify OTP response:', response.data);
+      }
+      
+      return response.data;
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('authService - Verify OTP error:', error);
+      } else {
+        console.error('OTP verification failed:', error.message || 'Unknown error');
+      }
+      
+      const errorMessage = error.response?.data?.message || 'Mã OTP không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.';
+      error.userMessage = errorMessage;
+      throw error;
+    }
+  },
+
+  async resetPassword(email, otp, newPassword) {
+    try {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Reset password request for:', { email, otp });
+      }
+      const response = await axiosInstance.post(ENDPOINTS.AUTH.RESET_PASSWORD, { 
+        email, 
+        otp, 
+        newPassword 
+      });
+      
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Reset password response:', response.data);
+      }
+      
+      return response.data;
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('authService - Reset password error:', error);
+      } else {
+        console.error('Password reset failed:', error.message || 'Unknown error');
+      }
+      
+      const errorMessage = error.response?.data?.message || 'Không thể đặt lại mật khẩu. Vui lòng thử lại.';
+      error.userMessage = errorMessage;
+      throw error;
+    }
   }
 };
 

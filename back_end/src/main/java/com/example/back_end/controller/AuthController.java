@@ -1,10 +1,16 @@
 package com.example.back_end.controller;
 
+import com.example.back_end.dto.request.ForgotPasswordRequest;
 import com.example.back_end.dto.request.IntrospectRequest;
+import com.example.back_end.dto.request.ResetPasswordRequest;
 import com.example.back_end.dto.request.UserCreationRequest;
+import com.example.back_end.dto.request.VerifyOtpRequest;
 import com.example.back_end.dto.response.ApiResponse;
 import com.example.back_end.dto.response.AuthenticationResponse;
+import com.example.back_end.dto.response.ForgotPasswordResponse;
 import com.example.back_end.dto.response.IntrospectResponse;
+import com.example.back_end.dto.response.ResetPasswordResponse;
+import com.example.back_end.dto.response.VerifyOtpResponse;
 import com.example.back_end.service.TokenStorageService;
 import com.example.back_end.service.UserService;
 import com.nimbusds.jose.JOSEException;
@@ -106,7 +112,7 @@ public class AuthController {
                             .message("Logout failed")
                             .build());
         }
-
+    }
     @PostMapping("/refresh-token")
     public ResponseEntity<ApiResponse<AuthenticationResponse>> refreshToken(@RequestHeader("Authorization") String token) {
         try {
@@ -138,5 +144,87 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.<IntrospectResponse>builder()
                 .result(response)
                 .build());
+    }
+    
+    /**
+     * Endpoint for forgot password request
+     * @param request Forgot password request with email
+     * @return Response with success status and message
+     */
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<ForgotPasswordResponse>> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
+        log.info("Received forgot password request for email: {}", request.getEmail());
+        
+        ForgotPasswordResponse response = userService.processForgotPassword(request.getEmail());
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(ApiResponse.<ForgotPasswordResponse>builder()
+                    .code(0)
+                    .result(response)
+                    .message("OTP sent successfully")
+                    .build());
+        } else {
+            return ResponseEntity.badRequest().body(ApiResponse.<ForgotPasswordResponse>builder()
+                    .code(400)
+                    .result(response)
+                    .message(response.getMessage())
+                    .build());
+        }
+    }
+    
+    /**
+     * Endpoint for OTP verification
+     * @param request Verify OTP request with email and OTP
+     * @return Response with success status and message
+     */
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<VerifyOtpResponse>> verifyOtp(@RequestBody @Valid VerifyOtpRequest request) {
+        log.info("Received OTP verification request for email: {}", request.getEmail());
+        
+        VerifyOtpResponse response = userService.verifyOtp(request.getEmail(), request.getOtp());
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(ApiResponse.<VerifyOtpResponse>builder()
+                    .code(0)
+                    .result(response)
+                    .message("OTP verified successfully")
+                    .build());
+        } else {
+            return ResponseEntity.badRequest().body(ApiResponse.<VerifyOtpResponse>builder()
+                    .code(400)
+                    .result(response)
+                    .message(response.getMessage())
+                    .build());
+        }
+    }
+    
+    /**
+     * Endpoint for password reset
+     * @param request Reset password request with email, OTP, and new password
+     * @return Response with success status and message
+     */
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<ResetPasswordResponse>> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
+        log.info("Received password reset request for email: {}", request.getEmail());
+        
+        ResetPasswordResponse response = userService.resetPassword(
+                request.getEmail(),
+                request.getOtp(),
+                request.getNewPassword()
+        );
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(ApiResponse.<ResetPasswordResponse>builder()
+                    .code(0)
+                    .result(response)
+                    .message("Password reset successfully")
+                    .build());
+        } else {
+            return ResponseEntity.badRequest().body(ApiResponse.<ResetPasswordResponse>builder()
+                    .code(400)
+                    .result(response)
+                    .message(response.getMessage())
+                    .build());
+        }
     }
 }

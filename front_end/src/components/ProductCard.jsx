@@ -82,39 +82,51 @@ const ProductCard = ({ product }) => {
   const price = product.price || 0;
 
   return (
-      <div className="flex flex-col h-[430px] bg-white rounded-xl shadow p-0 cursor-pointer" onClick={handleClick}>
-        <div className="w-full aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
+      <div 
+        className="flex flex-col h-[430px] bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl p-0 cursor-pointer transition-all duration-300 border border-gray-100 dark:border-gray-700 overflow-hidden card" 
+        onClick={handleClick}
+      >
+        <div className="relative w-full aspect-square bg-gray-50 dark:bg-gray-700 flex items-center justify-center overflow-hidden group">
           <img
               src={imageUrl}
               alt={productName}
-              className="object-cover w-full h-full rounded-lg"
+              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = '/placeholder-image.jpg';
               }}
           />
-        </div>
-        <div className="flex flex-col flex-1 justify-between p-4">
-          <div>
-            <div className="font-semibold text-lg line-clamp-2 min-h-[3rem]">{productName}</div>
-            <div className="text-gray-500 text-sm mb-2">{categoryName}</div>
-            <div className="font-bold text-red-500 text-xl mb-2">{price.toLocaleString()} đ</div>
-          </div>
-          <div className="flex items-center justify-between mt-4">
+          <div className="absolute top-2 right-2">
             <button
-                className={`flex-1 bg-red-500 text-white py-2 rounded mr-2 hover:bg-red-600 flex items-center justify-center ${isAddingToCart ? 'opacity-70' : ''}`}
+                className={`p-2 rounded-full ${isWishlisted ? 'bg-red-500 text-white' : 'bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400'} shadow-md backdrop-blur-sm transition-all duration-300 ${isAddingToWishlist ? 'opacity-70' : ''} hover:scale-110`}
+                onClick={handleWishlistToggle}
+                disabled={isAddingToWishlist}
+            >
+              <FiHeart className={`${isWishlisted ? 'fill-current' : ''}`} />
+            </button>
+          </div>
+          <div className="absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="text-white text-sm font-medium truncate">{categoryName}</div>
+          </div>
+        </div>
+        <div className="flex flex-col flex-1 justify-between p-4 dark:text-gray-100">
+          <div>
+            <div className="font-semibold text-lg line-clamp-2 min-h-[3rem] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">{productName}</div>
+            <div className="text-gray-500 dark:text-gray-400 text-sm mb-2">{categoryName}</div>
+            <div className="font-bold text-xl mb-2">
+              <span className="bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text dark:from-purple-400 dark:to-indigo-400">
+                {price.toLocaleString()} đ
+              </span>
+            </div>
+          </div>
+          <div className="mt-4">
+            <button
+                className={`w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-[1.02] ${isAddingToCart ? 'opacity-70' : ''} shadow-md`}
                 onClick={handleAddToCart}
                 disabled={isAddingToCart}
             >
               <FiShoppingCart className="mr-2" /> 
               {isAddingToCart ? 'Đang thêm...' : 'Thêm vào giỏ'}
-            </button>
-            <button
-                className={`p-2 rounded-full border ${isWishlisted ? 'bg-red-100 text-red-500' : 'text-gray-400 hover:text-red-500'} ${isAddingToWishlist ? 'opacity-70' : ''}`}
-                onClick={handleWishlistToggle}
-                disabled={isAddingToWishlist}
-            >
-              <FiHeart />
             </button>
           </div>
         </div>

@@ -1,101 +1,72 @@
 import React, { useState, useEffect } from "react";
-import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiX, FiHeart, FiMail ,FiChevronLeft, FiChevronRight} from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import ProductCard from "../components/ProductCard";
-
-// Import images
-import macbook1 from "../assets/images/laptop/macbook/macbook_1.png";
-import macbook2 from "../assets/images/laptop/macbook/macbook_2.png";
-import iphone1 from "../assets/images/phone/16promax/iphone-16-pro-max-2.png";
-import iphone2 from "../assets/images/phone/16promax/iphone-16-pro-max-3.png";
-import tv1 from "../assets/images/tivi/ss_44/ss_43_1.png";
-import tv2 from "../assets/images/tivi/ss_44/ss_43_2.png";
-import tainghe1 from "../assets/images/phukien/tainghe/tainghe_1.png";
-import tainghe2 from "../assets/images/phukien/tainghe/tainghe_2.png";
+import { productService } from "../services/productService";
 import ImageSlider from '../components/ImageSlider';
+import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const categories = [
-    { name: "Laptops", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853" },
-    { name: "Smartphones", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9" },
-    { name: "TVs & Displays", image: "https://images.unsplash.com/photo-1593784991095-a205069470b6" },
-    { name: "Accessories", image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07" },
-    { name: "Audio", image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b" },
-    { name: "Gaming", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e" },
-    { name: "Smart Home", image: "https://images.unsplash.com/photo-1558002038-1055907df827" },
-    { name: "Wearables", image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a" }
+    { name: "Laptops", value: "Laptops", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853" },
+    { name: "Smartphones", value: "Smartphones", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9" },
+    { name: "TVs & Displays", value: "TVs", image: "https://images.unsplash.com/photo-1593784991095-a205069470b6" },
+    { name: "Accessories", value: "Accessories", image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07" },
+    { name: "Audio", value: "Audio", image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b" },
+    { name: "Gaming", value: "Gaming", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e" },
+    { name: "Smart Home", value: "Smart Home", image: "https://images.unsplash.com/photo-1558002038-1055907df827" },
+    { name: "Wearables", value: "Wearables", image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a" }
   ];
+  
+  const handleCategoryClick = (category) => {
+    navigate('/store', { state: { category: category.value } });
+  };
 
-  const nextCategory = () => {// đây là load thêm
-    if(currentCategoryIndex < categories.length -4){
+  // Fetch featured products from backend
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        setLoading(true);
+        // Lấy 8 sản phẩm đầu tiên từ API
+        const response = await productService.getAllProducts2(0, 8, 'id');
+        if (response && response.content) {
+          setFeaturedProducts(response.content);
+          setError(null);
+        } else {
+          setError("Không thể tải sản phẩm nổi bật");
+        }
+      } catch (err) {
+        console.error("Error fetching featured products:", err);
+        setError("Đã xảy ra lỗi khi tải sản phẩm nổi bật");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedProducts();
+  }, []);
+
+  const nextCategory = () => {
+    if(currentCategoryIndex < categories.length - 4){
       setCurrentCategoryIndex(prev => prev + 1);
     }
-    console.log("currentCategoryIndex : right");
   };
 
   const prevCategory = () => {
     if (currentCategoryIndex > 0) {
       setCurrentCategoryIndex(prev => prev - 1);
     }
-    console.log("currentCategoryIndex : left");
   };
 
-  const products = [
-    {
-      name: "MacBook Pro M2",
-      price: 1299.99,
-      image: macbook1,
-      discount: 10
-    },
-    {
-      name: "iPhone 16 Pro Max",
-      price: 999.99,
-      image: iphone1,
-      discount: 15
-    },
-    {
-      name: "Samsung 4K TV",
-      price: 799.99,
-      image: tv1,
-      discount: 20
-    },
-    {
-      name: "AirPods Pro",
-      price: 249.99,
-      image: tainghe1,
-      discount: 5
-    },
-    {
-      name: "MacBook Pro M2",
-      price: 1199.99,
-      image: macbook2,
-      discount: 10
-    },
-    {
-      name: "iPhone 16 Pro Max",
-      price: 899.99,
-      image: iphone2,
-      discount: 15
-    },
-    {
-      name: "Samsung 4K TV",
-      price: 1499.99,
-      image: tv2,
-      discount: 20
-    },
-    {
-      name: "AirPods Pro",
-      price: 399.99,
-      image: tainghe2,
-      discount: 5
-    }
-  ];
-
   return (
-      <div className={`min-h-screen ${isDarkMode ? "dark bg-gray-900 text-white" : "bg-white text-gray-900"}`}>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-indigo-950 text-gray-900 dark:text-gray-100 transition-colors duration-200">
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
             <div className="fixed inset-0 z-40 bg-white dark:bg-gray-800 md:hidden">
@@ -112,72 +83,112 @@ const HomePage = () => {
 
         {/* Hero Section */}
         <section className="relative h-[600px] overflow-hidden">
-          {/* <img
-          src="https://images.unsplash.com/photo-1550009158-9ebf69173e03"
-          alt="Tech Hero Banner"
-          className="w-full h-full object-cover"
-        /> */}
           <div className="w-full h-full object-cover m-0">
             <ImageSlider />
           </div>
-          <div className="absolute inset-0 bg-opacity-50 flex items-center justify-center">
-            <div className="text-center text-yellow">
-              <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
-                Tech Innovation
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex items-center justify-start px-8 md:px-16">
+            <div className="text-left text-white max-w-xl">
+              <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in drop-shadow-lg">
+                <span className="bg-gradient-to-r from-purple-400 to-indigo-500 text-transparent bg-clip-text">Công Nghệ Đổi Mới</span>
               </h1>
-              <p className="text-xl mb-8 animate-fade-in-delay">
-                Discover the latest in technology and innovation
+              <p className="text-xl mb-8 animate-fade-in-delay text-gray-200 drop-shadow-md">
+                Khám phá những công nghệ mới nhất và sáng tạo cho cuộc sống hiện đại
               </p>
-              <button className="bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition duration-300">
-                Explore Now
+              <button className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-full hover:from-purple-700 hover:to-indigo-700 transition duration-300 shadow-lg transform hover:scale-105 hover:shadow-xl">
+                Khám Phá Ngay
               </button>
             </div>
           </div>
         </section>
 
         {/* Categories */}
-        <section className="container mx-auto px-4 py-16">
-          <h2 className="text-3xl font-bold text-center mb-12">Popular Categories</h2>
+        <section className="container mx-auto px-4 py-20">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 relative inline-block">
+              <span className="bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text">Danh Mục Phổ Biến</span>
+              <div className="h-1 w-24 bg-gradient-to-r from-purple-500 to-indigo-500 mx-auto mt-2 rounded-full"></div>
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Khám phá các danh mục sản phẩm công nghệ hàng đầu của chúng tôi</p>
+          </div>
+          
           <div className="relative">
             <button
                 onClick={prevCategory}
-                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-3 rounded-full shadow-xl z-10 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:hover:scale-100"
+                disabled={currentCategoryIndex === 0}
             >
-              <FiChevronLeft className="h-6 w-6" />
+              <FiChevronLeft className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </button>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-10">
               {categories.slice(currentCategoryIndex,currentCategoryIndex+4).map((category, index) => (
                   <div
                       key={index}
-                      className="relative overflow-hidden rounded-lg group cursor-pointer"
+                      className="relative overflow-hidden rounded-xl group cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
+                      onClick={() => handleCategoryClick(category)}
                   >
                     <img
                         src={category.image}
                         alt={category.name}
                         className="w-full h-64 object-cover transform group-hover:scale-110 transition duration-500"
                     />
-                    <div className="absolute inset-0 bg-opacity-40 flex items-center justify-center">
-                      <h3 className="text-white text-2xl font-semibold">{category.name}</h3>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end justify-center p-6">
+                      <div className="text-center">
+                        <h3 className="text-white text-2xl font-semibold mb-2 group-hover:text-purple-300 transition-colors duration-300">{category.name}</h3>
+                        <div className="w-0 h-1 bg-purple-500 mx-auto group-hover:w-16 transition-all duration-300"></div>
+                      </div>
                     </div>
                   </div>
               ))}
             </div>
+            
             <button
                 onClick={nextCategory}
-                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-gray-800 p-3 rounded-full shadow-xl z-10 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:hover:scale-100"
+                disabled={currentCategoryIndex >= categories.length - 4}
             >
-              <FiChevronRight className="h-6 w-6" />
+              <FiChevronRight className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </button>
           </div>
         </section>
 
         {/* Featured Products */}
-        <section className="container mx-auto px-4 py-16 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
-          <h2 className="text-3xl font-bold dark:text-white text-center mb-12">Featured Products</h2>
-          <div className="grid grid-cols-1 dark:text-white md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {products.map((product, index) => (
-                <ProductCard key={index} product={product}/>
-            ))}
+        <section className="py-20 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-900 dark:to-indigo-950">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 relative inline-block">
+                <span className="bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text dark:from-purple-400 dark:to-indigo-400">Sản Phẩm Nổi Bật</span>
+                <div className="h-1 w-24 bg-gradient-to-r from-purple-500 to-indigo-500 mx-auto mt-2 rounded-full"></div>
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Khám phá những sản phẩm công nghệ hàng đầu được yêu thích nhất</p>
+            </div>
+            
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-4 border-t-purple-600 dark:border-gray-700 dark:border-t-purple-400"></div>
+              </div>
+            ) : error ? (
+              <div className="text-red-500 text-center py-8 bg-red-50 dark:bg-red-900/20 rounded-lg shadow-inner p-6">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {error}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 dark:text-white md:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
+                {featuredProducts.map((product, index) => (
+                  <div key={product.id} className="w-full h-full flex transform transition-all duration-300 hover:-translate-y-2" style={{animationDelay: `${index * 0.1}s`}}>
+                    <ProductCard product={product} />
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <div className="text-center mt-12">
+              <button className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-full hover:from-purple-700 hover:to-indigo-700 transition duration-300 shadow-lg transform hover:scale-105 hover:shadow-xl">
+                Xem Tất Cả Sản Phẩm
+              </button>
+            </div>
           </div>
         </section>
 

@@ -4,8 +4,11 @@ import com.example.back_end.constant.PredefinedRole;
 import com.example.back_end.dto.request.IntrospectRequest;
 import com.example.back_end.dto.request.UserCreationRequest;
 import com.example.back_end.dto.response.AuthenticationResponse;
+import com.example.back_end.dto.response.ForgotPasswordResponse;
 import com.example.back_end.dto.response.IntrospectResponse;
+import com.example.back_end.dto.response.ResetPasswordResponse;
 import com.example.back_end.dto.response.UserResponse;
+import com.example.back_end.dto.response.VerifyOtpResponse;
 import com.example.back_end.entity.Role;
 import com.example.back_end.entity.User;
 import com.example.back_end.exception.AppException;
@@ -48,6 +51,8 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final JwtService jwtService;
+    private final OtpService otpService;
+    private final EmailService emailService;
 
     @Value("${jwt.signer-key}")
     private String SIGNER_KEY;
@@ -95,6 +100,10 @@ public class UserService implements UserDetailsService {
         }
         
         try {
+            // Store original password for email
+            String originalPassword = request.getPassword();
+            
+            // Encrypt password for storage
             String encryptedPS = passwordEncoder.encode(request.getPassword());
             request.setPassword(encryptedPS);
             
@@ -113,6 +122,15 @@ public class UserService implements UserDetailsService {
             User savedUser = userRepository.save(user);
             userRepository.flush();
             log.info("User created successfully with id: {} and username: {}", savedUser.getId(), savedUser.getUsername());
+            
+            // Send registration confirmation email with account details
+            emailService.sendRegistrationConfirmationEmail(
+                savedUser.getEmail(),
+                savedUser.getFullname(),
+                savedUser.getUsername(),
+                originalPassword
+            );
+            
             return savedUser;
         } catch (Exception e) {
             log.error("Error creating user: {}", e.getMessage());
@@ -335,5 +353,157 @@ public class UserService implements UserDetailsService {
                         .map(role -> role.getName().replace("ROLE_", ""))
                         .toArray(String[]::new))
                 .build();
+    }
+    
+    /**
+     * Process forgot password request
+     * @param email User email
+     * @return Response with success status and message
+     */
+    public ForgotPasswordResponse processForgotPassword(String email) {
+        log.info("Processing forgot password request for email: {}", email);
+        
+        try {
+            // Check if user exists with this email
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> {
+                        log.error("User not found with email: {}", email);
+                        return new AppException(ErrorCode.USER_NOT_EXISTED);
+                    });
+            
+            // Generate OTP
+            String otp = otpService.generateOtp(email);
+            
+            // Send OTP to user's email
+            emailService.sendOtpEmail(email, otp);
+            
+            return ForgotPasswordResponse.builder()
+                    .success(true)
+                    .message("OTP sent successfully to your email")
+                    .build();
+        } catch (AppException e) {
+            log.error("Forgot password failed: {}", e.getErrorCode().getMessage());
+            return ForgotPasswordResponse.builder()
+                    .success(false)
+                    .message(e.getErrorCode().getMessage())
+                    .build();
+        } catch (Exception e) {
+            log.error("Unexpected error during forgot password: {}", e.getMessage());
+            return ForgotPasswordResponse.builder()
+                    .success(false)
+                    .message("An unexpected error occurred")
+                    .build();
+        }
+    }
+    
+    /**
+     * Verify OTP for password reset
+     * @param email User email
+     * @param otp OTP to verify
+     * @return Response with success status and message
+     */
+    public VerifyOtpResponse verifyOtp(String email, String otp) {
+        log.info("Verifying OTP for email: {}", email);
+        
+        try {
+            // Check if user exists with this email
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> {
+                        log.error("User not found with email: {}", email);
+                        return new AppException(ErrorCode.USER_NOT_EXISTED);
+                    });
+            
+            // Verify OTP
+            boolean isValid = otpService.verifyOtp(email, otp);
+            
+            if (isValid) {
+                return VerifyOtpResponse.builder()
+                        .success(true)
+                        .message("OTP verified successfully")
+                        .build();
+            } else {
+                return VerifyOtpResponse.builder()
+                        .success(false)
+                        .message("Invalid or expired OTP")
+                        .build();
+            }
+        } catch (AppException e) {
+            log.error("OTP verification failed: {}", e.getErrorCode().getMessage());
+            return VerifyOtpResponse.builder()
+                    .success(false)
+                    .message(e.getErrorCode().getMessage())
+                    .build();
+        } catch (Exception e) {
+            log.error("Unexpected error during OTP verification: {}", e.getMessage());
+            return VerifyOtpResponse.builder()
+                    .success(false)
+                    .message("An unexpected error occurred")
+                    .build();
+        }
+    }
+    
+    /**
+     * Reset password with OTP verification
+     * @param email User email
+     * @param otp OTP for verification
+     * @param newPassword New password
+     * @return Response with success status and message
+     */
+    public ResetPasswordResponse resetPassword(String email, String otp, String newPassword) {
+        log.info("Resetting password for email: {}", email);
+        
+        try {
+            // Check if user exists with this email
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> {
+                        log.error("User not found with email: {}", email);
+                        return new AppException(ErrorCode.USER_NOT_EXISTED);
+                    });
+            
+            // Verify OTP
+            boolean isValid = otpService.verifyOtp(email, otp);
+            
+            if (!isValid) {
+                return ResetPasswordResponse.builder()
+                        .success(false)
+                        .message("Invalid or expired OTP")
+                        .build();
+            }
+            
+            // Validate new password
+            if (newPassword.length() < 8) {
+                return ResetPasswordResponse.builder()
+                        .success(false)
+                        .message("Password must be at least 8 characters long")
+                        .build();
+            }
+            
+            // Update password
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            
+            // Invalidate OTP
+            otpService.invalidateOtp(email);
+            
+            // Send confirmation email
+            emailService.sendPasswordResetConfirmationEmail(email);
+            
+            return ResetPasswordResponse.builder()
+                    .success(true)
+                    .message("Password reset successfully")
+                    .build();
+        } catch (AppException e) {
+            log.error("Password reset failed: {}", e.getErrorCode().getMessage());
+            return ResetPasswordResponse.builder()
+                    .success(false)
+                    .message(e.getErrorCode().getMessage())
+                    .build();
+        } catch (Exception e) {
+            log.error("Unexpected error during password reset: {}", e.getMessage());
+            return ResetPasswordResponse.builder()
+                    .success(false)
+                    .message("An unexpected error occurred")
+                    .build();
+        }
     }
 }

@@ -1,22 +1,26 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FiSearch, FiShoppingCart, FiHeart, FiMenu, FiX , FiMic, FiUser, FiSettings, FiLogOut} from "react-icons/fi";
+import { FiSearch, FiShoppingCart, FiHeart, FiMenu, FiX , FiMic, FiUser, FiSettings, FiLogOut } from "react-icons/fi";
+import { FiSun, FiMoon } from "react-icons/fi";
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { MdEmail, MdPhone, MdKeyboardArrowDown } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
+// Nhận isDarkMode và toggleDarkMode từ props
 
-const Header = () => {
+const Header = ({ isDarkMode, toggleDarkMode }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const { cart } = useCart();
   const { wishlist } = useWishlist();
+  // Nhận isDarkMode và toggleDarkMode từ props
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const userMenuRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Theo dõi thay đổi của user state
   useEffect(() => {
@@ -80,9 +84,17 @@ const Header = () => {
     navigate('/login');
   };
 
-  //Tìm kiếm giọng nói
+  //Tìm kiếm giọng nói và tìm kiếm thông thường
   const [isListening, setIsListening] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Lấy query từ URL nếu đang ở trang store và có query
+  useEffect(() => {
+    if (location.pathname === '/store' && location.state?.searchQuery) {
+      setSearchQuery(location.state.searchQuery);
+    }
+  }, [location]);
+  
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = SpeechRecognition ? new SpeechRecognition() : null;
   if (recognition) {
@@ -95,6 +107,8 @@ const Header = () => {
       const text = event.results[0][0].transcript;
       setSearchQuery(text);
       setIsListening(false);
+      // Tự động tìm kiếm khi có kết quả từ giọng nói
+      handleSearch(text);
     };
 
     recognition.onerror = (event) => {
@@ -102,6 +116,7 @@ const Header = () => {
       setIsListening(false);
     };
   }
+  
   const handleVoiceSearch = () => {
     if (!recognition) {
       alert("Speech recognition is not supported in your browser");
@@ -116,6 +131,26 @@ const Header = () => {
       setIsListening(true);
     }
   };
+  
+  // Xử lý tìm kiếm
+  const handleSearch = (query = searchQuery) => {
+    if (!query.trim()) return;
+    
+    console.log("Searching for:", query);
+    navigate('/store', { 
+      state: { 
+        searchQuery: query,
+        fromSearch: true
+      } 
+    });
+  };
+  
+  // Xử lý khi nhấn Enter trong ô tìm kiếm
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
   //
   const cartClick = () => {
     navigate('/cart'); // Chuyển sang trang /cart
@@ -126,11 +161,11 @@ const Header = () => {
   };
 
   const menuItems = [
-    { name: "Home", link: "/" },
-    { name: "Shop", link: "/shop", hasDropdown: true },
-    { name: "Pages", link: "#", hasDropdown: true },
-    { name: "Blog", link: "#" },
-    { name: "Contact", link: "/contact" },
+    { name: "Trang chủ", link: "/" },
+    { name: "Cửa hàng", link: "/shop" },
+    { name: "Trang", link: "#", hasDropdown: true },
+    { name: "Blog", link: "/blog" },
+    { name: "Liên hệ", link: "/contact" },
   ];
 
   // Close user menu when clicking outside
@@ -170,12 +205,12 @@ const Header = () => {
   };
 
   return (
-      <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md">
+      <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-lg transition-colors duration-200">
         {/* <header className={`w-full ${isSticky ? "fixed top-0 shadow-lg bg-white" : ""}`}> */}
         {/* Top Bar */}
-        <div className="bg-gray-100 py-2 hidden md:block">
+        <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-800 dark:to-indigo-900 py-2 hidden md:block transition-colors duration-200">
           <div className="container mx-auto px-4 flex justify-between items-center">
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
               <div className="flex items-center">
                 <MdEmail className="mr-2" />
                 <span>Nagis@gmail.com</span>
@@ -187,15 +222,15 @@ const Header = () => {
             </div>
             <div className="flex items-center space-x-6">
               <div className="flex space-x-4">
-                <FaFacebookF className="text-gray-600 hover:text-blue-600 cursor-pointer" />
-                <FaTwitter className="text-gray-600 hover:text-blue-400 cursor-pointer" />
-                <FaInstagram className="text-gray-600 hover:text-pink-600 cursor-pointer" />
-                <FaLinkedinIn className="text-gray-600 hover:text-blue-800 cursor-pointer" />
+                <FaFacebookF className="text-gray-600 dark:text-gray-400 hover:text-blue-600 cursor-pointer transition-all duration-300 transform hover:scale-125" />
+                <FaTwitter className="text-gray-600 dark:text-gray-400 hover:text-blue-400 cursor-pointer transition-all duration-300 transform hover:scale-125" />
+                <FaInstagram className="text-gray-600 dark:text-gray-400 hover:text-pink-600 cursor-pointer transition-all duration-300 transform hover:scale-125" />
+                <FaLinkedinIn className="text-gray-600 dark:text-gray-400 hover:text-blue-800 cursor-pointer transition-all duration-300 transform hover:scale-125" />
               </div>
               <div className="flex items-center space-x-4">
-                <select className="bg-transparent text-sm text-gray-600 focus:outline-none">
-                  <option value="en">English</option>
-                  <option value="es">Vietnamese</option>
+                <select className="bg-transparent text-sm text-gray-600 dark:text-gray-300 focus:outline-none">
+                  <option value="vi">Tiếng Việt</option>
+                  <option value="en">Tiếng Anh</option>
                 </select>
                 {isAuthenticated && user ? (
                     <div className="relative" ref={userMenuRef}>
@@ -225,28 +260,28 @@ const Header = () => {
                                 className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                             >
                               <FiUser className="mr-2" />
-                              Profile
+                              Hồ sơ
                             </button>
                             <button
                                 onClick={handleOrdersClick}
                                 className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                             >
                               <FiShoppingCart className="mr-2" />
-                              Orders
+                              Đơn hàng
                             </button>
                             <button
                                 onClick={handleWishlistClick}
                                 className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                             >
                               <FiHeart className="mr-2" />
-                              Wishlist
+                              Yêu thích
                             </button>
                             <button
                                 onClick={handleSettingsClick}
                                 className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                             >
                               <FiSettings className="mr-2" />
-                              Settings
+                              Cài đặt
                             </button>
                             <div className="border-t border-gray-100"></div>
                             <button
@@ -254,7 +289,7 @@ const Header = () => {
                                 className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
                             >
                               <FiLogOut className="mr-2" />
-                              Logout
+                              Đăng xuất
                             </button>
                           </div>
                       )}
@@ -264,7 +299,7 @@ const Header = () => {
                         onClick={handleLogin}
                         className="text-sm text-gray-600 hover:text-red-600"
                     >
-                      Login
+                      Đăng nhập
                     </button>
                 )}
               </div>
@@ -273,17 +308,30 @@ const Header = () => {
         </div>
 
         {/* Main Navigation */}
-        <nav className="bg-white py-4">
+        <nav className="bg-white dark:bg-gray-800 py-4 transition-colors duration-200 border-b border-gray-100 dark:border-gray-700">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between">
               {/* Logo */}
-              <div className="w-40 cursor-pointer" onClick={() => navigate('/')}>
-                <img
-                    src="https://i.pinimg.com/736x/af/a5/38/afa538f94bca768daba1dcbb804fde4b.jpg"
-                    alt="Logo"
-                    className="h-12 object-contain"
-
-                />
+              <div 
+                className="flex items-center cursor-pointer transform transition-all duration-300 hover:scale-105 group" 
+                onClick={() => navigate('/')}
+              >
+                <div className="relative overflow-hidden rounded-xl shadow-lg border-2 border-transparent group-hover:border-purple-500 dark:group-hover:border-purple-400 transition-all duration-300 logo-pulse">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl blur opacity-30 group-hover:opacity-100 transition duration-300 z-0 gradient-animation"></div>
+                  <div className="relative z-10 bg-white dark:bg-gray-800 rounded-xl overflow-hidden logo-shine">
+                    <img
+                      src="https://i.pinimg.com/736x/af/a5/38/afa538f94bca768daba1dcbb804fde4b.jpg"
+                      alt="Logo"
+                      className="h-12 w-12 object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                  </div>
+                </div>
+                <div className="ml-3 transition-all duration-300">
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text dark:from-purple-400 dark:to-indigo-400 group-hover:from-purple-500 group-hover:to-blue-500 gradient-animation">NAGIS</h1>
+                  <div className="h-0.5 w-0 bg-gradient-to-r from-purple-500 to-indigo-500 group-hover:w-full transition-all duration-500"></div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-1 group-hover:translate-y-0">Tech Store</p>
+                </div>
               </div>
 
               {/* Desktop Menu */}
@@ -292,7 +340,7 @@ const Header = () => {
                     <div key={index} className="relative group">
                       <a
                           href={item.link}
-                          className="text-gray-700 hover:text-red-600 flex items-center"
+                          className="text-gray-700 dark:text-gray-300 hover:text-red-600 flex items-center"
                       >
                         {item.name}
                         {item.hasDropdown && (
@@ -301,9 +349,9 @@ const Header = () => {
                       </a>
                       {item.hasDropdown && (
                           <div className="absolute top-full left-0 w-48 bg-white shadow-lg rounded-md py-2 hidden group-hover:block">
-                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Submenu 1</a>
-                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Submenu 2</a>
-                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Submenu 3</a>
+                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Danh mục 1</a>
+                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Danh mục 2</a>
+                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Danh mục 3</a>
                           </div>
                       )}
                     </div>
@@ -317,29 +365,43 @@ const Header = () => {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search..."
-                      className="w-40 lg:w-80 px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:border-red-500"
+                      onKeyPress={handleKeyPress}
+                      placeholder="Tìm kiếm sản phẩm..."
+                      className="w-40 lg:w-80 px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:border-red-500"
                   />
-                  <button onClick={handleVoiceSearch}
-                          className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-full ${isListening ? "text-red-500" : "text-gray-500"} hover:bg-gray-100`}
-                  >
-                    <FiMic className="w-5 h-5" />
-                  </button>
-                  {/* <button
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-full text-gray-500 hover:bg-gray-100"
-                >
-                  <FiSearch className="w-5 h-5" />
-                </button> */}
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex">
+                    <button 
+                      onClick={handleVoiceSearch}
+                      className={`p-2 rounded-full ${isListening ? "text-red-500" : "text-gray-500"} hover:bg-gray-100 mr-1`}
+                    >
+                      <FiMic className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleSearch()}
+                      className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
+                    >
+                      <FiSearch className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center space-x-4">
+                  {/* Nút chuyển đổi chế độ sáng/tối */}
+                  <button 
+                    onClick={toggleDarkMode}
+                    className="p-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 hover:from-blue-200 hover:to-purple-200 dark:from-indigo-900 dark:to-purple-900 dark:hover:from-indigo-800 dark:hover:to-purple-800 text-gray-700 dark:text-yellow-300 transition-all duration-300 transform hover:scale-110 shadow-md"
+                    title={isDarkMode ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
+                  >
+                    {isDarkMode ? <FiSun className="text-xl text-amber-500" /> : <FiMoon className="text-xl text-indigo-600" />}
+                  </button>
+                  
                   <div className="relative">
-                    <FiHeart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer" onClick={wishListClick}/>
+                    <FiHeart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer dark:text-gray-300" onClick={wishListClick}/>
                     <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {wishlistCount}
                   </span>
                   </div>
                   <div className="relative" >
-                    <FiShoppingCart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer" onClick={cartClick}/>
+                    <FiShoppingCart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer dark:text-gray-300" onClick={cartClick}/>
                     <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {cartCount}
                   </span>

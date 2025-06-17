@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-import { FaFacebook, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaFacebook, FaEye, FaEyeSlash, FaUser, FaLock } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import authService from "../services/authService";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
+import ForgotPassword from "../components/ForgotPassword";
+import VerifyOTP from "../components/VerifyOTP";
+import ResetPassword from "../components/ResetPassword";
 
 const PasswordStrength = ({ password }) => {
   const getStrength = (pass) => {
@@ -21,30 +25,30 @@ const PasswordStrength = ({ password }) => {
     if (strength === 0) return "bg-gray-200";
     if (strength === 1) return "bg-red-500";
     if (strength === 2) return "bg-yellow-500";
-    if (strength === 3) return "bg-blue-500";
+    if (strength === 3) return "bg-indigo-500";
     return "bg-green-500";
   };
 
   return (
-      <div className="mt-2">
-        <div className="h-2 w-full bg-gray-200 rounded-full">
-          <div
-              className={`h-full ${getColor()} rounded-full transition-all duration-300`}
-              style={{ width: `${(strength / 4) * 100}%` }}
-          ></div>
-        </div>
-        <p className="text-xs mt-1 text-gray-500">
-          {strength === 0 && "Enter password"}
-          {strength === 1 && "Weak"}
-          {strength === 2 && "Fair"}
-          {strength === 3 && "Good"}
-          {strength === 4 && "Strong"}
-        </p>
+    <div className="mt-2">
+      <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className={`h-full ${getColor()} rounded-full transition-all duration-300`}
+          style={{ width: `${(strength / 4) * 100}%` }}
+        ></div>
       </div>
+      <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">
+        {strength === 0 && "Nhập mật khẩu"}
+        {strength === 1 && "Yếu"}
+        {strength === 2 && "Trung bình"}
+        {strength === 3 && "Tốt"}
+        {strength === 4 && "Mạnh"}
+      </p>
+    </div>
   );
 };
 
-const LoginForm = ({ onSwitchToRegister }) => {
+const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -66,118 +70,190 @@ const LoginForm = ({ onSwitchToRegister }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log('Login form submitted');
-    console.log('Form data:', formData);
+    
     if (Object.keys(errors).length > 0) {
-      console.log('Validation errors:', errors);
       return;
     }
+    
     try {
-      console.log('Attempting login...');
+      setIsLoading(true);
       const response = await login({
         username: formData.username,
         password: formData.password
       });
-      console.log('Login response:', response);
+      
       if (response && response.authenticated) {
-        console.log('Login successful');
+        toast.success("Đăng nhập thành công!");
         navigate('/');
       } else {
-        console.log('Login failed: Not authenticated');
-        setErrors({ submit: 'Invalid username or password' });
+        setErrors({ submit: 'Tên đăng nhập hoặc mật khẩu không đúng' });
+        toast.error("Đăng nhập thất bại!");
       }
     } catch (error) {
       console.error('Login error:', error);
-      setErrors({ submit: error.response?.data?.message || 'An error occurred during login' });
+      setErrors({ submit: error.response?.data?.message || 'Đã xảy ra lỗi khi đăng nhập' });
+      toast.error("Đăng nhập thất bại!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-      <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-      >
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-        </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="w-full"
+    >
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400">
+          Đăng nhập
+        </h2>
+        <p className="mt-2 text-gray-600 dark:text-gray-300">Chào mừng bạn quay trở lại</p>
+      </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {errors.submit && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative" role="alert">
-                <span className="block sm:inline">{errors.submit}</span>
-              </div>
-          )}
+      <form className="space-y-6" onSubmit={handleLogin}>
+        {errors.submit && (
+          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg" role="alert">
+            <span className="block sm:inline">{errors.submit}</span>
+          </div>
+        )}
 
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Username</label>
-            <input
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tên đăng nhập</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaUser className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
                 type="text"
                 name="username"
                 value={formData.username}
                 onChange={handleInputChange}
-                className={`mt-1 block w-full px-3 py-2 border ${errors.username ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
-            />
+                className={`pl-10 block w-full px-4 py-3 border ${errors.username ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
+                placeholder="Nhập tên đăng nhập"
+              />
+            </div>
             {errors.username && <p className="mt-1 text-sm text-red-500">{errors.username}</p>}
           </div>
 
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700">Password</label>
-            <div className="mt-1 relative rounded-md shadow-sm">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mật khẩu</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaLock className="h-5 w-5 text-gray-400" />
+              </div>
               <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className={`block w-full px-3 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className={`pl-10 block w-full px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
+                placeholder="Nhập mật khẩu"
               />
               <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <FaEyeSlash className="text-gray-400" /> : <FaEye className="text-gray-400" />}
+                {showPassword ? 
+                  <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" /> : 
+                  <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                }
               </button>
             </div>
             {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
           </div>
 
-          <div>
-            <button
-                type="submit"
-                disabled={isLoading}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                    isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
-            >
-              {isLoading ? (
-                  <span className="flex items-center">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="rememberMe"
+                type="checkbox"
+                checked={formData.rememberMe}
+                onChange={handleInputChange}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                Ghi nhớ đăng nhập
+              </label>
+            </div>
+            <div className="text-sm">
+              <button 
+                type="button"
+                onClick={onForgotPassword}
+                className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              >
+                Quên mật khẩu?
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 transform hover:scale-[1.02] ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+          >
+            {isLoading ? (
+              <span className="flex items-center">
                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Processing...
+                Đang xử lý...
               </span>
-              ) : (
-                  "Sign in"
-              )}
-            </button>
-          </div>
-        </form>
-
-        <div className="mt-6 text-center">
-          <button
-              type="button"
-              onClick={onSwitchToRegister}
-              className="text-sm font-medium text-blue-600 hover:text-blue-500"
-          >
-            Don't have an account? Sign up
+            ) : (
+              "Đăng nhập"
+            )}
           </button>
         </div>
-      </motion.div>
+      </form>
+
+      <div className="mt-6">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+              Hoặc đăng nhập với
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+          >
+            <FcGoogle className="h-5 w-5 mr-2" />
+            Google
+          </button>
+          <button
+            type="button"
+            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+          >
+            <FaFacebook className="h-5 w-5 mr-2 text-blue-600" />
+            Facebook
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-6 text-center">
+        <button
+          type="button"
+          onClick={onSwitchToRegister}
+          className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+        >
+          Chưa có tài khoản? Đăng ký ngay
+        </button>
+      </div>
+    </motion.div>
   );
 };
 
@@ -221,35 +297,31 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    console.log('=== REGISTER START ===');
-    console.log('Form data:', formData);
 
     // Validate form
     const newErrors = {};
     if (!validateEmail(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+      newErrors.email = "Vui lòng nhập địa chỉ email hợp lệ";
     }
     if (!validatePassword(formData.password)) {
-      newErrors.password = "Password must be at least 8 characters long and include uppercase, number, and special character";
+      newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, số và ký tự đặc biệt";
     }
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
     }
     if (!formData.fullName) {
-      newErrors.fullName = "Full name is required";
+      newErrors.fullName = "Họ tên là bắt buộc";
     }
     if (!validatePhone(formData.phone)) {
-      newErrors.phone = "Please enter a valid 10-digit phone number";
+      newErrors.phone = "Vui lòng nhập số điện thoại 10 chữ số hợp lệ";
     }
     if (!formData.termsAccepted) {
-      newErrors.terms = "Please accept terms and conditions";
+      newErrors.terms = "Vui lòng chấp nhận điều khoản và điều kiện";
     }
 
-    console.log('Validation errors:', newErrors);
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log('No validation errors, proceeding with registration');
       setIsLoading(true);
       try {
         const userData = {
@@ -262,12 +334,10 @@ const RegisterForm = ({ onSwitchToLogin }) => {
           active: true
         };
 
-        console.log('Calling authService.register with:', userData);
         const response = await authService.register(userData);
-        console.log('Registration response:', response);
 
         if (response && response.authenticated) {
-          console.log('Registration successful');
+          toast.success("Đăng ký thành công!");
 
           // Đợi 2 giây để backend xử lý xong việc tạo tài khoản
           await new Promise(resolve => setTimeout(resolve, 2000));
@@ -280,212 +350,277 @@ const RegisterForm = ({ onSwitchToLogin }) => {
             });
 
             if (loginResponse && loginResponse.authenticated) {
-              console.log('Auto login successful after registration');
               // Chuyển về form đăng nhập
               onSwitchToLogin();
             } else {
-              console.log('Auto login failed after registration');
               setErrors({
-                submit: "Registration successful but auto login failed. Please try logging in manually."
+                submit: "Đăng ký thành công nhưng đăng nhập tự động thất bại. Vui lòng đăng nhập thủ công."
               });
             }
           } catch (loginError) {
             console.error('Auto login error:', loginError);
             setErrors({
-              submit: "Registration successful but auto login failed. Please try logging in manually."
+              submit: "Đăng ký thành công nhưng đăng nhập tự động thất bại. Vui lòng đăng nhập thủ công."
             });
           }
         } else {
-          console.log('Registration failed - not authenticated');
+          toast.error("Đăng ký thất bại!");
           setErrors({
-            submit: "Registration failed. Please try again."
+            submit: "Đăng ký thất bại. Vui lòng thử lại."
           });
         }
       } catch (error) {
         console.error('Registration error:', error);
-        console.error('Error details:', {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status
-        });
+        toast.error("Đăng ký thất bại!");
         setErrors({
-          submit: error.response?.data?.message || error.message || "Registration failed. Please try again."
+          submit: error.response?.data?.message || error.message || "Đăng ký thất bại. Vui lòng thử lại."
         });
       } finally {
         setIsLoading(false);
       }
-    } else {
-      console.log('Validation failed, not proceeding with registration');
     }
-    console.log('=== REGISTER END ===');
   };
 
   return (
-      <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-      >
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-        </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="w-full"
+    >
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400">
+          Tạo tài khoản mới
+        </h2>
+        <p className="mt-2 text-gray-600 dark:text-gray-300">Đăng ký để trải nghiệm dịch vụ của chúng tôi</p>
+      </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
-          {errors.submit && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative" role="alert">
-                <span className="block sm:inline">{errors.submit}</span>
-              </div>
-          )}
+      <form className="space-y-5" onSubmit={handleRegister}>
+        {errors.submit && (
+          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg" role="alert">
+            <span className="block sm:inline">{errors.submit}</span>
+          </div>
+        )}
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Full Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Họ tên</label>
             <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                className={`mt-1 block w-full px-3 py-2 border ${errors.fullName ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+              type="text"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleInputChange}
+              className={`block w-full px-4 py-3 border ${errors.fullName ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
+              placeholder="Nhập họ tên đầy đủ"
             />
             {errors.fullName && <p className="mt-1 text-sm text-red-500">{errors.fullName}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Số điện thoại</label>
             <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className={`mt-1 block w-full px-3 py-2 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              className={`block w-full px-4 py-3 border ${errors.phone ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
+              placeholder="Nhập số điện thoại"
             />
             {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone}</p>}
           </div>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Email address</label>
-            <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className={`mt-1 block w-full px-3 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
-            />
-            {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            className={`block w-full px-4 py-3 border ${errors.email ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
+            placeholder="Nhập địa chỉ email"
+          />
+          {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Username</label>
-            <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
-                className={`mt-1 block w-full px-3 py-2 border ${errors.username ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
-            />
-            {errors.username && <p className="mt-1 text-sm text-red-500">{errors.username}</p>}
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tên đăng nhập</label>
+          <input
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleInputChange}
+            className={`block w-full px-4 py-3 border ${errors.username ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
+            placeholder="Chọn tên đăng nhập"
+          />
+          {errors.username && <p className="mt-1 text-sm text-red-500">{errors.username}</p>}
+        </div>
 
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mật khẩu</label>
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700">Password</label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className={`block w-full px-3 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
-              />
-              <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <FaEyeSlash className="text-gray-400" /> : <FaEye className="text-gray-400" />}
-              </button>
-            </div>
-            {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
-            <PasswordStrength password={formData.password} />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
             <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                className={`mt-1 block w-full px-3 py-2 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className={`block w-full px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
+              placeholder="Tạo mật khẩu mạnh"
             />
-            {errors.confirmPassword && <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>}
-          </div>
-
-          <div className="flex items-center">
-            <input
-                type="checkbox"
-                name="termsAccepted"
-                checked={formData.termsAccepted}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <label className="ml-2 block text-sm text-gray-900">
-              I accept the terms and conditions
-            </label>
-          </div>
-
-          <div>
             <button
-                type="submit"
-                disabled={isLoading}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                    isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              onClick={() => setShowPassword(!showPassword)}
             >
-              {isLoading ? (
-                  <span className="flex items-center">
+              {showPassword ? 
+                <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" /> : 
+                <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+              }
+            </button>
+          </div>
+          {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+          <PasswordStrength password={formData.password} />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Xác nhận mật khẩu</label>
+          <input
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleInputChange}
+            className={`block w-full px-4 py-3 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
+            placeholder="Nhập lại mật khẩu"
+          />
+          {errors.confirmPassword && <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>}
+        </div>
+
+        <div className="flex items-center">
+          <input
+            id="terms"
+            name="termsAccepted"
+            type="checkbox"
+            checked={formData.termsAccepted}
+            onChange={handleInputChange}
+            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+          />
+          <label htmlFor="terms" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+            Tôi đồng ý với <a href="#" className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">điều khoản</a> và <a href="#" className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">chính sách bảo mật</a>
+          </label>
+        </div>
+        {errors.terms && <p className="mt-1 text-sm text-red-500">{errors.terms}</p>}
+
+        <div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 transform hover:scale-[1.02] ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+          >
+            {isLoading ? (
+              <span className="flex items-center">
                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Processing...
+                Đang xử lý...
               </span>
-              ) : (
-                  "Sign up"
-              )}
-            </button>
-          </div>
-        </form>
-
-        <div className="mt-6 text-center">
-          <button
-              type="button"
-              onClick={onSwitchToLogin}
-              className="text-sm font-medium text-blue-600 hover:text-blue-500"
-          >
-            Already have an account? Sign in
+            ) : (
+              "Đăng ký"
+            )}
           </button>
         </div>
-      </motion.div>
+      </form>
+
+      <div className="mt-6 text-center">
+        <button
+          type="button"
+          onClick={onSwitchToLogin}
+          className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+        >
+          Đã có tài khoản? Đăng nhập ngay
+        </button>
+      </div>
+    </motion.div>
   );
 };
 
 const AuthPage = () => {
   const [authState, setAuthState] = useState("login");
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPasswordOTP, setForgotPasswordOTP] = useState("");
+
+  const handleSwitchToLogin = () => {
+    setAuthState("login");
+  };
+
+  const handleSwitchToRegister = () => {
+    setAuthState("register");
+  };
+
+  const handleForgotPassword = () => {
+    setAuthState("forgot-password");
+  };
+
+  const handleOtpSent = (email) => {
+    setForgotPasswordEmail(email);
+    setAuthState("verify-otp");
+  };
+
+  const handleOtpVerified = (email, otp) => {
+    setForgotPasswordEmail(email);
+    setForgotPasswordOTP(otp);
+    setAuthState("reset-password");
+  };
+
+  const handlePasswordReset = () => {
+    toast.success("Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập với mật khẩu mới.");
+    setAuthState("login");
+  };
 
   return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-indigo-950 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-10 transition-colors duration-200">
+      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden transition-colors duration-200">
+        <div className="px-6 py-8 sm:px-8 sm:py-10">
           <AnimatePresence mode="wait">
-            {authState === "login" ? (
-                <LoginForm onSwitchToRegister={() => setAuthState("register")} />
-            ) : (
-                <RegisterForm onSwitchToLogin={() => setAuthState("login")} />
+            {authState === "login" && (
+              <LoginForm 
+                onSwitchToRegister={handleSwitchToRegister} 
+                onForgotPassword={handleForgotPassword}
+              />
+            )}
+            
+            {authState === "register" && (
+              <RegisterForm onSwitchToLogin={handleSwitchToLogin} />
+            )}
+            
+            {authState === "forgot-password" && (
+              <ForgotPassword 
+                onBack={handleSwitchToLogin}
+                onOtpSent={handleOtpSent}
+              />
+            )}
+            
+            {authState === "verify-otp" && (
+              <VerifyOTP 
+                email={forgotPasswordEmail}
+                onBack={() => setAuthState("forgot-password")}
+                onVerified={handleOtpVerified}
+              />
+            )}
+            
+            {authState === "reset-password" && (
+              <ResetPassword 
+                email={forgotPasswordEmail}
+                otp={forgotPasswordOTP}
+                onBack={() => setAuthState("verify-otp")}
+                onSuccess={handlePasswordReset}
+              />
             )}
           </AnimatePresence>
         </div>
       </div>
+    </div>
   );
 };
 

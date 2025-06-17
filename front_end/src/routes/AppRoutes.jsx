@@ -13,6 +13,7 @@ import Cart from '../Pages/Cart';
 import WishList from '../Pages/WishList';
 import Profile from '../Pages/Profile';
 import Orders from '../Pages/Orders';
+import Blog from '../Pages/Blog';
 import PrivateRoute from '../components/PrivateRoute';
 
 const AppRoutes = () => {
@@ -27,6 +28,7 @@ const AppRoutes = () => {
             <Route path="/doiTra" element={<DoiTra />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/blog" element={<Blog />} />
             <Route path="/login" element={<AuthPage />} />
             <Route path="/register" element={<AuthPage />} />
             <Route
