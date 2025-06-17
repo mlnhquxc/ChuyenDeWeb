@@ -40,8 +40,8 @@ SELECT 'MacBook Pro M1 Max 14 inch 32GB/512GB', 'Chip Apple M1 Max; RAM 32GB; SS
 (SELECT id FROM categories WHERE name = 'Laptops'), 50
 WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'MacBook Pro M1 Max 14 inch 32GB/512GB');
 
-INSERT INTO product_images (product_id, image_url)
-SELECT p.id, 'https://cdn2.cellphones.com.vn/x/media/catalog/product/m/a/macbook-pro-14-inch-2021-m1-max-10cpu-24gpu-32gb-96w-3_3_1.jpg'
+INSERT INTO product_images (product_id, image_url, is_primary)
+SELECT p.id, 'https://cdn2.cellphones.com.vn/x/media/catalog/product/m/a/macbook-pro-14-inch-2021-m1-max-10cpu-24gpu-32gb-96w-3_3_1.jpg', true
 FROM products p WHERE p.name = 'MacBook Pro M1 Max 14 inch 32GB/512GB';
 
 INSERT INTO product_images (product_id, image_url)
@@ -58,8 +58,8 @@ SELECT 'iPhone 15 128GB', 'Chip A16 Bionic; Dynamic Island; Camera nâng cấp 4
 (SELECT id FROM categories WHERE name = 'Smartphones'), 100
 WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'iPhone 15 128GB');
 
-INSERT INTO product_images (product_id, image_url)
-SELECT p.id, 'https://cdn2.cellphones.com.vn/x/media/catalog/product/i/p/iphone-15-plus_1__1.png'
+INSERT INTO product_images (product_id, image_url, is_primary)
+SELECT p.id, 'https://cdn2.cellphones.com.vn/x/media/catalog/product/i/p/iphone-15-plus_1__1.png', true
 FROM products p WHERE p.name = 'iPhone 15 128GB';
 
 INSERT INTO product_images (product_id, image_url)
@@ -76,8 +76,8 @@ SELECT 'Smart Tivi OLED LG 4K 55 inch 55A3PSA', 'Màn hình OLED 4K 55 inch; H�
 (SELECT id FROM categories WHERE name = 'TVs'), 30
 WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Smart Tivi OLED LG 4K 55 inch 55A3PSA');
 
-INSERT INTO product_images (product_id, image_url)
-SELECT p.id, 'https://m.media-amazon.com/images/I/51FZgruKdpL._SL1500_.jpg'
+INSERT INTO product_images (product_id, image_url, is_primary)
+SELECT p.id, 'https://m.media-amazon.com/images/I/51FZgruKdpL._SL1500_.jpg', true
 FROM products p WHERE p.name = 'Smart Tivi OLED LG 4K 55 inch 55A3PSA';
 
 INSERT INTO product_images (product_id, image_url)
@@ -94,8 +94,8 @@ SELECT 'Tai nghe Bluetooth Sony WF-1000XM4', 'Tai nghe không dây chống ồn 
 (SELECT id FROM categories WHERE name = 'Accessories'), 200
 WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Tai nghe Bluetooth Sony WF-1000XM4');
 
-INSERT INTO product_images (product_id, image_url)
-SELECT p.id, 'https://cdn2.cellphones.com.vn/x/media/catalog/product/t/a/tai-nghe-khong-day-sony-wf-1000xm5-6_1.png'
+INSERT INTO product_images (product_id, image_url, is_primary)
+SELECT p.id, 'https://cdn2.cellphones.com.vn/x/media/catalog/product/t/a/tai-nghe-khong-day-sony-wf-1000xm5-6_1.png', true
 FROM products p WHERE p.name = 'Tai nghe Bluetooth Sony WF-1000XM4';
 
 INSERT INTO product_images (product_id, image_url)
@@ -112,8 +112,8 @@ SELECT 'Laptop Masstel E140 Celeron', 'CPU Intel Celeron; RAM 4GB; SSD 128GB; M�
 (SELECT id FROM categories WHERE name = 'Laptops'), 40
 WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'Laptop Masstel E140 Celeron');
 
-INSERT INTO product_images (product_id, image_url)
-SELECT p.id, 'https://cdn2.cellphones.com.vn/x/media/catalog/product/t/e/text_ng_n_9_36.png'
+INSERT INTO product_images (product_id, image_url, is_primary)
+SELECT p.id, 'https://cdn2.cellphones.com.vn/x/media/catalog/product/t/e/text_ng_n_9_36.png', true
 FROM products p WHERE p.name = 'Laptop Masstel E140 Celeron';
 
 INSERT INTO product_images (product_id, image_url)
@@ -130,8 +130,8 @@ SELECT 'HP Pavilion 15-eg2082TU i5 1240P/8GB/512GB SSD/Win11', 'CPU Intel Core i
 (SELECT id FROM categories WHERE name = 'Laptops'), 35
 WHERE NOT EXISTS (SELECT 1 FROM products WHERE name = 'HP Pavilion 15-eg2082TU i5 1240P/8GB/512GB SSD/Win11');
 
-INSERT INTO product_images (product_id, image_url)
-SELECT p.id, 'https://cdn2.cellphones.com.vn/x/media/catalog/product/1/_/1_467.png'
+INSERT INTO product_images (product_id, image_url, is_primary)
+SELECT p.id, 'https://cdn2.cellphones.com.vn/x/media/catalog/product/1/_/1_467.png', true
 FROM products p WHERE p.name = 'HP Pavilion 15-eg2082TU i5 1240P/8GB/512GB SSD/Win11';
 
 INSERT INTO product_images (product_id, image_url)

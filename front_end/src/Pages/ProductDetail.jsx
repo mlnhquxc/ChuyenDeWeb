@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FiHeart, FiShoppingCart, FiMinus, FiPlus } from "react-icons/fi";
+import { FaShoppingBag } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { productService } from "../services/productService";
 import { useWishlist } from "../context/WishlistContext";
@@ -63,7 +64,7 @@ const ProductDetail = () => {
     }
   };
 
-  const handleBuyNow = async () => {
+  const handleBuyNow = () => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
@@ -74,16 +75,23 @@ const ProductDetail = () => {
       return;
     }
     
-    try {
-      setIsAddingToCart(true);
-      await addToCart(product.id, quantity);
-      navigate("/cart");
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      alert("Có lỗi xảy ra khi thêm vào giỏ hàng");
-    } finally {
-      setIsAddingToCart(false);
-    }
+    // Navigate directly to payment page with product data
+    const buyNowItem = {
+      id: `buynow_${product.id}`,
+      productId: product.id,
+      productName: product.name,
+      productPrice: product.price,
+      productImage: product.imageUrls?.[0] || product.image,
+      quantity: quantity,
+      subtotal: product.price * quantity
+    };
+    
+    navigate('/payment', {
+      state: {
+        selectedItems: [buyNowItem],
+        isFromBuyNow: true
+      }
+    });
   };
 
   const handleWishlistClick = async () => {
@@ -219,10 +227,10 @@ const ProductDetail = () => {
               </button>
               <button
                   onClick={handleBuyNow}
-                  className="flex-1 flex items-center justify-center py-3 px-4 rounded-full font-semibold text-white dark:text-gray-900 transition-all duration-300 shadow-md hover:-translate-y-1 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-300 dark:to-gray-400"
-                  disabled={isAddingToCart}
+                  className="flex-1 flex items-center justify-center py-3 px-4 rounded-full font-semibold text-white transition-all duration-300 shadow-md hover:-translate-y-1 hover:shadow-lg bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
               >
-                {isAddingToCart ? 'Đang xử lý...' : 'Mua ngay'}
+                <FaShoppingBag className="mr-2" />
+                Mua ngay
               </button>
               <button
                   onClick={handleWishlistClick}

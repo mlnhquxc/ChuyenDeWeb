@@ -53,6 +53,17 @@ const orderService = {
     }
   },
 
+  // Create order directly from products (Buy Now functionality)Add commentMore actions
+  createDirectOrder: async (orderData) => {
+    try {
+      const response = await axiosInstance.post('/api/orders/create-direct', orderData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating direct order:', error);
+      throw error.response?.data || error;
+    }
+  },
+
   // Cancel order
   cancelOrder: async (orderId, reason = '') => {
     try {

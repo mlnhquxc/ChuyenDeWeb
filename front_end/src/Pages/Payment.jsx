@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   FaLock,
   FaCreditCard,
@@ -7,17 +7,23 @@ import {
   FaWallet,
   FaArrowLeft,
 } from "react-icons/fa";
-import { toast } from "react-toastify";
-import ProvinceSelect from "../API/Location.jsx";
+import { showToast } from "../utils/toast";
+import ProvinceSelect, { calculateShippingFee } from "../api/Location.jsx";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import orderService from "../services/orderService";
 import userService from "../services/userService";
+import { ProductImage } from "../utils/placeholderImage.jsx";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { cart, loading: cartLoading, clearCart } = useCart();
   const { user } = useAuth();
+  
+  // Get selected items from cart or buy now
+  const { selectedItems, isFromCart, isFromBuyNow } = location.state || {};
+  const cartItems = selectedItems || cart.items || [];
   
   const [formData, setFormData] = useState({
     fullName: "",
@@ -68,19 +74,31 @@ const CheckoutPage = () => {
     }
   }, [user]);
 
-  // Check if cart is empty
-  const isCartEmpty = !cart || 
+  // Check if cart is empty (when not coming from cart selection or buy now)
+  const isCartEmpty = !isFromCart && !isFromBuyNow && (!cart || 
                      (cart.items && cart.items.length === 0) || 
                      (Array.isArray(cart) && cart.length === 0) ||
-                     cart.totalItems === 0;
+                     cart.totalItems === 0);
 
-  // Get cart items
-  const cartItems = cart?.items || [];
+  const [calculatedShippingFee, setCalculatedShippingFee] = useState(0);
 
   const shippingMethods = {
-    standard: { price: 0, time: "3-5 ngày làm việc" },
-    express: { price: 50000, time: "1-2 ngày làm việc" },
-    economy: { price: 20000, time: "5-7 ngày làm việc" },
+    standard: { price: calculatedShippingFee || 30000, time: "3-5 ngày làm việc" },
+    express: { price: calculatedShippingFee ? Math.round(calculatedShippingFee * 1.67) : 50000, time: "1-2 ngày làm việc" },
+    economy: { price: calculatedShippingFee ? Math.round(calculatedShippingFee * 0.67) : 20000, time: "5-7 ngày làm việc" },
+  };
+
+  // Recalculate shipping fee when shipping method changesAdd commentMore actions
+  useEffect(() => {
+    if (formData.province && formData.shippingMethod) {
+      const newFee = calculateShippingFee(formData.province, formData.shippingMethod);
+      setCalculatedShippingFee(newFee);
+    }
+  }, [formData.shippingMethod, formData.province]);
+
+  // Handle shipping fee calculation when location changes
+  const handleShippingFeeChange = (fee) => {
+    setCalculatedShippingFee(fee);
   };
 
   const validateForm = () => {
@@ -120,9 +138,9 @@ const CheckoutPage = () => {
   };
 
   const calculateTotal = () => {
-    if (!cart || !cartItems.length) return 0;
+    if (!cartItems.length) return 0;
     
-    const subtotal = cart.totalPrice || cartItems.reduce(
+    const subtotal = cartItems.reduce(
         (sum, item) => sum + (item.productPrice * item.quantity),
         0
     );
@@ -131,8 +149,8 @@ const CheckoutPage = () => {
   };
 
   const getSubtotal = () => {
-    if (!cart || !cartItems.length) return 0;
-    return cart.totalPrice || cartItems.reduce(
+    if (!cartItems.length) return 0;
+    return cartItems.reduce(
         (sum, item) => sum + (item.productPrice * item.quantity),
         0
     );
@@ -166,7 +184,8 @@ const CheckoutPage = () => {
         const response = await orderService.createOrderFromCart(orderData);
         
         if (response.result) {
-          toast.success('Đặt hàng thành công!');
+          const orderNumber = response.result.id || 'N/A';
+          showToast.orderSuccess(orderNumber);
           setShowSuccess(true);
           
           // Clear cart after successful order
@@ -179,7 +198,7 @@ const CheckoutPage = () => {
         }
       } catch (error) {
         console.error("Order submission failed:", error);
-        toast.error(error.message || 'Có lỗi xảy ra khi đặt hàng');
+        showToast.orderError(error.message || 'Có lỗi xảy ra khi đặt hàng');
       } finally {
         setIsLoading(false);
       }
@@ -235,6 +254,9 @@ const CheckoutPage = () => {
   return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400 mb-8">
+            {isFromBuyNow ? 'Mua ngay' : 'Thanh toán'}
+          </h1>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Form */}
             <div className="space-y-8">
@@ -327,6 +349,7 @@ const CheckoutPage = () => {
                       formData={formData}
                       setFormData={setFormData}
                       errors={errors}
+                      onShippingFeeChange={handleShippingFeeChange}
                   />
 
                   <div>
@@ -494,13 +517,11 @@ const CheckoutPage = () => {
                 <div className="space-y-4">
                   {cartItems.map((item) => (
                       <div key={item.id} className="flex items-center space-x-4">
-                        <img
-                            src={item.productImage || '/api/placeholder/80/80'}
+                        <ProductImage
+                            src={item.productImage}
                             alt={item.productName}
                             className="w-20 h-20 object-cover rounded"
-                            onError={(e) => {
-                              e.target.src = '/api/placeholder/80/80';
-                            }}
+                            size="medium"
                         />
                         <div className="flex-1">
                           <h3 className="font-medium">{item.productName}</h3>

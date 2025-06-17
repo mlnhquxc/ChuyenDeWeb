@@ -1,5 +1,6 @@
 package com.example.back_end.service;
 
+import com.example.back_end.dto.request.CreateDirectOrderRequest;
 import com.example.back_end.dto.request.CreateOrderRequest;
 import com.example.back_end.entity.Order;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ public interface IOrderService {
     Order getOrderByNumber(String orderNumber);
     Order createOrder(Integer userId, String shippingAddress, String phone);
     Order createOrderFromCart(String username, CreateOrderRequest request);
+    Order createDirectOrder(String username, CreateDirectOrderRequest request);
     Order updateOrderStatus(Long id, String status);
     Order cancelOrder(Long id, String username, String reason);
     Order updateTrackingNumber(Long id, String trackingNumber);

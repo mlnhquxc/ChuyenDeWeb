@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { FiShoppingCart, FiHeart } from "react-icons/fi";
+import { FaShoppingBag } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { showToast } from "../utils/toast";
 import { useWishlist } from "../context/WishlistContext";
 import { useAuth } from "../context/AuthContext";
+import { ProductImage } from "../utils/placeholderImage.jsx";
 
 const ProductCard = ({ product }) => {
   if (!product) {
@@ -42,10 +45,10 @@ const ProductCard = ({ product }) => {
     try {
       setIsAddingToCart(true);
       await addToCart(product.id, 1);
-      alert("Sản phẩm đã được thêm vào giỏ hàng");
+      showToast.addToCartSuccess(product.name, 1);
     } catch (error) {
       console.error("Error adding to cart:", error);
-      alert("Có lỗi xảy ra khi thêm vào giỏ hàng");
+      showToast.addToCartError(product.name, "Có lỗi xảy ra khi thêm vào giỏ hàng");
     } finally {
       setIsAddingToCart(false);
     }
@@ -75,26 +78,50 @@ const ProductCard = ({ product }) => {
       setIsAddingToWishlist(false);
     }
   };
+
+  const handleBuyNow = (e) => {
+    e.stopPropagation();
+    
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    
+    // Navigate directly to payment page with product data
+    const buyNowItem = {
+      id: `buynow_${product.id}`,
+      productId: product.id,
+      productName: product.name,
+      productPrice: product.price,
+      productImage: product.imageUrls?.[0] || product.image,
+      quantity: 1,
+      subtotal: product.price
+    };
+    
+    navigate('/payment', {
+      state: {
+        selectedItems: [buyNowItem],
+        isFromBuyNow: true
+      }
+    });
+  };
   
-  const imageUrl = product.imageUrls?.[0] || product.image || '/placeholder-image.jpg';
+  const imageUrl = product.imageUrls?.[0] || product.image;
   const productName = product.name || 'Không có tên';
   const categoryName = product.categoryName || 'Không phân loại';
   const price = product.price || 0;
 
   return (
       <div 
-        className="flex flex-col h-[430px] bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl p-0 cursor-pointer transition-all duration-300 border border-gray-100 dark:border-gray-700 overflow-hidden card" 
+        className="flex flex-col h-[480px] bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl p-0 cursor-pointer transition-all duration-300 border border-gray-100 dark:border-gray-700 overflow-hidden card" 
         onClick={handleClick}
       >
         <div className="relative w-full aspect-square bg-gray-50 dark:bg-gray-700 flex items-center justify-center overflow-hidden group">
-          <img
+          <ProductImage
               src={imageUrl}
               alt={productName}
               className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = '/placeholder-image.jpg';
-              }}
+              size="large"
           />
           <div className="absolute top-2 right-2">
             <button
@@ -119,7 +146,14 @@ const ProductCard = ({ product }) => {
               </span>
             </div>
           </div>
-          <div className="mt-4">
+          <div className="mt-4 space-y-2">
+            <button
+                className={`w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white py-2.5 px-4 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-[1.02] shadow-md font-medium`}
+                onClick={handleBuyNow}
+            >
+              <FaShoppingBag className="mr-2" /> 
+              Mua ngay
+            </button>
             <button
                 className={`w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-[1.02] ${isAddingToCart ? 'opacity-70' : ''} shadow-md`}
                 onClick={handleAddToCart}

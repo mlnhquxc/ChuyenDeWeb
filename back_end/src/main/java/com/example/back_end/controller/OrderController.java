@@ -2,6 +2,7 @@ package com.example.back_end.controller;
 
 import com.example.back_end.constant.OrderStatus;
 import com.example.back_end.dto.OrderDTO;
+import com.example.back_end.dto.request.CreateDirectOrderRequest;
 import com.example.back_end.dto.request.CreateOrderRequest;
 import com.example.back_end.dto.response.ApiResponse;
 import com.example.back_end.entity.Order;
@@ -132,13 +133,15 @@ public class OrderController {
                 .build());
     }
 
-    // Legacy create order endpoint
-    @PostMapping("/{userId}")
-    public ResponseEntity<ApiResponse<OrderDTO>> createOrder(
-            @PathVariable Integer userId,
-            @RequestParam String shippingAddress,
-            @RequestParam String phone) {
-        Order order = orderService.createOrder(userId, shippingAddress, phone);
+        // Create order directly from products (Buy Now functionality)More actions
+    @PostMapping("/create-direct")
+    public ResponseEntity<ApiResponse<OrderDTO>> createDirectOrder(
+            @Valid @RequestBody CreateDirectOrderRequest request) {
+        
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        
+        Order order = orderService.createDirectOrder(username, request);
         OrderDTO orderDTO = orderMapper.toOrderDTO(order);
         
         return ResponseEntity.ok(ApiResponse.<OrderDTO>builder()

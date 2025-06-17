@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import authService from "../services/authService";
 import { useAuth } from "../context/AuthContext";
-import { toast } from "react-toastify";
+import { showToast } from "../utils/toast";
 import ForgotPassword from "../components/ForgotPassword";
 import VerifyOTP from "../components/VerifyOTP";
 import ResetPassword from "../components/ResetPassword";
@@ -83,16 +83,17 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
       });
       
       if (response && response.authenticated) {
-        toast.success("Đăng nhập thành công!");
+        showToast.loginSuccess(formData.username);
         navigate('/');
       } else {
         setErrors({ submit: 'Tên đăng nhập hoặc mật khẩu không đúng' });
-        toast.error("Đăng nhập thất bại!");
+        showToast.loginError('Tên đăng nhập hoặc mật khẩu không đúng');
       }
     } catch (error) {
       console.error('Login error:', error);
-      setErrors({ submit: error.response?.data?.message || 'Đã xảy ra lỗi khi đăng nhập' });
-      toast.error("Đăng nhập thất bại!");
+      const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi đăng nhập';
+      setErrors({ submit: errorMessage });
+      showToast.loginError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -337,7 +338,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
         const response = await authService.register(userData);
 
         if (response && response.authenticated) {
-          toast.success("Đăng ký thành công!");
+          showToast.registerSuccess();
 
           // Đợi 2 giây để backend xử lý xong việc tạo tài khoản
           await new Promise(resolve => setTimeout(resolve, 2000));
@@ -364,14 +365,15 @@ const RegisterForm = ({ onSwitchToLogin }) => {
             });
           }
         } else {
-          toast.error("Đăng ký thất bại!");
+          showToast.registerError("Đăng ký thất bại. Vui lòng thử lại.");
           setErrors({
             submit: "Đăng ký thất bại. Vui lòng thử lại."
           });
         }
       } catch (error) {
         console.error('Registration error:', error);
-        toast.error("Đăng ký thất bại!");
+        const errorMessage = error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại.";
+        showToast.registerError(errorMessage);
         setErrors({
           submit: error.response?.data?.message || error.message || "Đăng ký thất bại. Vui lòng thử lại."
         });
