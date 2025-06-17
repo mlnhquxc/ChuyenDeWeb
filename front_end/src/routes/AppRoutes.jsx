@@ -65,7 +65,7 @@ const AppRoutes = () => {
                     </PrivateRoute>
                 }
             />
-            <RouteAdd commentMore actions
+            <Route
                 path="/buy-now"
                 element={
                     <PrivateRoute>

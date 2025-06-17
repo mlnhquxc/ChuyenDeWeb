@@ -40,4 +40,18 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.orderDate BETWEEN :startDate AND :endDate")
     List<Order> findByOrderDateBetween(@Param("startDate") LocalDateTime startDate, 
                                       @Param("endDate") LocalDateTime endDate);
-} 
+    @Query("SELECT DISTINCT o FROM Order o " +
+           "LEFT JOIN FETCH o.orderDetails od " +
+           "LEFT JOIN FETCH od.product p " +
+           "LEFT JOIN FETCH p.productImages " +
+           "WHERE o.user.id = :userId " +
+           "ORDER BY o.orderDate DESC")
+    Page<Order> findByUserIdWithProductImages(@Param("userId") Integer userId, Pageable pageable);
+    
+    @Query("SELECT DISTINCT o FROM Order o " +
+           "LEFT JOIN FETCH o.orderDetails od " +
+           "LEFT JOIN FETCH od.product p " +
+           "LEFT JOIN FETCH p.productImages " +
+           "WHERE o.id = :orderId")
+    Optional<Order> findByIdWithProductImages(@Param("orderId") Long orderId);
+}

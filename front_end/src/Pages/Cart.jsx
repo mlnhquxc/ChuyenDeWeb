@@ -1,13 +1,37 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaTrash, FaArrowLeft, FaShoppingCart } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { ProductImage } from '../utils/placeholderImage.jsx';
 
 const Cart = () => {
     const { cart, loading, updateCartItem, removeFromCart } = useCart();
     const [updatingItems, setUpdatingItems] = useState({});
     const [removingItems, setRemovingItems] = useState({});
+    const [selectedItems, setSelectedItems] = useState({});
+    const [selectAll, setSelectAll] = useState(false);
+    const navigate = useNavigate();
+
+    // Determine if cart is empty based on different possible structures
+    const isCartEmpty = !cart || 
+                       (cart.items && cart.items.length === 0) || 
+                       (Array.isArray(cart) && cart.length === 0) ||
+                       cart.totalItems === 0;
+    
+    // Get cart items based on the structure (backend returns items array)
+    const cartItems = cart?.items || (Array.isArray(cart) ? cart : []);
+
+    // Initialize selected items when cart items change - MOVED BEFORE EARLY RETURNS
+    React.useEffect(() => {
+        if (cartItems.length > 0) {
+            const initialSelection = {};
+            cartItems.forEach(item => {
+                initialSelection[item.id] = selectedItems[item.id] || false;
+            });
+            setSelectedItems(initialSelection);
+        }
+    }, [cartItems.length]);
 
     if (loading) {
         return (
@@ -16,12 +40,6 @@ const Cart = () => {
             </div>
         );
     }
-
-    // Determine if cart is empty based on different possible structures
-    const isCartEmpty = !cart || 
-                       (cart.items && cart.items.length === 0) || 
-                       (Array.isArray(cart) && cart.length === 0) ||
-                       cart.totalItems === 0;
     
     if (isCartEmpty) {
         return (
@@ -45,18 +63,20 @@ const Cart = () => {
             </div>
         );
     }
-    
-    // Get cart items based on the structure (backend returns items array)
-    const cartItems = cart.items || (Array.isArray(cart) ? cart : []);
 
-    // Calculate total from cart items or use the total from backend
-    const total = cart.totalPrice || cartItems.reduce(
-        (sum, item) => {
-            const price = item.productPrice || (item.product ? item.product.price : item.price);
-            return sum + (price * item.quantity);
-        }, 
-        0
-    );
+    // Calculate total from selected items only
+    const calculateSelectedTotal = () => {
+        return cartItems.reduce((sum, item) => {
+            if (selectedItems[item.id]) {
+                const price = item.productPrice || (item.product ? item.product.price : item.price);
+                return sum + (price * item.quantity);
+            }
+            return sum;
+        }, 0);
+    };
+
+    const selectedTotal = calculateSelectedTotal();
+    const selectedCount = Object.values(selectedItems).filter(Boolean).length;
 
     const handleUpdateQuantity = async (itemId, newQuantity, productId, productName) => {
         if (newQuantity < 1) {
@@ -95,6 +115,39 @@ const Cart = () => {
         }
     };
 
+    const handleSelectItem = (itemId) => {
+        setSelectedItems(prev => ({
+            ...prev,
+            [itemId]: !prev[itemId]
+        }));
+    };
+
+    const handleSelectAll = () => {
+        const newSelectAll = !selectAll;
+        setSelectAll(newSelectAll);
+        const newSelectedItems = {};
+        cartItems.forEach(item => {
+            newSelectedItems[item.id] = newSelectAll;
+        });
+        setSelectedItems(newSelectedItems);
+    };
+
+    const handleCheckoutSelected = () => {
+        const selectedCartItems = cartItems.filter(item => selectedItems[item.id]);
+        if (selectedCartItems.length === 0) {
+            toast.warning("Vui lòng chọn ít nhất một sản phẩm để thanh toán");
+            return;
+        }
+        
+        // Navigate to payment with selected items
+        navigate('/payment', {
+            state: {
+                selectedItems: selectedCartItems,
+                isFromCart: true
+            }
+        });
+    };
+
     return (
         <div className="max-w-5xl mx-auto px-4 py-10">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400 mb-8">
@@ -102,6 +155,20 @@ const Cart = () => {
             </h1>
             
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-colors duration-200">
+                {/* Select All Header */}
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={selectAll}
+                            onChange={handleSelectAll}
+                            className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                        />
+                        <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Chọn tất cả ({cartItems.length} sản phẩm)
+                        </span>
+                    </label>
+                </div>
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
                     {cartItems.map((item) => {
                         // Extract product data based on the CartItemDTO structure
@@ -114,10 +181,20 @@ const Cart = () => {
                         
                         return (
                             <div key={itemId} className="p-6 flex flex-col sm:flex-row items-center gap-6">
+                                {/* Checkbox */}
+                                <div className="flex-shrink-0">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedItems[itemId] || false}
+                                        onChange={() => handleSelectItem(itemId)}
+                                        className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                    />
+                                </div>
                                 <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
-                                    <img
-                                        src={productImage}
+                                <ProductImage
+                                    src={item.productImage}
                                         alt={productName}
+                                        size="medium"
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
                                             e.target.onerror = null;
@@ -190,18 +267,21 @@ const Cart = () => {
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <div className="text-gray-600 dark:text-gray-300">
                             <p>Tổng số sản phẩm: <span className="font-medium">{cartItems.length}</span></p>
-                            <p>Tổng số lượng: <span className="font-medium">
-                                {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+                            <p>Sản phẩm đã chọn: <span className="font-medium text-purple-600 dark:text-purple-400">{selectedCount}</span></p>
+                            <p>Tổng số lượng đã chọn: <span className="font-medium">
+                                {cartItems.reduce((sum, item) => {
+                                    return selectedItems[item.id] ? sum + item.quantity : sum;
+                                }, 0)}
                             </span></p>
                         </div>
                         
                         <div className="text-right">
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Tổng thanh toán:</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Tổng thanh toán (đã chọn):</p>
                             <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400">
                                 {new Intl.NumberFormat('vi-VN', {
                                     style: 'currency',
                                     currency: 'VND'
-                                }).format(total)}
+                                }).format(selectedTotal)}
                             </p>
                         </div>
                     </div>
@@ -212,11 +292,17 @@ const Cart = () => {
                             Tiếp tục mua sắm
                         </Link>
                         
-                        <Link to="/payment" className="flex-1">
-                            <button className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-3 px-6 rounded-lg font-medium transition-all duration-300 transform hover:scale-[1.02] shadow-md">
-                                Tiến hành thanh toán
-                            </button>
-                        </Link>
+                        <button 
+                            onClick={handleCheckoutSelected}
+                            disabled={selectedCount === 0}
+                            className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-300 transform hover:scale-[1.02] shadow-md ${
+                                selectedCount > 0 
+                                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white' 
+                                    : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                            }`}
+                        >
+                            Thanh toán ({selectedCount} sản phẩm)
+                        </button>
                     </div>
                 </div>
             </div>

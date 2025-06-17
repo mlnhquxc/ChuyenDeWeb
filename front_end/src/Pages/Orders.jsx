@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaBox, FaTruck, FaCheckCircle, FaClock, FaTimes, FaEye } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import orderService from '../services/orderService';
+import { ProductImage } from '../utils/placeholderImage.jsx';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -18,9 +19,17 @@ const Orders = () => {
   const loadOrders = async () => {
     try {
       setLoading(true);
-      const response = await orderService.getMyOrders(currentPage, 10);
+      // Explicitly sort by orderDate in descending order (newest first)
+      const response = await orderService.getMyOrders(currentPage, 10, 'orderDate', 'desc');
       if (response.result) {
-        setOrders(response.result.content || []);
+        const ordersData = response.result.content || [];
+        // Additional client-side sorting to ensure newest orders are first
+        const sortedOrders = ordersData.sort((a, b) => {
+          const dateA = new Date(a.orderDate || a.createdAt);
+          const dateB = new Date(b.orderDate || b.createdAt);
+          return dateB - dateA; // Descending order (newest first)
+        });
+        setOrders(sortedOrders);
         setTotalPages(response.result.totalPages || 0);
       }
     } catch (error) {
@@ -156,13 +165,11 @@ const Orders = () => {
                       <div className="divide-y divide-gray-200">
                         {order.orderDetails?.slice(0, 2).map((item) => (
                             <div key={item.id} className="py-4 flex items-center">
-                              <img
-                                  src={item.productImage || 'https://via.placeholder.com/64x64?text=No+Image'}
+                              <ProductImage
+                                  src={item.productImage}
                                   alt={item.productName}
+                                  size="small"
                                   className="w-16 h-16 object-cover rounded-md"
-                                  onError={(e) => {
-                                    e.target.src = 'https://via.placeholder.com/64x64?text=No+Image';
-                                  }}
                               />
                               <div className="ml-4 flex-1">
                                 <h3 className="text-sm font-medium text-gray-800">{item.productName}</h3>
@@ -289,13 +296,11 @@ const Orders = () => {
                   <div className="divide-y divide-gray-200">
                     {selectedOrder.orderDetails?.map((item) => (
                       <div key={item.id} className="py-4 flex items-center">
-                        <img
-                          src={item.productImage || 'https://via.placeholder.com/80x80?text=No+Image'}
+                        <ProductImage
+                          src={item.productImage}
                           alt={item.productName}
                           className="w-20 h-20 object-cover rounded-md"
-                          onError={(e) => {
-                            e.target.src = 'https://via.placeholder.com/80x80?text=No+Image';
-                          }}
+                          size="medium"
                         />
                         <div className="ml-4 flex-1">
                           <h4 className="font-medium text-gray-800">{item.productName}</h4>

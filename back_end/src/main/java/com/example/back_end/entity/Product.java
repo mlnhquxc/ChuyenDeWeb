@@ -116,10 +116,14 @@ public class Product {
     public String getPrimaryImageUrl() {
         if (productImages != null && !productImages.isEmpty()) {
             return productImages.stream()
-                    .filter(ProductImage::getIsPrimary)
+                    .filter(img -> img != null && Boolean.TRUE.equals(img.getIsPrimary()))
                     .findFirst()
                     .map(ProductImage::getImageUrl)
-                    .orElse(productImages.get(0).getImageUrl());
+                    .orElse(productImages.stream()
+                            .filter(img -> img != null && img.getImageUrl() != null)
+                            .findFirst()
+                            .map(ProductImage::getImageUrl)
+                            .orElse(null));
         }
         return image;
     }

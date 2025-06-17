@@ -30,7 +30,7 @@ public class OrderMapper {
                 .userId(order.getUser().getId())
                 .username(order.getUser().getUsername())
                 .userEmail(order.getUser().getEmail())
-                .shippingFee(order.getShippingFee())Add commentMore actions
+                .shippingFee(order.getShippingFee())
                 .discountAmount(order.getDiscountAmount())
                 .taxAmount(order.getTaxAmount())
                 .notes(order.getNotes())
@@ -52,7 +52,7 @@ public class OrderMapper {
                 .totalAmount(order.getTotalAmount())
                 .orderDate(order.getOrderDate())
                 .orderDetails(orderDetailDTOs)
-                .canBeCancelled(order.canBeCancelled())Add commentMore actions
+                .canBeCancelled(order.canBeCancelled())
                 .isCompleted(order.isCompleted())
                 .isCancelled(order.isCancelled())
                 .build();
@@ -65,11 +65,17 @@ public class OrderMapper {
 
         BigDecimal subtotal = orderDetail.getPrice().multiply(BigDecimal.valueOf(orderDetail.getQuantity()));
 
+        String productImage = orderDetail.getProduct().getPrimaryImageUrl();
+        // Fallback to a default image if no image is available
+        if (productImage == null || productImage.trim().isEmpty()) {
+            productImage = "/api/placeholder/80/80"; // Default placeholder image
+        }
+
         return OrderDetailDTO.builder()
                 .id(orderDetail.getId())
                 .productId(orderDetail.getProduct().getId())
                 .productName(orderDetail.getProduct().getName())
-                .productImage(orderDetail.getProduct().getPrimaryImageUrl())
+                .productImage(productImage)
                 .price(orderDetail.getPrice())
                 .quantity(orderDetail.getQuantity())
                 .subtotal(subtotal)

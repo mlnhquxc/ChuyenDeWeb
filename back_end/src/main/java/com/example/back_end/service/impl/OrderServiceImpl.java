@@ -40,7 +40,7 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     public Page<Order> getOrdersByUsername(String username, Pageable pageable) {
         User user = userService.findByUsername(username);
-        return orderRepository.findByUserIdOrderByOrderDateDesc(user.getId(), pageable);
+        return orderRepository.findByUserIdWithProductImages(user.getId(), pageable);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class OrderServiceImpl implements IOrderService {
 
     @Override
     public Order getOrderById(Long id) {
-        return orderRepository.findById(id)
+        return orderRepository.findByIdWithProductImages(id)
                 .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
     }
 
@@ -169,7 +169,7 @@ public class OrderServiceImpl implements IOrderService {
         return savedOrder;
     }
 
-    @OverrideAdd commentMore actions
+    @Override
     @Transactional
     public Order createDirectOrder(String username, CreateDirectOrderRequest request) {
         User user = userService.findByUsername(username);
