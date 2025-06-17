@@ -7,7 +7,7 @@ import {
   FaWallet,
   FaArrowLeft,
 } from "react-icons/fa";
-import { toast } from "react-toastify";
+import { showToast } from "../utils/toast";
 import ProvinceSelect, { calculateShippingFee } from "../api/Location.jsx";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -184,7 +184,8 @@ const CheckoutPage = () => {
         const response = await orderService.createOrderFromCart(orderData);
         
         if (response.result) {
-          toast.success('Đặt hàng thành công!');
+          const orderNumber = response.result.id || 'N/A';
+          showToast.orderSuccess(orderNumber);
           setShowSuccess(true);
           
           // Clear cart after successful order
@@ -197,7 +198,7 @@ const CheckoutPage = () => {
         }
       } catch (error) {
         console.error("Order submission failed:", error);
-        toast.error(error.message || 'Có lỗi xảy ra khi đặt hàng');
+        showToast.orderError(error.message || 'Có lỗi xảy ra khi đặt hàng');
       } finally {
         setIsLoading(false);
       }

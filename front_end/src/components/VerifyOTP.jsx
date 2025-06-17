@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FaArrowLeft, FaKey } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import authService from '../services/authService';
-import { toast } from 'react-toastify';
+import { showToast } from '../utils/toast';
 
 const VerifyOTP = ({ email, onBack, onVerified }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);

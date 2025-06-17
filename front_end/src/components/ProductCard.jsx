@@ -3,6 +3,7 @@ import { FiShoppingCart, FiHeart } from "react-icons/fi";
 import { FaShoppingBag } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { showToast } from "../utils/toast";
 import { useWishlist } from "../context/WishlistContext";
 import { useAuth } from "../context/AuthContext";
 import { ProductImage } from "../utils/placeholderImage.jsx";
@@ -44,10 +45,10 @@ const ProductCard = ({ product }) => {
     try {
       setIsAddingToCart(true);
       await addToCart(product.id, 1);
-      alert("Sản phẩm đã được thêm vào giỏ hàng");
+      showToast.addToCartSuccess(product.name, 1);
     } catch (error) {
       console.error("Error adding to cart:", error);
-      alert("Có lỗi xảy ra khi thêm vào giỏ hàng");
+      showToast.addToCartError(product.name, "Có lỗi xảy ra khi thêm vào giỏ hàng");
     } finally {
       setIsAddingToCart(false);
     }

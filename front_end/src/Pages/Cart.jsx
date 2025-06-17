@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaTrash, FaArrowLeft, FaShoppingCart } from 'react-icons/fa';
-import { toast } from 'react-toastify';
 import { ProductImage } from '../utils/placeholderImage.jsx';
 
 const Cart = () => {
@@ -93,23 +92,27 @@ const Cart = () => {
         try {
             setUpdatingItems(prev => ({ ...prev, [itemId]: true }));
             await updateCartItem(itemId, newQuantity);
-            toast.success("Cập nhật số lượng thành công");
+            // No toast notification - visual feedback is enough
         } catch (error) {
             console.error("Error updating quantity:", error);
-            toast.error("Có lỗi xảy ra khi cập nhật số lượng");
+            // Only show toast for errors, not success
+            alert("Có lỗi xảy ra khi cập nhật số lượng. Vui lòng thử lại.");
         } finally {
             setUpdatingItems(prev => ({ ...prev, [itemId]: false }));
         }
     };
 
     const handleRemoveItem = async (productId) => {
+        const item = cartItems.find(item => item.productId === productId);
+        const productName = item?.productName || "sản phẩm";
+        
         try {
             setRemovingItems(prev => ({ ...prev, [productId]: true }));
             await removeFromCart(productId);
-            toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
+            // No toast notification - item disappearing is clear feedback
         } catch (error) {
             console.error("Error removing item:", error);
-            toast.error("Có lỗi xảy ra khi xóa sản phẩm");
+            alert("Có lỗi xảy ra khi xóa sản phẩm. Vui lòng thử lại.");
         } finally {
             setRemovingItems(prev => ({ ...prev, [productId]: false }));
         }
@@ -135,7 +138,7 @@ const Cart = () => {
     const handleCheckoutSelected = () => {
         const selectedCartItems = cartItems.filter(item => selectedItems[item.id]);
         if (selectedCartItems.length === 0) {
-            toast.warning("Vui lòng chọn ít nhất một sản phẩm để thanh toán");
+            alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán");
             return;
         }
         
@@ -180,7 +183,14 @@ const Cart = () => {
                         const subtotal = item.subtotal;
                         
                         return (
-                            <div key={itemId} className="p-6 flex flex-col sm:flex-row items-center gap-6">
+                            <div 
+                                key={itemId} 
+                                className={`p-6 flex flex-col sm:flex-row items-center gap-6 transition-all duration-300 ${
+                                    updatingItems[itemId] || removingItems[productId] 
+                                        ? 'bg-gray-50 dark:bg-gray-700/50' 
+                                        : 'hover:bg-gray-50/50 dark:hover:bg-gray-700/30'
+                                }`}
+                            >
                                 {/* Checkbox */}
                                 <div className="flex-shrink-0">
                                     <input
@@ -213,23 +223,29 @@ const Cart = () => {
                                     </p>
                                     
                                     <div className="mt-3 flex items-center">
-                                        <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                                        <div className={`flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden transition-all duration-200 ${
+                                            updatingItems[itemId] ? 'opacity-75 scale-95' : 'opacity-100 scale-100'
+                                        }`}>
                                             <button
                                                 onClick={() => handleUpdateQuantity(itemId, item.quantity - 1, productId, productName)}
                                                 className={`w-8 h-8 flex items-center justify-center ${
                                                     item.quantity === 1 
                                                     ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20' 
                                                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                                } disabled:opacity-50 transition-colors`}
+                                                } disabled:opacity-50 transition-all duration-200 hover:scale-110 active:scale-95`}
                                                 disabled={updatingItems[itemId]}
                                                 title={item.quantity === 1 ? 'Nhấn để xóa sản phẩm khỏi giỏ hàng' : 'Giảm số lượng'}
                                             >
                                                 -
                                             </button>
-                                            <span className="w-10 text-center text-gray-800 dark:text-gray-200">{item.quantity}</span>
+                                            <span className={`w-10 text-center text-gray-800 dark:text-gray-200 transition-all duration-200 ${
+                                                updatingItems[itemId] ? 'animate-pulse' : ''
+                                            }`}>
+                                                {item.quantity}
+                                            </span>
                                             <button
                                                 onClick={() => handleUpdateQuantity(itemId, item.quantity + 1, productId, productName)}
-                                                className="w-8 h-8 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+                                                className="w-8 h-8 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 transition-all duration-200 hover:scale-110 active:scale-95"
                                                 disabled={updatingItems[itemId]}
                                             >
                                                 +
@@ -237,13 +253,18 @@ const Cart = () => {
                                         </div>
                                         
                                         {updatingItems[itemId] && (
-                                            <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">Đang cập nhật...</span>
+                                            <div className="ml-3 flex items-center">
+                                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-indigo-500 mr-2"></div>
+                                                <span className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">Đang cập nhật...</span>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
                                 
                                 <div className="flex flex-col items-end">
-                                    <p className="text-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400">
+                                    <p className={`text-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400 transition-all duration-300 ${
+                                        updatingItems[itemId] ? 'animate-pulse scale-105' : 'hover:scale-105'
+                                    }`}>
                                         {new Intl.NumberFormat('vi-VN', {
                                             style: 'currency',
                                             currency: 'VND'
@@ -252,10 +273,18 @@ const Cart = () => {
                                     
                                     <button
                                         onClick={() => handleRemoveItem(productId)}
-                                        className="mt-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 disabled:opacity-50 transition-colors p-2"
+                                        className="mt-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 disabled:opacity-50 transition-all duration-200 p-2 hover:scale-110 active:scale-95 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                                         disabled={removingItems[productId]}
+                                        title="Xóa sản phẩm khỏi giỏ hàng"
                                     >
-                                        {removingItems[productId] ? 'Đang xóa...' : <FaTrash />}
+                                        {removingItems[productId] ? (
+                                            <div className="flex items-center">
+                                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-500 mr-1"></div>
+                                                <span className="text-xs">Đang xóa...</span>
+                                            </div>
+                                        ) : (
+                                            <FaTrash />
+                                        )}
                                     </button>
                                 </div>
                             </div>
@@ -277,7 +306,7 @@ const Cart = () => {
                         
                         <div className="text-right">
                             <p className="text-sm text-gray-600 dark:text-gray-400">Tổng thanh toán (đã chọn):</p>
-                            <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400">
+                            <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400 transition-all duration-300 hover:scale-105">
                                 {new Intl.NumberFormat('vi-VN', {
                                     style: 'currency',
                                     currency: 'VND'
