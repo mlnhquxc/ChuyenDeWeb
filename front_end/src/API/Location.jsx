@@ -1,7 +1,59 @@
 import React, { useEffect, useState } from "react";
-import { data } from "react-router-dom";
+// Shipping fee calculation based on location
+const calculateShippingFee = (province, shippingMethod = 'standard') => {
+  const baseFees = {
+    standard: 30000,
+    express: 50000,
+    economy: 20000
+  };
 
-const ProvinceSelect = ({ formData, setFormData, errors }) => {
+  // Major cities with lower shipping fees
+  const majorCities = [
+    'Thành phố Hà Nội',
+    'Thành phố Hồ Chí Minh',
+    'Thành phố Đà Nẵng',
+    'Thành phố Hải Phòng',
+    'Thành phố Cần Thơ'
+  ];
+
+  // Remote provinces with higher shipping fees
+  const remoteProvinces = [
+    'Tỉnh Cao Bằng',
+    'Tỉnh Hà Giang',
+    'Tỉnh Lai Châu',
+    'Tỉnh Lào Cai',
+    'Tỉnh Điện Biên',
+    'Tỉnh Sơn La',
+    'Tỉnh Yên Bái',
+    'Tỉnh Tuyên Quang',
+    'Tỉnh Bắc Kạn',
+    'Tỉnh Thái Nguyên',
+    'Tỉnh Lạng Sơn',
+    'Tỉnh Quảng Ninh',
+    'Tỉnh Bắc Giang',
+    'Tỉnh Phú Thọ',
+    'Tỉnh Vĩnh Phúc',
+    'Tỉnh Bắc Ninh',
+    'Tỉnh Hải Dương',
+    'Tỉnh Hưng Yên',
+    'Tỉnh Thái Bình',
+    'Tỉnh Hà Nam',
+    'Tỉnh Nam Định',
+    'Tỉnh Ninh Bình'
+  ];
+
+  let multiplier = 1;
+  
+  if (majorCities.includes(province)) {
+    multiplier = 0.8; // 20% discount for major cities
+  } else if (remoteProvinces.includes(province)) {
+    multiplier = 1.5; // 50% surcharge for remote provinces
+  }
+
+  return Math.round(baseFees[shippingMethod] * multiplier);
+};
+
+const ProvinceSelect = ({ formData, setFormData, errors, onShippingFeeChange }) => {
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
@@ -43,15 +95,17 @@ const ProvinceSelect = ({ formData, setFormData, errors }) => {
       fetch(`https://esgoo.net/api-tinhthanh/3/${formData.districtId}.htm`)
         .then((response) => response.json())
         .then((data) => {
-            if(data.error ===0 && Array.isArray(data.data)){
+            if(data.error === 0 && Array.isArray(data.data)){
                 setWards(data.data);
             }else{
                 console.error("Dữ liệu phường/xã không hợp lệ");
             }
         })
         .catch((err) => console.error("Lỗi khi lấy phường/xã:", err));
-    }
-  });
+      } else {
+        setWards([]);
+      }
+    }, [formData.districtId]);
 
   return (
     <>
@@ -67,8 +121,32 @@ const ProvinceSelect = ({ formData, setFormData, errors }) => {
             value={formData.province}
             onChange={(e) =>{
               const selectedProvince = provinces.find(p => p.full_name === e.target.value);
-              setFormData({ ...formData, province: selectedProvince.full_name,provinceId: selectedProvince.id, district: "", ward: "" });
-              console.log(e.target.value);
+              if (selectedProvince) {
+                const newFormData = { 
+                  ...formData, 
+                  province: selectedProvince.full_name,
+                  provinceId: selectedProvince.id, 
+                  district: "", 
+                  districtId: "",
+                  ward: "" 
+                };
+                setFormData(newFormData);
+                
+                // Calculate and update shipping fee
+                if (onShippingFeeChange) {
+                  const shippingFee = calculateShippingFee(selectedProvince.full_name, formData.shippingMethod);
+                  onShippingFeeChange(shippingFee);
+                }
+              } else {
+                setFormData({ 
+                  ...formData, 
+                  province: e.target.value,
+                  provinceId: "",
+                  district: "", 
+                  districtId: "",
+                  ward: "" 
+                });
+              }
             }
             }
           >
@@ -94,8 +172,21 @@ const ProvinceSelect = ({ formData, setFormData, errors }) => {
             value={formData.district}
             onChange={(e) => {
               const selectedDistrict = districts.find(d => d.full_name === e.target.value);
-              setFormData({ ...formData, district: selectedDistrict.full_name, districtId: selectedDistrict.id });
-              console.log(selectedDistrict);
+              if (selectedDistrict) {
+                setFormData({ 
+                  ...formData, 
+                  district: selectedDistrict.full_name, 
+                  districtId: selectedDistrict.id,
+                  ward: ""
+                });
+              } else {
+                setFormData({ 
+                  ...formData, 
+                  district: e.target.value, 
+                  districtId: "",
+                  ward: ""
+                });
+              }
             }}
           >
             <option value="">Chọn Quận/Huyện</option>
@@ -135,3 +226,4 @@ const ProvinceSelect = ({ formData, setFormData, errors }) => {
 };
 
 export default ProvinceSelect;
+export { calculateShippingFee };

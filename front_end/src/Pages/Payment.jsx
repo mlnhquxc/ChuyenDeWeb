@@ -8,7 +8,7 @@ import {
   FaArrowLeft,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-import ProvinceSelect from "../API/Location.jsx";
+import ProvinceSelect, { calculateShippingFee } from "../api/Location.jsx";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import orderService from "../services/orderService";
@@ -77,10 +77,25 @@ const CheckoutPage = () => {
   // Get cart items
   const cartItems = cart?.items || [];
 
+  const [calculatedShippingFee, setCalculatedShippingFee] = useState(0);
+
   const shippingMethods = {
-    standard: { price: 0, time: "3-5 ngày làm việc" },
-    express: { price: 50000, time: "1-2 ngày làm việc" },
-    economy: { price: 20000, time: "5-7 ngày làm việc" },
+    standard: { price: calculatedShippingFee || 30000, time: "3-5 ngày làm việc" },
+    express: { price: calculatedShippingFee ? Math.round(calculatedShippingFee * 1.67) : 50000, time: "1-2 ngày làm việc" },
+    economy: { price: calculatedShippingFee ? Math.round(calculatedShippingFee * 0.67) : 20000, time: "5-7 ngày làm việc" },
+  };
+
+  // Recalculate shipping fee when shipping method changesAdd commentMore actions
+  useEffect(() => {
+    if (formData.province && formData.shippingMethod) {
+      const newFee = calculateShippingFee(formData.province, formData.shippingMethod);
+      setCalculatedShippingFee(newFee);
+    }
+  }, [formData.shippingMethod, formData.province]);
+
+  // Handle shipping fee calculation when location changes
+  const handleShippingFeeChange = (fee) => {
+    setCalculatedShippingFee(fee);
   };
 
   const validateForm = () => {
@@ -327,6 +342,7 @@ const CheckoutPage = () => {
                       formData={formData}
                       setFormData={setFormData}
                       errors={errors}
+                      onShippingFeeChange={handleShippingFeeChange}
                   />
 
                   <div>

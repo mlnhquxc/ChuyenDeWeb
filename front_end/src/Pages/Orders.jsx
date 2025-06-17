@@ -157,11 +157,11 @@ const Orders = () => {
                         {order.orderDetails?.slice(0, 2).map((item) => (
                             <div key={item.id} className="py-4 flex items-center">
                               <img
-                                  src={item.productImage || '/api/placeholder/64/64'}
+                                  src={item.productImage || 'https://via.placeholder.com/64x64?text=No+Image'}
                                   alt={item.productName}
                                   className="w-16 h-16 object-cover rounded-md"
                                   onError={(e) => {
-                                    e.target.src = '/api/placeholder/64/64';
+                                    e.target.src = 'https://via.placeholder.com/64x64?text=No+Image';
                                   }}
                               />
                               <div className="ml-4 flex-1">
@@ -290,11 +290,11 @@ const Orders = () => {
                     {selectedOrder.orderDetails?.map((item) => (
                       <div key={item.id} className="py-4 flex items-center">
                         <img
-                          src={item.productImage || '/api/placeholder/80/80'}
+                          src={item.productImage || 'https://via.placeholder.com/80x80?text=No+Image'}
                           alt={item.productName}
                           className="w-20 h-20 object-cover rounded-md"
                           onError={(e) => {
-                            e.target.src = '/api/placeholder/80/80';
+                            e.target.src = 'https://via.placeholder.com/80x80?text=No+Image';
                           }}
                         />
                         <div className="ml-4 flex-1">

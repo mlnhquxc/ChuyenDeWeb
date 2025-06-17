@@ -1,6 +1,7 @@
 package com.example.back_end.service.impl;
 
 import com.example.back_end.constant.OrderStatus;
+import com.example.back_end.dto.request.CreateDirectOrderRequest;
 import com.example.back_end.dto.request.CreateOrderRequest;
 import com.example.back_end.entity.*;
 import com.example.back_end.repositories.OrderRepository;
@@ -164,6 +165,83 @@ public class OrderServiceImpl implements IOrderService {
 
         Order savedOrder = orderRepository.save(order);
         log.info("Order created successfully: {}", savedOrder.getOrderNumber());
+        
+        return savedOrder;
+    }
+
+    @OverrideAdd commentMore actions
+    @Transactional
+    public Order createDirectOrder(String username, CreateDirectOrderRequest request) {
+        User user = userService.findByUsername(username);
+        
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new RuntimeException("Order items are required");
+        }
+        
+        // Calculate total amount and validate products
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        
+        for (CreateDirectOrderRequest.OrderItemRequest item : request.getItems()) {
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found with ID: " + item.getProductId()));
+            
+            if (product.getStock() < item.getQuantity()) {
+                throw new RuntimeException("Insufficient stock for product: " + product.getName() + 
+                                         ". Available: " + product.getStock() + ", Requested: " + item.getQuantity());
+            }
+            
+            BigDecimal itemSubtotal = product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+            totalAmount = totalAmount.add(itemSubtotal);
+        }
+        
+        // Add shipping fee if provided
+        if (request.getShippingFee() != null) {
+            totalAmount = totalAmount.add(request.getShippingFee());
+        }
+        
+        // Subtract discount if provided
+        if (request.getDiscountAmount() != null) {
+            totalAmount = totalAmount.subtract(request.getDiscountAmount());
+        }
+        
+        Order order = Order.builder()
+                .user(user)
+                .orderDate(LocalDateTime.now())
+                .status(OrderStatus.PENDING)
+                .shippingAddress(request.getShippingAddress())
+                .billingAddress(request.getBillingAddress() != null ? request.getBillingAddress() : request.getShippingAddress())
+                .phone(request.getPhone())
+                .customerName(request.getCustomerName())
+                .email(request.getEmail() != null ? request.getEmail() : user.getEmail())
+                .paymentMethod(request.getPaymentMethod())
+                .totalAmount(totalAmount)
+                .shippingFee(request.getShippingFee() != null ? request.getShippingFee() : BigDecimal.ZERO)
+                .discountAmount(request.getDiscountAmount() != null ? request.getDiscountAmount() : BigDecimal.ZERO)
+                .notes(request.getNotes())
+                .orderDetails(new ArrayList<>())
+                .build();
+
+        // Create order details and update product stock
+        for (CreateDirectOrderRequest.OrderItemRequest item : request.getItems()) {
+            Product product = productRepository.findById(item.getProductId()).get();
+            
+            OrderDetail orderDetail = OrderDetail.builder()
+                    .order(order)
+                    .product(product)
+                    .quantity(item.getQuantity())
+                    .price(product.getPrice())
+                    .subtotal(product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                    .build();
+
+            order.getOrderDetails().add(orderDetail);
+            
+            // Update product stock
+            product.setStock(product.getStock() - item.getQuantity());
+            productRepository.save(product);
+        }
+
+        Order savedOrder = orderRepository.save(order);
+        log.info("Direct order created successfully: {}", savedOrder.getOrderNumber());
         
         return savedOrder;
     }
