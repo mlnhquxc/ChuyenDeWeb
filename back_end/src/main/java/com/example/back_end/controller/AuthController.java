@@ -20,10 +20,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.userdetails.User;
 import com.example.back_end.exception.AppException;
+import com.example.back_end.entity.User;
 
 import java.text.ParseException;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -205,7 +206,7 @@ public class AuthController {
      */
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponse<ResetPasswordResponse>> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
-        log.info("Received password reset request for email: {}", request.getEmail());
+        log.info("Received password reset request for email: {} with OTP: {}", request.getEmail(), request.getOtp());
         
         ResetPasswordResponse response = userService.resetPassword(
                 request.getEmail(),
@@ -213,17 +214,217 @@ public class AuthController {
                 request.getNewPassword()
         );
         
+        log.info("Password reset response: {}", response);
+        
         if (response.isSuccess()) {
+            log.info("Password reset successful for email: {}", request.getEmail());
             return ResponseEntity.ok(ApiResponse.<ResetPasswordResponse>builder()
                     .code(0)
                     .result(response)
                     .message("Password reset successfully")
                     .build());
         } else {
+            log.warn("Password reset failed for email: {}, reason: {}", request.getEmail(), response.getMessage());
             return ResponseEntity.badRequest().body(ApiResponse.<ResetPasswordResponse>builder()
                     .code(400)
                     .result(response)
                     .message(response.getMessage())
+                    .build());
+        }
+    }
+    
+    /**
+     * Endpoint for account activation
+     * @param request Map containing activation token
+     * @return Response with success status and message
+     */
+    @PostMapping("/activate")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> activateAccount(@RequestBody Map<String, String> request) {
+        log.info("Received account activation request with data: {}", request);
+        
+        String token = request.get("token");
+        if (token == null || token.isEmpty()) {
+            log.error("Token is missing in the request");
+            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
+                    .code(400)
+                    .message("Token is required")
+                    .build());
+        }
+        
+        log.info("Calling userService.activateAccount with token: {}", token.substring(0, Math.min(20, token.length())) + "...");
+        boolean success = userService.activateAccount(token);
+        log.info("Account activation result: {}", success);
+        
+        if (success) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("activated", true);
+            
+            log.info("Account activated successfully");
+            return ResponseEntity.ok(ApiResponse.<Map<String, Object>>builder()
+                    .code(0)
+                    .result(result)
+                    .message("Account activated successfully")
+                    .build());
+        } else {
+            log.error("Failed to activate account");
+            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
+                    .code(400)
+                    .message("Failed to activate account. Token may be invalid or expired.")
+                    .build());
+        }
+    }
+    
+    /**
+     * Endpoint to check account activation status
+     * @param request Map containing email
+     * @return Response with activation status
+     */
+    /**
+     * Endpoint to check current OTP for an email (for debugging only)
+     * @param request Map containing email
+     * @return Response with current OTP
+     */
+    @PostMapping("/check-otp")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> checkCurrentOtp(@RequestBody Map<String, String> request) {
+        log.info("Received check OTP request");
+        
+        String email = request.get("email");
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
+                    .code(400)
+                    .message("Email is required")
+                    .build());
+        }
+        
+        try {
+            // Get current OTP
+            String currentOtp = userService.otpService.getCurrentOtp(email);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("email", email);
+            result.put("otp", currentOtp);
+            
+            return ResponseEntity.ok(ApiResponse.<Map<String, Object>>builder()
+                    .code(0)
+                    .result(result)
+                    .message(currentOtp != null ? "Current OTP retrieved" : "No valid OTP found")
+                    .build());
+        } catch (Exception e) {
+            log.error("Error checking OTP: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
+                    .code(400)
+                    .message("Failed to check OTP: " + e.getMessage())
+                    .build());
+        }
+    }
+    
+    @PostMapping("/check-activation")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> checkActivationStatus(@RequestBody Map<String, String> request) {
+        log.info("Received check activation status request");
+        
+        String email = request.get("email");
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
+                    .code(400)
+                    .message("Email is required")
+                    .build());
+        }
+        
+        try {
+            // Find user by email
+            User user = userService.findByEmail(email);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("activated", user.getActive());
+            
+            return ResponseEntity.ok(ApiResponse.<Map<String, Object>>builder()
+                    .code(0)
+                    .result(result)
+                    .message(user.getActive() ? "Account is activated" : "Account is not activated")
+                    .build());
+        } catch (Exception e) {
+            log.error("Error checking activation status: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
+                    .code(400)
+                    .message("Failed to check activation status: " + e.getMessage())
+                    .build());
+        }
+    }
+    
+    /**
+     * Endpoint for direct account activation by email (for testing only)
+     * @param request Map containing email
+     * @return Response with success status and message
+     */
+    @PostMapping("/activate-by-email")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> activateByEmail(@RequestBody Map<String, String> request) {
+        log.info("Received direct account activation request");
+        
+        String email = request.get("email");
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
+                    .code(400)
+                    .message("Email is required")
+                    .build());
+        }
+        
+        try {
+            // Find user by email
+            User user = userService.findByEmail(email);
+            
+            // Activate account
+            user.setActive(true);
+            userService.saveUser(user);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("activated", true);
+            
+            return ResponseEntity.ok(ApiResponse.<Map<String, Object>>builder()
+                    .code(0)
+                    .result(result)
+                    .message("Account activated successfully")
+                    .build());
+        } catch (Exception e) {
+            log.error("Error activating account: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
+                    .code(400)
+                    .message("Failed to activate account: " + e.getMessage())
+                    .build());
+        }
+    }
+    
+    /**
+     * Endpoint to resend activation email
+     * @param request Map containing email
+     * @return Response with success status and message
+     */
+    @PostMapping("/resend-activation")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> resendActivation(@RequestBody Map<String, String> request) {
+        log.info("Received resend activation request");
+        
+        String email = request.get("email");
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
+                    .code(400)
+                    .message("Email is required")
+                    .build());
+        }
+        
+        boolean success = userService.resendActivation(email);
+        
+        if (success) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("sent", true);
+            
+            return ResponseEntity.ok(ApiResponse.<Map<String, Object>>builder()
+                    .code(0)
+                    .result(result)
+                    .message("Activation email sent successfully")
+                    .build());
+        } else {
+            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
+                    .code(400)
+                    .message("Failed to send activation email. Account may already be activated or email is invalid.")
                     .build());
         }
     }

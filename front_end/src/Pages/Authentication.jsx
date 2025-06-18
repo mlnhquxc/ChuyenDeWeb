@@ -68,32 +68,97 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
     }));
   };
 
+  const [accountNotActivated, setAccountNotActivated] = useState(false);
+  const [inactiveAccountEmail, setInactiveAccountEmail] = useState("");
+  
   const handleLogin = async (e) => {
     e.preventDefault();
     
-    if (Object.keys(errors).length > 0) {
+    // Ngăn chặn hành vi mặc định của form
+    e.stopPropagation();
+    
+    // Xóa lỗi trước khi kiểm tra
+    setErrors({});
+    
+    // Kiểm tra dữ liệu đầu vào
+    let validationErrors = {};
+    
+    if (!formData.username.trim()) {
+      validationErrors.username = 'Vui lòng nhập tên đăng nhập';
+    }
+    
+    if (!formData.password) {
+      validationErrors.password = 'Vui lòng nhập mật khẩu';
+    }
+    
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
     
     try {
       setIsLoading(true);
-      const response = await login({
+      setAccountNotActivated(false); // Reset trạng thái tài khoản chưa kích hoạt
+      
+      console.log('Authentication - Attempting login with:', {
         username: formData.username,
-        password: formData.password
+        password: '********' // Không hiển thị mật khẩu trong log
       });
       
-      if (response && response.authenticated) {
-        showToast.loginSuccess(formData.username);
-        navigate('/');
-      } else {
-        setErrors({ submit: 'Tên đăng nhập hoặc mật khẩu không đúng' });
-        showToast.loginError('Tên đăng nhập hoặc mật khẩu không đúng');
+      // Gọi API đăng nhập trực tiếp từ authService thay vì qua context
+      // để tránh các xử lý phụ có thể gây chuyển hướng
+      const loginData = {
+        username: formData.username,
+        password: formData.password
+      };
+      
+      try {
+        const response = await authService.login(loginData);
+        
+        console.log('Authentication - Login response:', response);
+        
+        if (response && response.authenticated) {
+          // Đăng nhập thành công
+          showToast.loginSuccess(formData.username);
+          navigate('/');
+        } else {
+          // Đăng nhập thất bại nhưng không có lỗi
+          setErrors({ submit: 'Tên đăng nhập hoặc mật khẩu không đúng' });
+          showToast.loginError('Tên đăng nhập hoặc mật khẩu không đúng');
+        }
+      } catch (error) {
+        console.error('Authentication - Direct login error:', error);
+        
+        // Kiểm tra nếu lỗi là tài khoản chưa kích hoạt
+        if (error.code === 'ACCOUNT_NOT_ACTIVATED') {
+          setAccountNotActivated(true);
+          setInactiveAccountEmail(error.email || formData.username);
+          setErrors({ 
+            submit: 'Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email để kích hoạt tài khoản hoặc yêu cầu gửi lại email kích hoạt.' 
+          });
+        } else {
+          // Hiển thị thông báo lỗi từ backend hoặc từ authService
+          const errorMessage = error.userMessage || error.response?.data?.message || 'Đã xảy ra lỗi khi đăng nhập';
+          setErrors({ submit: errorMessage });
+          showToast.loginError(errorMessage);
+        }
       }
     } catch (error) {
-      console.error('Login error:', error);
-      const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi đăng nhập';
-      setErrors({ submit: errorMessage });
-      showToast.loginError(errorMessage);
+      console.error('Authentication - Outer login error:', error);
+      setErrors({ submit: 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleResendActivationFromLogin = async () => {
+    try {
+      setIsLoading(true);
+      await authService.resendActivation(inactiveAccountEmail);
+      showToast.success("Email kích hoạt đã được gửi lại. Vui lòng kiểm tra hộp thư của bạn.");
+    } catch (error) {
+      console.error('Resend activation error:', error);
+      showToast.error(error.userMessage || "Không thể gửi lại email kích hoạt. Vui lòng thử lại sau.");
     } finally {
       setIsLoading(false);
     }
@@ -118,6 +183,16 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
         {errors.submit && (
           <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg" role="alert">
             <span className="block sm:inline">{errors.submit}</span>
+            {accountNotActivated && (
+              <button
+                type="button"
+                onClick={handleResendActivationFromLogin}
+                className="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                disabled={isLoading}
+              >
+                {isLoading ? "Đang gửi..." : "Gửi lại email kích hoạt"}
+              </button>
+            )}
           </div>
         )}
 
@@ -296,6 +371,9 @@ const RegisterForm = ({ onSwitchToLogin }) => {
     }));
   };
 
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -331,39 +409,19 @@ const RegisterForm = ({ onSwitchToLogin }) => {
           fullname: formData.fullName,
           phone: formData.phone,
           role: "USER",
-          username: formData.username,
-          active: true
+          username: formData.username
+          // Không cần đặt active: true vì mặc định sẽ là false để yêu cầu kích hoạt
         };
 
         const response = await authService.register(userData);
 
-        if (response && response.authenticated) {
-          showToast.registerSuccess();
-
-          // Đợi 2 giây để backend xử lý xong việc tạo tài khoản
-          await new Promise(resolve => setTimeout(resolve, 2000));
-
-          // Thử đăng nhập ngay sau khi đăng ký
-          try {
-            const loginResponse = await authService.login({
-              username: formData.username,
-              password: formData.password
-            });
-
-            if (loginResponse && loginResponse.authenticated) {
-              // Chuyển về form đăng nhập
-              onSwitchToLogin();
-            } else {
-              setErrors({
-                submit: "Đăng ký thành công nhưng đăng nhập tự động thất bại. Vui lòng đăng nhập thủ công."
-              });
-            }
-          } catch (loginError) {
-            console.error('Auto login error:', loginError);
-            setErrors({
-              submit: "Đăng ký thành công nhưng đăng nhập tự động thất bại. Vui lòng đăng nhập thủ công."
-            });
-          }
+        if (response && response.needsActivation) {
+          // Đăng ký thành công, hiển thị thông báo kích hoạt
+          showToast.success("Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản.");
+          setRegistrationSuccess(true);
+          setRegisteredEmail(formData.email);
+          
+          // Không tự động đăng nhập vì tài khoản chưa được kích hoạt
         } else {
           showToast.registerError("Đăng ký thất bại. Vui lòng thử lại.");
           setErrors({
@@ -382,6 +440,19 @@ const RegisterForm = ({ onSwitchToLogin }) => {
       }
     }
   };
+  
+  const handleResendActivation = async () => {
+    try {
+      setIsLoading(true);
+      await authService.resendActivation(registeredEmail);
+      showToast.success("Email kích hoạt đã được gửi lại. Vui lòng kiểm tra hộp thư của bạn.");
+    } catch (error) {
+      console.error('Resend activation error:', error);
+      showToast.error(error.userMessage || "Không thể gửi lại email kích hoạt. Vui lòng thử lại sau.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <motion.div
@@ -391,19 +462,55 @@ const RegisterForm = ({ onSwitchToLogin }) => {
       transition={{ duration: 0.3 }}
       className="w-full"
     >
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400">
-          Tạo tài khoản mới
-        </h2>
-        <p className="mt-2 text-gray-600 dark:text-gray-300">Đăng ký để trải nghiệm dịch vụ của chúng tôi</p>
-      </div>
-
-      <form className="space-y-5" onSubmit={handleRegister}>
-        {errors.submit && (
-          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg" role="alert">
-            <span className="block sm:inline">{errors.submit}</span>
+      {registrationSuccess ? (
+        <div className="text-center">
+          <div className="mb-8">
+            <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="mt-4 text-2xl font-bold text-gray-800 dark:text-white">Đăng ký thành công!</h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">
+              Chúng tôi đã gửi email kích hoạt đến <span className="font-medium">{registeredEmail}</span>. 
+              Vui lòng kiểm tra hộp thư của bạn và nhấp vào liên kết kích hoạt để hoàn tất quá trình đăng ký.
+            </p>
           </div>
-        )}
+          
+          <div className="mt-6 space-y-4">
+            <button
+              type="button"
+              onClick={handleResendActivation}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300"
+              disabled={isLoading}
+            >
+              {isLoading ? "Đang gửi..." : "Gửi lại email kích hoạt"}
+            </button>
+            
+            <button
+              type="button"
+              onClick={onSwitchToLogin}
+              className="w-full flex justify-center py-3 px-4 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300"
+            >
+              Quay lại đăng nhập
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400">
+              Tạo tài khoản mới
+            </h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">Đăng ký để trải nghiệm dịch vụ của chúng tôi</p>
+          </div>
+
+          <form className="space-y-5" onSubmit={handleRegister}>
+            {errors.submit && (
+              <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg" role="alert">
+                <span className="block sm:inline">{errors.submit}</span>
+              </div>
+            )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -543,6 +650,8 @@ const RegisterForm = ({ onSwitchToLogin }) => {
           Đã có tài khoản? Đăng nhập ngay
         </button>
       </div>
+      </>
+      )}
     </motion.div>
   );
 };
@@ -576,7 +685,7 @@ const AuthPage = () => {
   };
 
   const handlePasswordReset = () => {
-    toast.success("Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập với mật khẩu mới.");
+    showToast.success("Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập với mật khẩu mới.");
     setAuthState("login");
   };
 

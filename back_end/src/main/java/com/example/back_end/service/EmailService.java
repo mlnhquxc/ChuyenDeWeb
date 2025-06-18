@@ -101,4 +101,40 @@ public class EmailService {
             // We log the error but don't throw an exception as this is not critical for the registration flow
         }
     }
+    
+    /**
+     * Send account activation email
+     * @param to Recipient email
+     * @param fullName User's full name
+     * @param username Username
+     * @param activationUrl Activation URL
+     */
+    @Async
+    public void sendActivationEmail(String to, String fullName, String username, String activationUrl) {
+        try {
+            log.info("Sending activation email to: {}", to);
+            
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject("Activate Your Account");
+            
+            String emailContent = 
+                "Dear " + fullName + ",\n\n" +
+                "Thank you for registering with our platform. To complete your registration, please activate your account by clicking the link below:\n\n" +
+                activationUrl + "\n\n" +
+                "This link will expire in 24 hours.\n\n" +
+                "If you did not register for an account, please ignore this email.\n\n" +
+                "Best regards,\n" +
+                "The Team";
+            
+            message.setText(emailContent);
+            mailSender.send(message);
+            
+            log.info("Activation email sent successfully to: {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send activation email to: {}", to, e);
+            // We log the error but don't throw an exception as this is not critical for the registration flow
+        }
+    }
 }

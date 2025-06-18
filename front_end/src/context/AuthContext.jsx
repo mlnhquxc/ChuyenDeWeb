@@ -75,22 +75,36 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (credentials) => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('AuthContext - Attempting login with credentials:', credentials);
-    }
+    console.log('AuthContext - Attempting login with credentials:', credentials);
+    
     try {
       const response = await authService.login(credentials);
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('AuthContext - Login response:', response);
-      }
+      console.log('AuthContext - Login response:', response);
+      
       if (response && response.authenticated) {
         setUser(response.user);
         setIsAuthenticated(true);
         return response;
       }
+      
+      // Nếu không có lỗi nhưng không xác thực thành công
+      console.warn('AuthContext - Login failed but no error thrown');
       return null;
     } catch (error) {
-      console.error('AuthContext - Login error:', error.message || 'Unknown error');
+      console.error('AuthContext - Login error:', error);
+      
+      // Kiểm tra nếu lỗi là tài khoản chưa kích hoạt
+      if (error.code === 'ACCOUNT_NOT_ACTIVATED') {
+        console.warn('AuthContext - Account not activated:', error.email);
+      } else {
+        console.error('AuthContext - Login error details:', {
+          message: error.message,
+          userMessage: error.userMessage,
+          response: error.response?.data
+        });
+      }
+      
+      // Ném lỗi để component xử lý
       throw error;
     }
   };
@@ -110,23 +124,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = async () => {
+  const logout = async (redirectToAuth = true) => {
     try {
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('AuthContext - Attempting logout...');
-      }
+      console.log('AuthContext - Attempting logout...');
       await authService.logout();
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('AuthContext - Logout successful, clearing user state');
-      }
+      console.log('AuthContext - Logout successful, clearing user state');
+      
       setUser(null);
       setIsAuthenticated(false);
-      window.location.href = '/auth';
+      
+      // Chỉ chuyển hướng nếu được yêu cầu
+      if (redirectToAuth) {
+        console.log('AuthContext - Redirecting to auth page');
+        window.location.href = '/auth';
+      }
     } catch (error) {
       console.error('AuthContext - Logout error:', error.message || 'Unknown error');
+      
       setUser(null);
       setIsAuthenticated(false);
-      window.location.href = '/auth';
+      
+      // Chỉ chuyển hướng nếu được yêu cầu
+      if (redirectToAuth) {
+        console.log('AuthContext - Redirecting to auth page after error');
+        window.location.href = '/auth';
+      }
     }
   };
 

@@ -50,10 +50,21 @@ axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        
+        // Kiểm tra xem yêu cầu có phải là đăng nhập không
+        const isLoginRequest = originalRequest.url.endsWith('/api/auth/login');
+        console.log('Request URL:', originalRequest.url);
+        console.log('Is login request:', isLoginRequest);
+        
+        // Nếu là yêu cầu đăng nhập, không xử lý đặc biệt, chỉ trả về lỗi
+        if (isLoginRequest) {
+            console.log('Login request failed, returning error without redirect');
+            return Promise.reject(error);
+        }
 
         if (error.response) {
-            // Handle 401 Unauthorized error
-            if (error.response.status === 401 && !originalRequest._retry) {
+            // Handle 401 Unauthorized error (chỉ cho các yêu cầu không phải đăng nhập)
+            if (error.response.status === 401 && !originalRequest._retry && !isLoginRequest) {
                 if (isRefreshing) {
                     // If token refresh is in progress, queue the request
                     return new Promise((resolve, reject) => {
@@ -88,18 +99,20 @@ axiosInstance.interceptors.response.use(
                     processQueue(refreshError, null);
                     // Log the user out and redirect to login page
                     authService.logout();
-                    window.location.href = '/auth';
+                    // Không chuyển hướng tự động
+                    // window.location.href = '/auth';
                     return Promise.reject(refreshError);
                 } finally {
                     isRefreshing = false;
                 }
             }
 
-            // Handle 403 Forbidden error
-            if (error.response.status === 403) {
+            // Handle 403 Forbidden error (chỉ cho các yêu cầu không phải đăng nhập)
+            if (error.response.status === 403 && !isLoginRequest) {
+                console.log('403 error from non-login request, logging out');
                 authService.logout();
-                window.location.href = '/auth';
-                return Promise.reject(error);
+                // Không chuyển hướng tự động
+                // window.location.href = '/auth';
             }
         }
         return Promise.reject(error);

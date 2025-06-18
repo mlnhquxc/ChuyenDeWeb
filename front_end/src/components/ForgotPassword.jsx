@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaEnvelope, FaArrowLeft } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import authService from '../services/authService';
-import { toast } from 'react-toastify';
+import { showToast } from '../utils/toast';
 
 const ForgotPassword = ({ onBack, onOtpSent }) => {
   const [email, setEmail] = useState('');
@@ -29,12 +29,13 @@ const ForgotPassword = ({ onBack, onOtpSent }) => {
 
     try {
       const response = await authService.forgotPassword(email);
-      toast.success('Mã OTP đã được gửi đến email của bạn');
+      console.log('Forgot password response:', response);
+      showToast.success('Mã OTP đã được gửi đến email của bạn');
       onOtpSent(email);
     } catch (error) {
       console.error('Forgot password error:', error);
       setError(error.userMessage || 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.');
-      toast.error('Không thể gửi mã OTP');
+      showToast.error('Không thể gửi mã OTP');
     } finally {
       setIsLoading(false);
     }

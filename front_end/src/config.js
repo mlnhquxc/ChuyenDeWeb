@@ -1,4 +1,4 @@
-export const API_URL = 'http://localhost:8080';
+export const API_URL = 'http://192.168.2.11:8080';
 
 export const ENDPOINTS = {
     AUTH: {
@@ -8,7 +8,10 @@ export const ENDPOINTS = {
         INTROSPECT: '/api/auth/introspect',
         FORGOT_PASSWORD: '/api/auth/forgot-password',
         VERIFY_OTP: '/api/auth/verify-otp',
-        RESET_PASSWORD: '/api/auth/reset-password'
+        RESET_PASSWORD: '/api/auth/reset-password',
+        ACTIVATE_ACCOUNT: '/api/auth/activate',
+        RESEND_ACTIVATION: '/api/auth/resend-activation',
+        CHECK_ACTIVATION: '/api/auth/check-activation'
     },
     USER: {
         PROFILE: '/api/users/profile',
