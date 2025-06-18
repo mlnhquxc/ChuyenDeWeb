@@ -46,9 +46,17 @@ const authService = {
         throw error;
       }
 
+      console.log('authService - Saving token and user to localStorage');
       localStorage.setItem(TOKEN_KEY, token);
       localStorage.setItem(USER_KEY, JSON.stringify(user));
-      return { accessToken: token, user, authenticated };
+      
+      // Kiểm tra xem đã lưu thành công chưa
+      const savedToken = localStorage.getItem(TOKEN_KEY);
+      const savedUser = localStorage.getItem(USER_KEY);
+      console.log('authService - Saved token:', savedToken ? 'Token saved successfully' : 'Failed to save token');
+      console.log('authService - Saved user:', savedUser ? 'User saved successfully' : 'Failed to save user');
+      
+      return { token, user, authenticated };
     } catch (error) {
       // Xóa token và user khỏi localStorage nếu đăng nhập thất bại
       localStorage.removeItem(TOKEN_KEY);
@@ -243,24 +251,21 @@ const authService = {
 
   // Clear expired tokens and force fresh login
   clearExpiredTokens() {
+    console.log('authService - Checking for expired tokens');
     const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) return;
+    if (!token) {
+      console.log('authService - No token found');
+      return false;
+    }
 
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const currentTime = Date.now() / 1000;
-      
-      if (payload.exp && payload.exp < currentTime) {
-        console.log('Clearing expired token');
-        this.logout();
-        return true; // Token was expired and cleared
-      }
-    } catch (error) {
-      console.error('Error checking token expiration:', error);
-      this.logout();
-      return true; // Token was invalid and cleared
+    // Sử dụng phương thức isTokenValid để kiểm tra
+    if (!this.isTokenValid(token)) {
+      console.log('authService - Clearing expired or invalid token');
+      this.logout(false); // Không tự động chuyển hướng
+      return true; // Token was expired and cleared
     }
     
+    console.log('authService - Token is still valid');
     return false; // Token is still valid
   },
 
@@ -290,6 +295,36 @@ const authService = {
     }
   },
 
+  isTokenValid(token) {
+    if (!token) {
+      return false;
+    }
+    
+    try {
+      // Kiểm tra cấu trúc token
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        console.error('Invalid token format');
+        return false;
+      }
+      
+      // Giải mã payload
+      const payload = JSON.parse(atob(parts[1]));
+      const currentTime = Date.now() / 1000;
+      
+      // Kiểm tra thời hạn
+      if (payload.exp && payload.exp < currentTime) {
+        console.log('Token has expired, exp:', payload.exp, 'current:', currentTime);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error validating token:', error);
+      return false;
+    }
+  },
+  
   isAuthenticated() {
     const token = localStorage.getItem(TOKEN_KEY);
     const user = localStorage.getItem(USER_KEY);
@@ -298,20 +333,10 @@ const authService = {
       return false;
     }
     
-    // Check if token is expired (basic check)
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const currentTime = Date.now() / 1000;
-      
-      if (payload.exp && payload.exp < currentTime) {
-        console.log('Token has expired, clearing storage');
-        this.logout();
-        return false;
-      }
-    } catch (error) {
-      console.error('Error checking token expiration:', error);
-      // If we can't parse the token, consider it invalid
-      this.logout();
+    // Kiểm tra token có hợp lệ không
+    if (!this.isTokenValid(token)) {
+      console.log('Token is invalid or expired, clearing storage');
+      this.logout(false);
       return false;
     }
     

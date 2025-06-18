@@ -70,13 +70,30 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
   const handleLogout = async () => {
     try {
       console.log('Header: Initiating logout...');
-      await logout();
-      console.log('Header: Logout successful, navigating to login');
-      navigate('/login', { replace: true });
+      // Đóng dropdown menu trước
+      setIsUserMenuOpen(false);
+      
+      // Thực hiện logout
+      await logout(false); // false để không tự động chuyển hướng
+      
+      console.log('Header: Logout successful, navigating to home');
+      
+      // Kích hoạt sự kiện để cập nhật UI
+      window.dispatchEvent(new Event('auth-state-changed'));
+      
+      // Chuyển hướng về trang chủ
+      navigate('/', { replace: true });
     } catch (error) {
       console.error('Header: Logout error:', error);
-      // Even if logout fails, navigate to login page
-      navigate('/login', { replace: true });
+      
+      // Đóng dropdown menu
+      setIsUserMenuOpen(false);
+      
+      // Kích hoạt sự kiện để cập nhật UI
+      window.dispatchEvent(new Event('auth-state-changed'));
+      
+      // Chuyển hướng về trang chủ
+      navigate('/', { replace: true });
     }
   };
 
@@ -179,6 +196,34 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  
+  // Lắng nghe sự kiện thay đổi trạng thái xác thực
+  useEffect(() => {
+    const handleAuthChange = () => {
+      console.log('Header - Auth state changed event received');
+      // Cập nhật lại state từ localStorage
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const currentUser = JSON.parse(userStr);
+          console.log('Header - Updated user from localStorage:', currentUser?.username);
+        } catch (error) {
+          console.error('Header - Error parsing user data:', error);
+        }
+      }
+    };
+
+    window.addEventListener('auth-state-changed', handleAuthChange);
+    return () => window.removeEventListener('auth-state-changed', handleAuthChange);
+  }, []);
+  
+  // Log khi trạng thái xác thực thay đổi
+  useEffect(() => {
+    console.log('Header - Authentication state changed:', { 
+      isAuthenticated, 
+      user: user?.username || 'No user' 
+    });
+  }, [isAuthenticated, user]);
 
   const handleUserMenuClick = () => {
     setIsUserMenuOpen(!isUserMenuOpen);

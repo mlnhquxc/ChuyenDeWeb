@@ -313,35 +313,7 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    public String uploadAvatar(String email, MultipartFile file) {
-        User user = findByEmail(email);
-        
-        try {
-            // Generate unique filename
-            String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String filename = UUID.randomUUID().toString() + extension;
-            
-            // Save file to filesystem
-            String uploadDir = "uploads/avatars/";
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-            
-            File destFile = new File(dir.getAbsolutePath() + File.separator + filename);
-            file.transferTo(destFile);
-            
-            // Update user avatar URL
-            String avatarUrl = "/uploads/avatars/" + filename;
-            user.setAvatar(avatarUrl);
-            userRepository.save(user);
-            
-            return avatarUrl;
-        } catch (IOException e) {
-            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
-        }
-    }
+
 
     public String validateToken(String token) throws ParseException, JOSEException {
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
@@ -638,6 +610,15 @@ public class UserService implements UserDetailsService {
     }
     
     /**
+     * Get current OTP for the given email (for debugging purposes)
+     * @param email User email
+     * @return Current OTP or null if not found
+     */
+    public String getCurrentOtp(String email) {
+        return otpService.getCurrentOtp(email);
+    }
+    
+    /**
      * Reset password with OTP verification
      * @param email User email
      * @param otp OTP for verification
@@ -711,6 +692,107 @@ public class UserService implements UserDetailsService {
                     .success(false)
                     .message("An unexpected error occurred")
                     .build();
+        }
+    }
+    
+    /**
+     * Upload avatar for user
+     * @param username Username
+     * @param file Avatar file
+     * @return Avatar URL
+     */
+    @Value("${app.upload.dir:uploads}")
+    private String uploadDir;
+    
+    @Value("${app.upload.url:http://localhost:8080/uploads}")
+    private String uploadUrl;
+    
+    public String uploadAvatar(String username, MultipartFile file) {
+        log.info("Uploading avatar for user: {}", username);
+        
+        try {
+            // Find user
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> {
+                        log.error("User not found with username: {}", username);
+                        return new AppException(ErrorCode.USER_NOT_EXISTED);
+                    });
+            
+            // Check if file is empty
+            if (file.isEmpty()) {
+                log.error("Empty file submitted for avatar upload");
+                throw new AppException(ErrorCode.INVALID_REQUEST);
+            }
+            
+            // Check file type
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                log.error("Invalid file type for avatar: {}", contentType);
+                throw new AppException(ErrorCode.INVALID_REQUEST);
+            }
+            
+            // Create upload directory if it doesn't exist
+            File uploadPath = new File(uploadDir);
+            log.info("Upload directory path: {}", uploadPath.getAbsolutePath());
+            
+            if (!uploadPath.exists()) {
+                log.info("Creating upload directory: {}", uploadPath.getAbsolutePath());
+                if (!uploadPath.mkdirs()) {
+                    log.error("Failed to create upload directory");
+                    throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
+                }
+            } else {
+                log.info("Upload directory already exists");
+            }
+            
+            // Generate unique filename
+            String originalFilename = file.getOriginalFilename();
+            String fileExtension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+            String filename = "avatar_" + username + "_" + UUID.randomUUID() + fileExtension;
+            
+            // Save file
+            File destFile = new File(uploadPath.getAbsolutePath() + File.separator + filename);
+            log.info("Saving avatar to: {}", destFile.getAbsolutePath());
+            
+            try {
+                file.transferTo(destFile);
+                log.info("File saved successfully to: {}", destFile.getAbsolutePath());
+                
+                // Verify file was saved
+                if (!destFile.exists() || destFile.length() == 0) {
+                    log.error("File was not saved properly: {}", destFile.getAbsolutePath());
+                    throw new IOException("File was not saved properly");
+                }
+            } catch (IOException e) {
+                log.error("Error saving file: {}", e.getMessage());
+                throw e;
+            }
+            
+            // Update user avatar URL - use relative path for better compatibility
+            String avatarUrl = "/uploads/" + filename;
+            log.info("Setting avatar URL for user: {}, URL: {}", username, avatarUrl);
+            
+            // Log the absolute URL for debugging
+            String absoluteUrl = uploadUrl + "/" + filename;
+            log.info("Absolute URL would be: {}", absoluteUrl);
+            
+            user.setAvatar(avatarUrl);
+            userRepository.save(user);
+            
+            log.info("Avatar uploaded successfully for user: {}, URL: {}", username, avatarUrl);
+            return avatarUrl;
+        } catch (AppException e) {
+            log.error("Avatar upload failed: {}", e.getErrorCode().getMessage());
+            throw e;
+        } catch (IOException e) {
+            log.error("IO error during avatar upload: {}", e.getMessage());
+            throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            log.error("Unexpected error during avatar upload: {}", e.getMessage());
+            throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -36,6 +36,10 @@ public enum ErrorCode {
     WISHLIST_NOT_FOUND(4000, "Wishlist not found", HttpStatus.NOT_FOUND),
     WISHLIST_ITEM_NOT_FOUND(4001, "Wishlist item not found", HttpStatus.NOT_FOUND),
     PRODUCT_ALREADY_IN_WISHLIST(4002, "Product is already in wishlist", HttpStatus.BAD_REQUEST),
+    
+    // File upload related errors
+    INVALID_REQUEST(5000, "Invalid request", HttpStatus.BAD_REQUEST),
+    INTERNAL_SERVER_ERROR(5001, "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
     private final int code;

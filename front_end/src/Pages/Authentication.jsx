@@ -113,14 +113,24 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
       };
       
       try {
-        const response = await authService.login(loginData);
+        // Sử dụng login từ AuthContext để cập nhật trạng thái xác thực
+        const response = await login(loginData);
         
         console.log('Authentication - Login response:', response);
         
         if (response && response.authenticated) {
           // Đăng nhập thành công
           showToast.loginSuccess(formData.username);
-          navigate('/');
+          
+          // Kích hoạt sự kiện để cập nhật UI
+          window.dispatchEvent(new Event('auth-state-changed'));
+          
+          // Đợi một chút để đảm bảo trạng thái đã được cập nhật
+          setTimeout(() => {
+            console.log('Authentication - Redirecting to home after successful login');
+            // Sử dụng replace: true để thay thế lịch sử điều hướng
+            navigate('/', { replace: true });
+          }, 300);
         } else {
           // Đăng nhập thất bại nhưng không có lỗi
           setErrors({ submit: 'Tên đăng nhập hoặc mật khẩu không đúng' });

@@ -298,7 +298,7 @@ public class AuthController {
         
         try {
             // Get current OTP
-            String currentOtp = userService.otpService.getCurrentOtp(email);
+            String currentOtp = userService.getCurrentOtp(email);
             
             Map<String, Object> result = new HashMap<>();
             result.put("email", email);

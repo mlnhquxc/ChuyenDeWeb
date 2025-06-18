@@ -97,10 +97,8 @@ axiosInstance.interceptors.response.use(
                 } catch (refreshError) {
                     // If token refresh fails, reject all queued requests
                     processQueue(refreshError, null);
-                    // Log the user out and redirect to login page
-                    authService.logout();
-                    // Không chuyển hướng tự động
-                    // window.location.href = '/auth';
+                    // Log the user out and redirect to home page
+                    authService.logout(true); // true để chuyển hướng về trang chủ
                     return Promise.reject(refreshError);
                 } finally {
                     isRefreshing = false;
@@ -110,9 +108,7 @@ axiosInstance.interceptors.response.use(
             // Handle 403 Forbidden error (chỉ cho các yêu cầu không phải đăng nhập)
             if (error.response.status === 403 && !isLoginRequest) {
                 console.log('403 error from non-login request, logging out');
-                authService.logout();
-                // Không chuyển hướng tự động
-                // window.location.href = '/auth';
+                authService.logout(true); // true để chuyển hướng về trang chủ
             }
         }
         return Promise.reject(error);
