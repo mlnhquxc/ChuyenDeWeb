@@ -30,10 +30,10 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String shortDescription;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal price;
 
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 15, scale = 2)
     private BigDecimal originalPrice;
 
     @Column(nullable = false)
@@ -116,10 +116,14 @@ public class Product {
     public String getPrimaryImageUrl() {
         if (productImages != null && !productImages.isEmpty()) {
             return productImages.stream()
-                    .filter(ProductImage::getIsPrimary)
+                    .filter(img -> img != null && Boolean.TRUE.equals(img.getIsPrimary()))
                     .findFirst()
                     .map(ProductImage::getImageUrl)
-                    .orElse(productImages.get(0).getImageUrl());
+                    .orElse(productImages.stream()
+                            .filter(img -> img != null && img.getImageUrl() != null)
+                            .findFirst()
+                            .map(ProductImage::getImageUrl)
+                            .orElse(null));
         }
         return image;
     }

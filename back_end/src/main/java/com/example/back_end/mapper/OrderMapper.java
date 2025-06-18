@@ -26,15 +26,35 @@ public class OrderMapper {
 
         return OrderDTO.builder()
                 .id(order.getId())
+                .orderNumber(order.getOrderNumber())
                 .userId(order.getUser().getId())
                 .username(order.getUser().getUsername())
                 .userEmail(order.getUser().getEmail())
+                .shippingFee(order.getShippingFee())
+                .discountAmount(order.getDiscountAmount())
+                .taxAmount(order.getTaxAmount())
+                .notes(order.getNotes())
+                .trackingNumber(order.getTrackingNumber())
+                .shippedDate(order.getShippedDate())
+                .deliveredDate(order.getDeliveredDate())
+                .cancelledDate(order.getCancelledDate())
+                .cancellationReason(order.getCancellationReason())
+                .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
+                .email(order.getEmail())
+                .customerName(order.getCustomerName())
+                .paymentMethod(order.getPaymentMethod())
+                .paymentStatus(order.getPaymentStatus())
                 .shippingAddress(order.getShippingAddress())
+                .billingAddress(order.getBillingAddress())
                 .phone(order.getPhone())
                 .status(order.getStatus())
                 .totalAmount(order.getTotalAmount())
                 .orderDate(order.getOrderDate())
                 .orderDetails(orderDetailDTOs)
+                .canBeCancelled(order.canBeCancelled())
+                .isCompleted(order.isCompleted())
+                .isCancelled(order.isCancelled())
                 .build();
     }
 
@@ -45,11 +65,17 @@ public class OrderMapper {
 
         BigDecimal subtotal = orderDetail.getPrice().multiply(BigDecimal.valueOf(orderDetail.getQuantity()));
 
+        String productImage = orderDetail.getProduct().getPrimaryImageUrl();
+        // Fallback to a default image if no image is available
+        if (productImage == null || productImage.trim().isEmpty()) {
+            productImage = "/api/placeholder/80/80"; // Default placeholder image
+        }
+
         return OrderDetailDTO.builder()
                 .id(orderDetail.getId())
                 .productId(orderDetail.getProduct().getId())
                 .productName(orderDetail.getProduct().getName())
-                .productImage(orderDetail.getProduct().getImage())
+                .productImage(productImage)
                 .price(orderDetail.getPrice())
                 .quantity(orderDetail.getQuantity())
                 .subtotal(subtotal)

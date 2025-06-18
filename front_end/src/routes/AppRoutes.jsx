@@ -13,9 +13,10 @@ import Cart from '../Pages/Cart';
 import WishList from '../Pages/WishList';
 import Profile from '../Pages/Profile';
 import Orders from '../Pages/Orders';
+import BuyNow from '../Pages/BuyNow';
+import Payment from '../Pages/Payment';
 import Blog from '../Pages/Blog';
 import PrivateRoute from '../components/PrivateRoute';
-
 const AppRoutes = () => {
     return (
         <Routes>
@@ -60,6 +61,22 @@ const AppRoutes = () => {
                 element={
                     <PrivateRoute>
                         <Orders />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/buy-now"
+                element={
+                    <PrivateRoute>
+                        <BuyNow />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/payment"
+                element={
+                    <PrivateRoute>
+                        <Payment />
                     </PrivateRoute>
                 }
             />

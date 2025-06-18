@@ -72,12 +72,39 @@ function App() {
                 position="top-right"
                 autoClose={3000}
                 hideProgressBar={false}
-                newestOnTop={false}
+                newestOnTop={true}
                 closeOnClick
                 rtl={false}
                 pauseOnFocusLoss
                 draggable
                 pauseOnHover
+                theme={isDarkMode ? "dark" : "light"}
+                className="mt-16"
+                toastClassName={() => 
+                  "relative flex p-1 min-h-10 rounded-md justify-between overflow-hidden cursor-pointer " +
+                  (isDarkMode 
+                    ? "bg-gray-800 text-white border border-gray-700" 
+                    : "bg-white text-gray-900 border border-gray-200"
+                  )
+                }
+                bodyClassName={() => "text-sm font-medium p-3"}
+                progressClassName={() => 
+                  isDarkMode 
+                    ? "bg-gradient-to-r from-purple-500 to-indigo-500" 
+                    : "bg-gradient-to-r from-purple-600 to-indigo-600"
+                }
+                closeButton={({ closeToast }) => (
+                  <button
+                    onClick={closeToast}
+                    className={`self-start p-2 rounded-full transition-colors ${
+                      isDarkMode 
+                        ? "hover:bg-gray-700 text-gray-400 hover:text-white" 
+                        : "hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    ✕
+                  </button>
+                )}
               />
             </WishlistProvider>
           </CartProvider>

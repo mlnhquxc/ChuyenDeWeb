@@ -62,18 +62,18 @@ public class Order {
     @Column(name = "customer_name", nullable = false)
     private String customerName;
 
-    @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
+    @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
     private BigDecimal totalAmount;
 
-    @Column(name = "shipping_fee", precision = 10, scale = 2)
+    @Column(name = "shipping_fee", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal shippingFee = BigDecimal.ZERO;
 
-    @Column(name = "discount_amount", precision = 10, scale = 2)
+    @Column(name = "discount_amount", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
-    @Column(name = "tax_amount", precision = 10, scale = 2)
+    @Column(name = "tax_amount", precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal taxAmount = BigDecimal.ZERO;
 

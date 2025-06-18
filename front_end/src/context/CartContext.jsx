@@ -45,43 +45,37 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (productId, quantity = 1) => {
     try {
-      setLoading(true);
+      // Don't set global loading for add to cart to prevent flickering
       const response = await cartService.addToCart(productId, quantity);
       setCart(response.result);
       return response;
     } catch (error) {
       console.error('Error adding to cart:', error);
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
   const updateCartItem = async (cartItemId, quantity) => {
     try {
-      setLoading(true);
+      // Don't set global loading for updates to prevent flickering
       const response = await cartService.updateCartItem(cartItemId, quantity);
       setCart(response.result);
       return response;
     } catch (error) {
       console.error('Error updating cart item:', error);
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
   const removeFromCart = async (productId) => {
     try {
-      setLoading(true);
+      // Don't set global loading for removal to prevent flickering
       const response = await cartService.removeFromCart(productId);
       setCart(response.result);
       return response;
     } catch (error) {
       console.error('Error removing from cart:', error);
       throw error;
-    } finally {
-      setLoading(false);
     }
   };
 
