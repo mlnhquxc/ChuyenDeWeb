@@ -65,32 +65,70 @@ public class EmailService {
     }
     
     /**
-     * Send registration confirmation email with account details
+     * Send email verification link to user
+     * @param to Recipient email
+     * @param fullName User's full name
+     * @param verificationToken Verification token
+     * @param baseUrl Base URL of the application
+     */
+    @Async
+    public void sendEmailVerification(String to, String fullName, String verificationToken, String baseUrl) {
+        try {
+            log.info("Sending email verification to: {}", to);
+            
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject("Xác thực tài khoản - Verify Your Account");
+            
+            String verificationUrl = "http://localhost:5173/verify-email?token=" + verificationToken;
+            
+            String emailContent = 
+                "Xin chào " + fullName + ",\n\n" +
+                "Cảm ơn bạn đã đăng ký tài khoản với chúng tôi!\n\n" +
+                "Để hoàn tất quá trình đăng ký, vui lòng click vào link dưới đây để xác thực email của bạn:\n\n" +
+                verificationUrl + "\n\n" +
+                "Link này sẽ hết hạn sau 24 giờ.\n\n" +
+                "Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này.\n\n" +
+                "Trân trọng,\n" +
+                "Đội ngũ hỗ trợ";
+            
+            message.setText(emailContent);
+            mailSender.send(message);
+            
+            log.info("Email verification sent successfully to: {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send email verification to: {}", to, e);
+            throw new RuntimeException("Failed to send verification email", e);
+        }
+    }
+    
+    /**
+     * Send registration confirmation email after successful verification
      * @param to Recipient email
      * @param fullName User's full name
      * @param username Username
-     * @param password Original password (not encrypted)
      */
     @Async
-    public void sendRegistrationConfirmationEmail(String to, String fullName, String username, String password) {
+    public void sendRegistrationConfirmationEmail(String to, String fullName, String username) {
         try {
             log.info("Sending registration confirmation email to: {}", to);
             
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(to);
-            message.setSubject("Welcome to Our Platform - Registration Successful");
+            message.setSubject("Chào mừng bạn đến với hệ thống của chúng tôi!");
             
             String emailContent = 
-                "Dear " + fullName + ",\n\n" +
-                "Thank you for registering with our platform. Your account has been created successfully.\n\n" +
-                "Here are your account details:\n" +
-                "Username: " + username + "\n" +
-                "Password: " + password + "\n\n" +
-                "Please keep this information secure. We recommend changing your password after your first login.\n\n" +
-                "If you have any questions or need assistance, please contact our support team.\n\n" +
-                "Best regards,\n" +
-                "The Team";
+                "Xin chào " + fullName + ",\n\n" +
+                "Tài khoản của bạn đã được xác thực thành công!\n\n" +
+                "Thông tin tài khoản:\n" +
+                "Tên đăng nhập: " + username + "\n" +
+                "Email: " + to + "\n\n" +
+                "Bạn có thể đăng nhập vào hệ thống ngay bây giờ.\n\n" +
+                "Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với đội ngũ hỗ trợ.\n\n" +
+                "Trân trọng,\n" +
+                "Đội ngũ hỗ trợ";
             
             message.setText(emailContent);
             mailSender.send(message);

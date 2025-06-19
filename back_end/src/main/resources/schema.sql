@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     fullname VARCHAR(100) NOT NULL,
     email VARCHAR(45) NOT NULL UNIQUE,
     phone VARCHAR(20) NOT NULL,
+    address TEXT,
     avatar VARCHAR(255),
     active BOOLEAN NOT NULL DEFAULT FALSE
 );
@@ -23,6 +24,20 @@ CREATE TABLE IF NOT EXISTS user_roles (
     PRIMARY KEY (user_id, role_name),
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (role_name) REFERENCES roles(name)
+);
+
+-- Tạo bảng email_verification_tokens
+CREATE TABLE IF NOT EXISTS email_verification_tokens (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(500) NOT NULL UNIQUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL,
+    verified_at DATETIME NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_token (token),
+    INDEX idx_user_id (user_id),
+    INDEX idx_expires_at (expires_at)
 );
 
 -- Tạo bảng categories

@@ -121,12 +121,12 @@ export const AuthProvider = ({ children }) => {
       }
       setUser(null);
       setIsAuthenticated(false);
-      window.location.href = '/auth';
+      window.location.href = '/login';
     } catch (error) {
       console.error('AuthContext - Logout error:', error.message || 'Unknown error');
       setUser(null);
       setIsAuthenticated(false);
-      window.location.href = '/auth';
+      window.location.href = '/login';
     }
   };
 

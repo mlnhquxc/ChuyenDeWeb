@@ -103,4 +103,69 @@ public class JwtService {
             throw e;
         }
     }
+
+    /**
+     * Generate email verification token
+     * @param email User email
+     * @return JWT token for email verification
+     */
+    public String generateEmailVerificationToken(String email) {
+        try {
+            JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+            JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                    .subject(email)
+                    .issuer("CDWED.com")
+                    .issueTime(new Date())
+                    .expirationTime(new Date(
+                            Instant.now().plus(24, ChronoUnit.HOURS).toEpochMilli()
+                    ))
+                    .claim("customClaim", "EmailVerification")
+                    .build();
+
+            Payload payload = new Payload(jwtClaimsSet.toJSONObject());
+            JWSObject jwsObject = new JWSObject(header, payload);
+            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
+            return jwsObject.serialize();
+        } catch (JOSEException e) {
+            log.error("Error generating email verification token", e);
+            throw new JwtAuthenticationException("Cannot generate email verification token", e);
+        }
+    }
+
+    /**
+     * Validate email verification token
+     * @param token Email verification token
+     * @return Email from token
+     */
+    public String validateEmailVerificationToken(String token) throws ParseException, JOSEException {
+        try {
+            JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            
+            if (!signedJWT.verify(verifier)) {
+                log.error("Invalid email verification token signature");
+                throw new JwtAuthenticationException("Invalid token signature");
+            }
+
+            Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+            if (expiryTime.before(new Date())) {
+                log.error("Email verification token has expired at: {}, current time: {}", expiryTime, new Date());
+                throw new JwtAuthenticationException("Token has expired");
+            }
+
+            String customClaim = signedJWT.getJWTClaimsSet().getStringClaim("customClaim");
+            if (!"EmailVerification".equals(customClaim)) {
+                log.error("Invalid token type for email verification");
+                throw new JwtAuthenticationException("Invalid token type");
+            }
+
+            return signedJWT.getJWTClaimsSet().getSubject();
+        } catch (ParseException e) {
+            log.error("Error parsing email verification token", e);
+            throw e;
+        } catch (JOSEException e) {
+            log.error("Error verifying email verification token", e);
+            throw e;
+        }
+    }
 } 

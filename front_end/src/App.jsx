@@ -50,7 +50,7 @@ function App() {
           <CartProvider>
             <WishlistProvider>
               <TokenCleaner />
-              <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-indigo-950 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+              <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-slate-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
                 <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
                 <main className="flex-grow">
                   <Routes>
@@ -90,8 +90,8 @@ function App() {
                 bodyClassName={() => "text-sm font-medium p-3"}
                 progressClassName={() => 
                   isDarkMode 
-                    ? "bg-gradient-to-r from-purple-500 to-indigo-500" 
-                    : "bg-gradient-to-r from-purple-600 to-indigo-600"
+                    ? "bg-gradient-to-r from-blue-500 to-indigo-500" 
+                    : "bg-gradient-to-r from-blue-600 to-indigo-600"
                 }
                 closeButton={({ closeToast }) => (
                   <button

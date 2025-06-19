@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaTrash, FaArrowLeft, FaShoppingCart } from 'react-icons/fa';
+import { FaTrash, FaArrowLeft, FaShoppingCart, FaPlus, FaMinus, FaCreditCard, FaBoxOpen } from 'react-icons/fa';
+import { HiShoppingBag } from 'react-icons/hi';
 import { ProductImage } from '../utils/placeholderImage.jsx';
 
 const Cart = () => {
@@ -35,7 +36,10 @@ const Cart = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+                <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-emerald-200 border-t-4 border-t-emerald-500 mb-4"></div>
+                    <p className="text-emerald-500 dark:text-emerald-400 font-medium">Đang tải giỏ hàng...</p>
+                </div>
             </div>
         );
     }
@@ -43,20 +47,20 @@ const Cart = () => {
     if (isCartEmpty) {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 py-12">
-                <div className="text-center">
-                    <div className="mb-6 flex justify-center">
-                        <div className="w-24 h-24 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                            <FaShoppingCart className="w-10 h-10" />
+                <div className="text-center max-w-md mx-auto">
+                    <div className="mb-8 flex justify-center">
+                        <div className="w-32 h-32 rounded-full bg-gradient-to-br from-emerald-200 to-teal-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center text-emerald-700 dark:text-emerald-300 shadow-xl">
+                            <HiShoppingBag className="w-16 h-16" />
                         </div>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">Giỏ hàng của bạn đang trống</h2>
-                    <p className="text-gray-600 dark:text-gray-300 mb-8">Hãy thêm sản phẩm vào giỏ hàng để tiến hành mua sắm</p>
+                    <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">Giỏ hàng trống</h2>
+                    <p className="text-gray-600 dark:text-gray-300 mb-8 text-lg">Hãy thêm những sản phẩm yêu thích vào giỏ hàng để bắt đầu mua sắm nhé!</p>
                     <Link
                         to="/store"
-                        className="inline-flex items-center px-6 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-[1.02] shadow-md"
+                        className="inline-flex items-center px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-lg hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 transform hover:scale-[1.05] shadow-lg hover:shadow-emerald-200 dark:hover:shadow-emerald-800"
                     >
-                        <FaArrowLeft className="mr-2" />
-                        Tiếp tục mua sắm
+                        <FaBoxOpen className="mr-3" />
+                        Khám phá sản phẩm
                     </Link>
                 </div>
             </div>
@@ -153,21 +157,24 @@ const Cart = () => {
 
     return (
         <div className="max-w-5xl mx-auto px-4 py-10">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400 mb-8">
-                Giỏ hàng của bạn
-            </h1>
+            <div className="text-center mb-8">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent dark:from-emerald-400 dark:to-teal-400 mb-2">
+                    Giỏ hàng của bạn
+                </h1>
+                <div className="w-24 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 mx-auto rounded-full"></div>
+            </div>
             
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-colors duration-200">
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300">
                 {/* Select All Header */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                    <label className="flex items-center cursor-pointer">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-gray-800 dark:to-gray-700">
+                    <label className="flex items-center cursor-pointer group">
                         <input
                             type="checkbox"
                             checked={selectAll}
                             onChange={handleSelectAll}
-                            className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                            className="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 dark:focus:ring-emerald-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 transition-all duration-200"
                         />
-                        <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <span className="ml-3 text-base font-semibold text-gray-700 dark:text-gray-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-200">
                             Chọn tất cả ({cartItems.length} sản phẩm)
                         </span>
                     </label>
@@ -187,8 +194,8 @@ const Cart = () => {
                                 key={itemId} 
                                 className={`p-6 flex flex-col sm:flex-row items-center gap-6 transition-all duration-300 ${
                                     updatingItems[itemId] || removingItems[productId] 
-                                        ? 'bg-gray-50 dark:bg-gray-700/50' 
-                                        : 'hover:bg-gray-50/50 dark:hover:bg-gray-700/30'
+                                        ? 'bg-gray-100 dark:bg-gray-800' 
+                                        : 'hover:bg-gray-100/50 dark:hover:bg-gray-800/50'
                                 }`}
                             >
                                 {/* Checkbox */}
@@ -197,10 +204,10 @@ const Cart = () => {
                                         type="checkbox"
                                         checked={selectedItems[itemId] || false}
                                         onChange={() => handleSelectItem(itemId)}
-                                        className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                        className="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 dark:focus:ring-emerald-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 transition-all duration-200"
                                     />
                                 </div>
-                                <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
+                                <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
                                 <ProductImage
                                     src={item.productImage}
                                         alt={productName}
@@ -214,8 +221,8 @@ const Cart = () => {
                                 </div>
                                 
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white truncate">{productName}</h3>
-                                    <p className="text-indigo-600 dark:text-indigo-400 font-medium">
+                                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white truncate hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-200">{productName}</h3>
+                                    <p className="text-emerald-600 dark:text-emerald-400 font-semibold">
                                         {new Intl.NumberFormat('vi-VN', {
                                             style: 'currency',
                                             currency: 'VND'
@@ -228,15 +235,15 @@ const Cart = () => {
                                         }`}>
                                             <button
                                                 onClick={() => handleUpdateQuantity(itemId, item.quantity - 1, productId, productName)}
-                                                className={`w-8 h-8 flex items-center justify-center ${
+                                                className={`w-8 h-8 flex items-center justify-center rounded-l-lg ${
                                                     item.quantity === 1 
-                                                    ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20' 
+                                                    ? 'text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20' 
                                                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                                 } disabled:opacity-50 transition-all duration-200 hover:scale-110 active:scale-95`}
                                                 disabled={updatingItems[itemId]}
                                                 title={item.quantity === 1 ? 'Nhấn để xóa sản phẩm khỏi giỏ hàng' : 'Giảm số lượng'}
                                             >
-                                                -
+                                                <FaMinus className="w-3 h-3" />
                                             </button>
                                             <span className={`w-10 text-center text-gray-800 dark:text-gray-200 transition-all duration-200 ${
                                                 updatingItems[itemId] ? 'animate-pulse' : ''
@@ -245,24 +252,24 @@ const Cart = () => {
                                             </span>
                                             <button
                                                 onClick={() => handleUpdateQuantity(itemId, item.quantity + 1, productId, productName)}
-                                                className="w-8 h-8 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 transition-all duration-200 hover:scale-110 active:scale-95"
+                                                className="w-8 h-8 flex items-center justify-center rounded-r-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-50 transition-all duration-200 hover:scale-110 active:scale-95"
                                                 disabled={updatingItems[itemId]}
                                             >
-                                                +
+                                                <FaPlus className="w-3 h-3" />
                                             </button>
                                         </div>
                                         
                                         {updatingItems[itemId] && (
                                             <div className="ml-3 flex items-center">
-                                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-indigo-500 mr-2"></div>
-                                                <span className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">Đang cập nhật...</span>
+                                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-emerald-500 mr-2"></div>
+                                                <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">Đang cập nhật...</span>
                                             </div>
                                         )}
                                     </div>
                                 </div>
                                 
                                 <div className="flex flex-col items-end">
-                                    <p className={`text-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400 transition-all duration-300 ${
+                                    <p className={`text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent dark:from-emerald-400 dark:to-teal-400 transition-all duration-300 ${
                                         updatingItems[itemId] ? 'animate-pulse scale-105' : 'hover:scale-105'
                                     }`}>
                                         {new Intl.NumberFormat('vi-VN', {
@@ -273,13 +280,13 @@ const Cart = () => {
                                     
                                     <button
                                         onClick={() => handleRemoveItem(productId)}
-                                        className="mt-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 disabled:opacity-50 transition-all duration-200 p-2 hover:scale-110 active:scale-95 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                                        className="mt-2 text-gray-500 hover:text-rose-500 dark:text-gray-400 dark:hover:text-rose-400 disabled:opacity-50 transition-all duration-200 p-2 hover:scale-110 active:scale-95 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg"
                                         disabled={removingItems[productId]}
                                         title="Xóa sản phẩm khỏi giỏ hàng"
                                     >
                                         {removingItems[productId] ? (
                                             <div className="flex items-center">
-                                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-500 mr-1"></div>
+                                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-rose-500 mr-1"></div>
                                                 <span className="text-xs">Đang xóa...</span>
                                             </div>
                                         ) : (
@@ -292,21 +299,21 @@ const Cart = () => {
                     })}
                 </div>
                 
-                <div className="p-6 bg-gray-50 dark:bg-gray-900/50">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                        <div className="text-gray-600 dark:text-gray-300">
-                            <p>Tổng số sản phẩm: <span className="font-medium">{cartItems.length}</span></p>
-                            <p>Sản phẩm đã chọn: <span className="font-medium text-purple-600 dark:text-purple-400">{selectedCount}</span></p>
-                            <p>Tổng số lượng đã chọn: <span className="font-medium">
+                <div className="p-6 bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-gray-800 dark:to-gray-700">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-6">
+                        <div className="text-gray-700 dark:text-gray-200 space-y-2">
+                            <p className="flex items-center"><span className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>Tổng số sản phẩm: <span className="font-semibold ml-1">{cartItems.length}</span></p>
+                            <p className="flex items-center"><span className="w-2 h-2 bg-teal-500 rounded-full mr-2"></span>Sản phẩm đã chọn: <span className="font-semibold text-emerald-600 dark:text-emerald-400 ml-1">{selectedCount}</span></p>
+                            <p className="flex items-center"><span className="w-2 h-2 bg-emerald-400 rounded-full mr-2"></span>Tổng số lượng đã chọn: <span className="font-semibold ml-1">
                                 {cartItems.reduce((sum, item) => {
                                     return selectedItems[item.id] ? sum + item.quantity : sum;
                                 }, 0)}
                             </span></p>
                         </div>
                         
-                        <div className="text-right">
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Tổng thanh toán (đã chọn):</p>
-                            <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400 transition-all duration-300 hover:scale-105">
+                        <div className="text-right bg-gradient-to-br from-emerald-200 to-teal-200 dark:from-gray-700 dark:to-gray-600 p-4 rounded-xl shadow-md border border-emerald-300 dark:border-gray-600">
+                            <p className="text-sm text-emerald-800 dark:text-emerald-300 mb-1 font-medium">Tổng thanh toán (đã chọn):</p>
+                            <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent dark:from-emerald-400 dark:to-teal-400 transition-all duration-300 hover:scale-105">
                                 {new Intl.NumberFormat('vi-VN', {
                                     style: 'currency',
                                     currency: 'VND'
@@ -316,7 +323,7 @@ const Cart = () => {
                     </div>
                     
                     <div className="flex flex-col sm:flex-row gap-4">
-                        <Link to="/store" className="inline-flex items-center justify-center px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <Link to="/store" className="inline-flex items-center justify-center px-6 py-3 rounded-xl border-2 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-300 hover:scale-[1.02]">
                             <FaArrowLeft className="mr-2" />
                             Tiếp tục mua sắm
                         </Link>
@@ -324,12 +331,13 @@ const Cart = () => {
                         <button 
                             onClick={handleCheckoutSelected}
                             disabled={selectedCount === 0}
-                            className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-300 transform hover:scale-[1.02] shadow-md ${
+                            className={`flex-1 py-4 px-8 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg ${
                                 selectedCount > 0 
-                                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white' 
+                                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-emerald-200 dark:shadow-emerald-800' 
                                     : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                             }`}
                         >
+                            <FaCreditCard className="mr-2" />
                             Thanh toán ({selectedCount} sản phẩm)
                         </button>
                     </div>

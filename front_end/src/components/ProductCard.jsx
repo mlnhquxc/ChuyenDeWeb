@@ -125,7 +125,7 @@ const ProductCard = ({ product }) => {
           />
           <div className="absolute top-2 right-2">
             <button
-                className={`p-2 rounded-full ${isWishlisted ? 'bg-red-500 text-white' : 'bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400'} shadow-md backdrop-blur-sm transition-all duration-300 ${isAddingToWishlist ? 'opacity-70' : ''} hover:scale-110`}
+                className={`p-2 rounded-full ${isWishlisted ? 'bg-rose-500 text-white' : 'bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 hover:text-rose-500 dark:hover:text-rose-400'} shadow-md backdrop-blur-sm transition-all duration-300 ${isAddingToWishlist ? 'opacity-70' : ''} hover:scale-110`}
                 onClick={handleWishlistToggle}
                 disabled={isAddingToWishlist}
             >
@@ -138,24 +138,24 @@ const ProductCard = ({ product }) => {
         </div>
         <div className="flex flex-col flex-1 justify-between p-4 dark:text-gray-100">
           <div>
-            <div className="font-semibold text-lg line-clamp-2 min-h-[3rem] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">{productName}</div>
+            <div className="font-semibold text-lg line-clamp-2 min-h-[3rem] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">{productName}</div>
             <div className="text-gray-500 dark:text-gray-400 text-sm mb-2">{categoryName}</div>
             <div className="font-bold text-xl mb-2">
-              <span className="bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text dark:from-purple-400 dark:to-indigo-400">
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text dark:from-blue-400 dark:to-indigo-400">
                 {price.toLocaleString()} đ
               </span>
             </div>
           </div>
           <div className="mt-4 space-y-2">
             <button
-                className={`w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white py-2.5 px-4 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-[1.02] shadow-md font-medium`}
+                className={`w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-2.5 px-4 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-[1.02] shadow-md font-medium`}
                 onClick={handleBuyNow}
             >
               <FaShoppingBag className="mr-2" /> 
               Mua ngay
             </button>
             <button
-                className={`w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-[1.02] ${isAddingToCart ? 'opacity-70' : ''} shadow-md`}
+                className={`w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-[1.02] ${isAddingToCart ? 'opacity-70' : ''} shadow-md`}
                 onClick={handleAddToCart}
                 disabled={isAddingToCart}
             >

@@ -78,15 +78,11 @@ const authService = {
         console.log('authService - Register response:', response.data);
       }
 
-      // Handle the API response structure: { code, result: { token, authenticated, user } }
+      // Handle the API response structure: { code, result: "message", message: "..." }
       const { result } = response.data;
-      if (result && result.user) {
-        const { token, user, authenticated } = result;
-        if (token) {
-          localStorage.setItem(TOKEN_KEY, token);
-        }
-        localStorage.setItem(USER_KEY, JSON.stringify(user));
-        return { accessToken: token, user, authenticated: authenticated || true };
+      if (result) {
+        // For email verification flow, we don't store tokens immediately
+        return { result, message: response.data.message };
       }
       return null;
     } catch (error) {
@@ -273,6 +269,31 @@ const authService = {
       }
       
       const errorMessage = error.response?.data?.message || 'Không thể đặt lại mật khẩu. Vui lòng thử lại.';
+      error.userMessage = errorMessage;
+      throw error;
+    }
+  },
+
+  async resendVerification(data) {
+    try {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Resend verification request for:', data.email);
+      }
+      const response = await axiosInstance.post(ENDPOINTS.AUTH.RESEND_VERIFICATION, data);
+      
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Resend verification response:', response.data);
+      }
+      
+      return response.data;
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('authService - Resend verification error:', error);
+      } else {
+        console.error('Resend verification failed:', error.message || 'Unknown error');
+      }
+      
+      const errorMessage = error.response?.data?.message || 'Không thể gửi lại email xác thực. Vui lòng thử lại.';
       error.userMessage = errorMessage;
       throw error;
     }

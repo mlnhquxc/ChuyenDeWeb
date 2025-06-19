@@ -13,6 +13,7 @@ import com.example.back_end.dto.response.ResetPasswordResponse;
 import com.example.back_end.dto.response.VerifyOtpResponse;
 import com.example.back_end.service.TokenStorageService;
 import com.example.back_end.service.UserService;
+import com.example.back_end.service.EmailVerificationService;
 import com.nimbusds.jose.JOSEException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,37 +34,30 @@ import java.util.Map;
 public class AuthController {
     private final UserService userService;
     private final TokenStorageService tokenStorageService;
+    private final EmailVerificationService emailVerificationService;
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<AuthenticationResponse>> register(@RequestBody @Valid UserCreationRequest request) {
+    public ResponseEntity<ApiResponse<String>> register(@RequestBody @Valid UserCreationRequest request) {
         log.info("Received registration request for email: {}", request.getEmail());
         try {
             com.example.back_end.entity.User user = userService.createRequest(request);
-            log.info("User created successfully");
+            log.info("User created successfully, verification email sent");
             
-            var userResponse = userService.getUserMapper().toUserResponse(user);
-            
-            AuthenticationResponse authResponse = AuthenticationResponse.builder()
-                    .authenticated(true)
-                    .user(userResponse)
-                    .build();
-            
-            log.info("Registration successful for user: {}", user.getEmail());
-            return ResponseEntity.ok(ApiResponse.<AuthenticationResponse>builder()
-                    .result(authResponse)
+            return ResponseEntity.ok(ApiResponse.<String>builder()
+                    .result("Registration successful! Please check your email to verify your account.")
                     .message("Registration successful")
                     .build());
         } catch (AppException e) {
             log.error("Registration failed: {}", e.getErrorCode().getMessage());
             return ResponseEntity.badRequest()
-                    .body(ApiResponse.<AuthenticationResponse>builder()
+                    .body(ApiResponse.<String>builder()
                             .message(e.getErrorCode().getMessage())
                             .build());
         } catch (Exception e) {
             log.error("Unexpected error during registration: {}", e.getMessage());
             return ResponseEntity.internalServerError()
-                    .body(ApiResponse.<AuthenticationResponse>builder()
+                    .body(ApiResponse.<String>builder()
                             .message("An unexpected error occurred")
                             .build());
         }
@@ -225,6 +219,76 @@ public class AuthController {
                     .result(response)
                     .message(response.getMessage())
                     .build());
+        }
+    }
+    
+    /**
+     * Endpoint for email verification
+     * @param token Email verification token
+     * @return Response with success status and message
+     */
+    @GetMapping("/verify-email")
+    public ResponseEntity<ApiResponse<String>> verifyEmail(@RequestParam("token") String token) {
+        log.info("Received email verification request");
+        try {
+            String message = emailVerificationService.verifyEmail(token);
+            
+            return ResponseEntity.ok(ApiResponse.<String>builder()
+                    .code(0)
+                    .result(message)
+                    .message("Email verified successfully")
+                    .build());
+        } catch (AppException e) {
+            log.error("Email verification failed: {}", e.getErrorCode().getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.<String>builder()
+                    .code(400)
+                    .result("Email verification failed")
+                    .message(e.getErrorCode().getMessage())
+                    .build());
+        } catch (Exception e) {
+            log.error("Unexpected error during email verification: {}", e.getMessage());
+            return ResponseEntity.internalServerError()
+                    .body(ApiResponse.<String>builder()
+                            .code(500)
+                            .result("Email verification failed")
+                            .message("An unexpected error occurred")
+                            .build());
+        }
+    }
+    
+    /**
+     * Endpoint for resending verification email
+     * @param request Map containing email
+     * @return Response with success status and message
+     */
+    @PostMapping("/resend-verification")
+    public ResponseEntity<ApiResponse<String>> resendVerificationEmail(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        log.info("Received resend verification request for email: {}", email);
+        
+        try {
+            emailVerificationService.resendVerificationEmail(email);
+            
+            return ResponseEntity.ok(ApiResponse.<String>builder()
+                    .code(0)
+                    .result("Verification email sent successfully")
+                    .message("Please check your email")
+                    .build());
+        } catch (AppException e) {
+            log.error("Resend verification failed: {}", e.getErrorCode().getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.<String>builder()
+                    .code(400)
+                    .result("Failed to send verification email")
+                    .message(e.getErrorCode().getMessage())
+                    .build());
+        } catch (Exception e) {
+            log.error("Unexpected error during resend verification: {}", e.getMessage());
+            return ResponseEntity.internalServerError()
+                    .body(ApiResponse.<String>builder()
+                            .code(500)
+                            .result("Failed to send verification email")
+                            .message("An unexpected error occurred")
+                            .build());
         }
     }
 }

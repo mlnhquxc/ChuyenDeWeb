@@ -92,8 +92,39 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
     } catch (error) {
       console.error('Login error:', error);
       const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi đăng nhập';
-      setErrors({ submit: errorMessage });
+      
+      // Kiểm tra nếu lỗi là email chưa được xác thực
+      if (errorMessage.includes('Email is not verified') || errorMessage.includes('Email not verified')) {
+        setErrors({ 
+          submit: 'Tài khoản chưa được xác thực. Vui lòng kiểm tra email để xác thực tài khoản.',
+          showResendButton: true,
+          userEmail: formData.username // Có thể là email hoặc username
+        });
+      } else {
+        setErrors({ submit: errorMessage });
+      }
       showToast.loginError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      setIsLoading(true);
+      const response = await authService.resendVerification({ email: errors.userEmail });
+      
+      if (response && response.result) {
+        showToast.success("Email xác thực đã được gửi lại. Vui lòng kiểm tra hộp thư.");
+        setErrors({ submit: "Email xác thực đã được gửi lại. Vui lòng kiểm tra hộp thư." });
+      } else {
+        showToast.error("Không thể gửi lại email xác thực. Vui lòng thử lại.");
+      }
+    } catch (error) {
+      console.error('Resend verification error:', error);
+      const errorMessage = error.response?.data?.message || 'Không thể gửi lại email xác thực';
+      showToast.error(errorMessage);
+      setErrors({ submit: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -116,8 +147,22 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
 
       <form className="space-y-6" onSubmit={handleLogin}>
         {errors.submit && (
-          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg" role="alert">
+          <div className={`px-4 py-3 rounded-lg ${
+            errors.submit.includes('gửi lại') 
+              ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400'
+              : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400'
+          }`} role="alert">
             <span className="block sm:inline">{errors.submit}</span>
+            {errors.showResendButton && (
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={isLoading}
+                className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                {isLoading ? 'Đang gửi...' : 'Gửi lại email xác thực'}
+              </button>
+            )}
           </div>
         )}
 
@@ -337,35 +382,20 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
         const response = await authService.register(userData);
 
-        if (response && response.authenticated) {
-          showToast.registerSuccess();
-
-          // Đợi 2 giây để backend xử lý xong việc tạo tài khoản
-          await new Promise(resolve => setTimeout(resolve, 2000));
-
-          // Thử đăng nhập ngay sau khi đăng ký
-          try {
-            const loginResponse = await authService.login({
-              username: formData.username,
-              password: formData.password
-            });
-
-            if (loginResponse && loginResponse.authenticated) {
-              // Chuyển về form đăng nhập
-              onSwitchToLogin();
-            } else {
-              setErrors({
-                submit: "Đăng ký thành công nhưng đăng nhập tự động thất bại. Vui lòng đăng nhập thủ công."
-              });
-            }
-          } catch (loginError) {
-            console.error('Auto login error:', loginError);
-            setErrors({
-              submit: "Đăng ký thành công nhưng đăng nhập tự động thất bại. Vui lòng đăng nhập thủ công."
-            });
-          }
+        if (response && response.result) {
+          showToast.success("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.");
+          
+          // Hiển thị thông báo thành công và chuyển về form đăng nhập
+          setErrors({
+            submit: "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản trước khi đăng nhập."
+          });
+          
+          // Chuyển về form đăng nhập sau 3 giây
+          setTimeout(() => {
+            onSwitchToLogin();
+          }, 3000);
         } else {
-          showToast.registerError("Đăng ký thất bại. Vui lòng thử lại.");
+          showToast.error("Đăng ký thất bại. Vui lòng thử lại.");
           setErrors({
             submit: "Đăng ký thất bại. Vui lòng thử lại."
           });
@@ -400,7 +430,11 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
       <form className="space-y-5" onSubmit={handleRegister}>
         {errors.submit && (
-          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg" role="alert">
+          <div className={`px-4 py-3 rounded-lg ${
+            errors.submit.includes('thành công') 
+              ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400'
+              : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400'
+          }`} role="alert">
             <span className="block sm:inline">{errors.submit}</span>
           </div>
         )}

@@ -59,6 +59,9 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     private TokenStorageService tokenStorageService;
+    
+    @Autowired
+    private EmailVerificationService emailVerificationService;
 
     public User createRequest(UserCreationRequest request) {
         log.info("Creating new user with email: {} and username: {}", request.getEmail(), request.getUsername());
@@ -100,15 +103,12 @@ public class UserService implements UserDetailsService {
         }
         
         try {
-            // Store original password for email
-            String originalPassword = request.getPassword();
-            
             // Encrypt password for storage
             String encryptedPS = passwordEncoder.encode(request.getPassword());
             request.setPassword(encryptedPS);
             
             User user = userMapper.toUser(request);
-            user.setActive(true);
+            user.setActive(false); // User is inactive until email is verified
             
             HashSet<Role> roles = new HashSet<>();
             Role userRole = roleRepository.findById(PredefinedRole.USER_ROLE)
@@ -123,13 +123,8 @@ public class UserService implements UserDetailsService {
             userRepository.flush();
             log.info("User created successfully with id: {} and username: {}", savedUser.getId(), savedUser.getUsername());
             
-            // Send registration confirmation email with account details
-            emailService.sendRegistrationConfirmationEmail(
-                savedUser.getEmail(),
-                savedUser.getFullname(),
-                savedUser.getUsername(),
-                originalPassword
-            );
+            // Send email verification
+            emailVerificationService.sendVerificationEmail(savedUser);
             
             return savedUser;
         } catch (Exception e) {
@@ -180,11 +175,17 @@ public class UserService implements UserDetailsService {
                         return new AppException(ErrorCode.USER_NOT_EXISTED);
                     });
             
-            log.info("Found user: username={}, email={}", user.getUsername(), user.getEmail());
+            log.info("Found user: username={}, email={}, active={}", user.getUsername(), user.getEmail(), user.getActive());
             
             if (!passwordEncoder.matches(password, user.getPassword())) {
                 log.error("Invalid password for user: {}", username);
                 throw new AppException(ErrorCode.INVALID_PASSWORD);
+            }
+            
+            // Check if email is verified
+            if (!user.getActive()) {
+                log.error("Email not verified for user: {}", username);
+                throw new AppException(ErrorCode.EMAIL_NOT_VERIFIED);
             }
             
             String scope = buildScope(user);

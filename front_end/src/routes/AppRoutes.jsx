@@ -16,7 +16,9 @@ import Orders from '../Pages/Orders';
 import BuyNow from '../Pages/BuyNow';
 import Payment from '../Pages/Payment';
 import Blog from '../Pages/Blog';
+import EmailVerification from '../Pages/EmailVerification';
 import PrivateRoute from '../components/PrivateRoute';
+import PublicRoute from '../components/PublicRoute';
 
 const AppRoutes = () => {
     return (
@@ -31,8 +33,31 @@ const AppRoutes = () => {
             <Route path="/faq" element={<FAQ />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/blog" element={<Blog />} />
-            <Route path="/login" element={<AuthPage />} />
-            <Route path="/register" element={<AuthPage />} />
+            <Route path="/verify-email" element={<EmailVerification />} />
+            <Route 
+                path="/login" 
+                element={
+                    <PublicRoute>
+                        <AuthPage />
+                    </PublicRoute>
+                } 
+            />
+            <Route 
+                path="/register" 
+                element={
+                    <PublicRoute>
+                        <AuthPage />
+                    </PublicRoute>
+                } 
+            />
+            <Route 
+                path="/auth" 
+                element={
+                    <PublicRoute>
+                        <AuthPage />
+                    </PublicRoute>
+                } 
+            />
             <Route
                 path="/cart"
                 element={

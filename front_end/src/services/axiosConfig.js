@@ -88,7 +88,7 @@ axiosInstance.interceptors.response.use(
                     processQueue(refreshError, null);
                     // Log the user out and redirect to login page
                     authService.logout();
-                    window.location.href = '/auth';
+                    window.location.href = '/login';
                     return Promise.reject(refreshError);
                 } finally {
                     isRefreshing = false;
@@ -98,7 +98,7 @@ axiosInstance.interceptors.response.use(
             // Handle 403 Forbidden error
             if (error.response.status === 403) {
                 authService.logout();
-                window.location.href = '/auth';
+                window.location.href = '/login';
                 return Promise.reject(error);
             }
         }

@@ -205,10 +205,10 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
   };
 
   return (
-      <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-lg transition-colors duration-200">
+      <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-lg transition-colors duration-200">
         {/* <header className={`w-full ${isSticky ? "fixed top-0 shadow-lg bg-white" : ""}`}> */}
         {/* Top Bar */}
-        <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-800 dark:to-indigo-900 py-2 hidden md:block transition-colors duration-200">
+        <div className="bg-gradient-to-r from-slate-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 py-2 hidden md:block transition-colors duration-200">
           <div className="container mx-auto px-4 flex justify-between items-center">
             <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
               <div className="flex items-center">
@@ -222,10 +222,10 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
             </div>
             <div className="flex items-center space-x-6">
               <div className="flex space-x-4">
-                <FaFacebookF className="text-gray-600 dark:text-gray-400 hover:text-blue-600 cursor-pointer transition-all duration-300 transform hover:scale-125" />
-                <FaTwitter className="text-gray-600 dark:text-gray-400 hover:text-blue-400 cursor-pointer transition-all duration-300 transform hover:scale-125" />
-                <FaInstagram className="text-gray-600 dark:text-gray-400 hover:text-pink-600 cursor-pointer transition-all duration-300 transform hover:scale-125" />
-                <FaLinkedinIn className="text-gray-600 dark:text-gray-400 hover:text-blue-800 cursor-pointer transition-all duration-300 transform hover:scale-125" />
+                <FaFacebookF className="text-gray-500 dark:text-gray-400 hover:text-blue-500 cursor-pointer transition-all duration-300 transform hover:scale-110" />
+                <FaTwitter className="text-gray-500 dark:text-gray-400 hover:text-sky-500 cursor-pointer transition-all duration-300 transform hover:scale-110" />
+                <FaInstagram className="text-gray-500 dark:text-gray-400 hover:text-rose-500 cursor-pointer transition-all duration-300 transform hover:scale-110" />
+                <FaLinkedinIn className="text-gray-500 dark:text-gray-400 hover:text-blue-600 cursor-pointer transition-all duration-300 transform hover:scale-110" />
               </div>
               <div className="flex items-center space-x-4">
                 <select className="bg-transparent text-sm text-gray-600 dark:text-gray-300 focus:outline-none">
@@ -328,8 +328,8 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
                   </div>
                 </div>
                 <div className="ml-3 transition-all duration-300">
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text dark:from-purple-400 dark:to-indigo-400 group-hover:from-purple-500 group-hover:to-blue-500 gradient-animation">NAGIS</h1>
-                  <div className="h-0.5 w-0 bg-gradient-to-r from-purple-500 to-indigo-500 group-hover:w-full transition-all duration-500"></div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text dark:from-blue-400 dark:to-indigo-400 group-hover:from-blue-500 group-hover:to-indigo-500 gradient-animation">NAGIS</h1>
+                  <div className="h-0.5 w-0 bg-gradient-to-r from-blue-500 to-indigo-500 group-hover:w-full transition-all duration-500"></div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-1 group-hover:translate-y-0">Tech Store</p>
                 </div>
               </div>
@@ -340,7 +340,7 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
                     <div key={index} className="relative group">
                       <a
                           href={item.link}
-                          className="text-gray-700 dark:text-gray-300 hover:text-red-600 flex items-center"
+                          className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 flex items-center transition-colors duration-300"
                       >
                         {item.name}
                         {item.hasDropdown && (
@@ -367,18 +367,18 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="Tìm kiếm sản phẩm..."
-                      className="w-40 lg:w-80 px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:border-red-500"
+                      className="w-40 lg:w-80 px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 transition-all duration-300"
                   />
                   <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex">
                     <button 
                       onClick={handleVoiceSearch}
-                      className={`p-2 rounded-full ${isListening ? "text-red-500" : "text-gray-500"} hover:bg-gray-100 mr-1`}
+                      className={`p-2 rounded-full ${isListening ? "text-blue-500 bg-blue-50 dark:bg-blue-900/30" : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-600"} mr-1 transition-all duration-300`}
                     >
                       <FiMic className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => handleSearch()}
-                      className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
+                      className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-blue-500 transition-all duration-300"
                     >
                       <FiSearch className="w-5 h-5" />
                     </button>
@@ -388,21 +388,21 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
                   {/* Nút chuyển đổi chế độ sáng/tối */}
                   <button 
                     onClick={toggleDarkMode}
-                    className="p-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 hover:from-blue-200 hover:to-purple-200 dark:from-indigo-900 dark:to-purple-900 dark:hover:from-indigo-800 dark:hover:to-purple-800 text-gray-700 dark:text-yellow-300 transition-all duration-300 transform hover:scale-110 shadow-md"
+                    className="p-2 rounded-full bg-gradient-to-r from-slate-100 to-blue-100 hover:from-slate-200 hover:to-blue-200 dark:from-gray-700 dark:to-gray-600 dark:hover:from-gray-600 dark:hover:to-gray-500 text-gray-600 dark:text-amber-400 transition-all duration-300 transform hover:scale-105 shadow-md"
                     title={isDarkMode ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
                   >
-                    {isDarkMode ? <FiSun className="text-xl text-amber-500" /> : <FiMoon className="text-xl text-indigo-600" />}
+                    {isDarkMode ? <FiSun className="text-xl text-amber-400" /> : <FiMoon className="text-xl text-slate-600" />}
                   </button>
                   
                   <div className="relative">
-                    <FiHeart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer dark:text-gray-300" onClick={wishListClick}/>
-                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    <FiHeart className="text-2xl text-gray-700 hover:text-rose-500 cursor-pointer dark:text-gray-300 dark:hover:text-rose-400 transition-colors duration-300" onClick={wishListClick}/>
+                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center shadow-lg font-semibold">
                     {wishlistCount}
                   </span>
                   </div>
                   <div className="relative" >
-                    <FiShoppingCart className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer dark:text-gray-300" onClick={cartClick}/>
-                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    <FiShoppingCart className="text-2xl text-gray-700 hover:text-emerald-600 cursor-pointer dark:text-gray-300 dark:hover:text-emerald-400 transition-colors duration-300" onClick={cartClick}/>
+                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center shadow-lg font-semibold">
                     {cartCount}
                   </span>
                   </div>

@@ -10,7 +10,7 @@
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  background-image: linear-gradient(to right, #8b5cf6, #6366f1);
+  background-image: linear-gradient(to right, #3b82f6, #6366f1);
 }
 
 /* Tùy chỉnh thanh cuộn */
@@ -60,7 +60,7 @@ button:active {
 /* Hiệu ứng focus cho input */
 input:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
 }
 
 /* Hiệu ứng hover cho các liên kết */
