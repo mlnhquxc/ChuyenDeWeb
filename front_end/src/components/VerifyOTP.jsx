@@ -78,12 +78,13 @@ const VerifyOTP = ({ email, onBack, onVerified }) => {
 
     try {
       const response = await authService.verifyOTP(email, otpValue);
-      toast.success('Xác thực OTP thành công');
+      console.log('OTP verification response:', response);
+      showToast.success('Xác thực OTP thành công');
       onVerified(email, otpValue);
     } catch (error) {
       console.error('OTP verification error:', error);
       setError(error.userMessage || 'Mã OTP không hợp lệ hoặc đã hết hạn');
-      toast.error('Xác thực OTP thất bại');
+      showToast.error('Xác thực OTP thất bại');
     } finally {
       setIsLoading(false);
     }
@@ -93,11 +94,11 @@ const VerifyOTP = ({ email, onBack, onVerified }) => {
     setIsLoading(true);
     try {
       await authService.forgotPassword(email);
-      toast.success('Mã OTP mới đã được gửi đến email của bạn');
+      showToast.success('Mã OTP mới đã được gửi đến email của bạn');
       setTimeLeft(300); // Reset timer to 5 minutes
     } catch (error) {
       console.error('Resend OTP error:', error);
-      toast.error('Không thể gửi lại mã OTP. Vui lòng thử lại sau.');
+      showToast.error('Không thể gửi lại mã OTP. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
     }

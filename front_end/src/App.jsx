@@ -17,6 +17,7 @@ import Footer from './components/Footer';
 import Store from './Pages/Store';
 import Wishlist from './Pages/WishList';
 import TokenCleaner from './components/TokenCleaner';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   // Thêm state và logic dark mode trực tiếp vào App
@@ -57,13 +58,35 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Authentication />} />
                     <Route path="/auth" element={<Authentication />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/payment" element={<Payment />} />
-                    <Route path="/orders" element={<Orders />} />
-                    <Route path="/product/:id" element={<ProductDetail />} />
-                    <Route path="/profile" element={<Profile />} />
                     <Route path="/store" element={<Store />} />
-                    <Route path="/wishlist" element={<Wishlist />} />
+                    <Route path="/product/:id" element={<ProductDetail />} />
+                    
+                    {/* Protected Routes - Yêu cầu đăng nhập */}
+                    <Route path="/cart" element={
+                      <ProtectedRoute>
+                        <Cart />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/payment" element={
+                      <ProtectedRoute>
+                        <Payment />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/orders" element={
+                      <ProtectedRoute>
+                        <Orders />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/profile" element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/wishlist" element={
+                      <ProtectedRoute>
+                        <Wishlist />
+                      </ProtectedRoute>
+                    } />
                   </Routes>
                 </main>
                 <Footer />

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import authService from '../services/authService';
-import { toast } from 'react-toastify';
+import { showToast } from '../utils/toast';
 
 const PasswordStrength = ({ password }) => {
   const getStrength = (pass) => {
@@ -77,13 +77,37 @@ const ResetPassword = ({ email, otp, onBack, onSuccess }) => {
     setIsLoading(true);
 
     try {
+      console.log('ResetPassword - Attempting to reset password for email:', email);
+      
       const response = await authService.resetPassword(email, otp, password);
-      toast.success('Đặt lại mật khẩu thành công');
-      onSuccess();
+      console.log('ResetPassword - Reset password response:', response);
+      
+      // Kiểm tra cấu trúc phản hồi từ backend
+      if (response && (response.code === 0 || response.result?.success)) {
+        console.log('ResetPassword - Password reset successful');
+        showToast.success('Đặt lại mật khẩu thành công');
+        
+        // Đặt timeout ngắn để đảm bảo thông báo hiển thị trước khi chuyển trang
+        setTimeout(() => {
+          onSuccess();
+        }, 300);
+      } else {
+        // Nếu có lỗi từ backend
+        console.error('ResetPassword - Backend returned error:', response);
+        const errorMsg = response?.message || response?.result?.message || 'Không thể đặt lại mật khẩu';
+        setError(errorMsg);
+        showToast.error('Đặt lại mật khẩu thất bại');
+      }
     } catch (error) {
-      console.error('Reset password error:', error);
+      console.error('ResetPassword - Reset password error:', error);
+      console.error('ResetPassword - Error details:', {
+        message: error.message,
+        userMessage: error.userMessage,
+        response: error.response?.data
+      });
+      
       setError(error.userMessage || 'Không thể đặt lại mật khẩu. Vui lòng thử lại.');
-      toast.error('Đặt lại mật khẩu thất bại');
+      showToast.error('Đặt lại mật khẩu thất bại');
     } finally {
       setIsLoading(false);
     }

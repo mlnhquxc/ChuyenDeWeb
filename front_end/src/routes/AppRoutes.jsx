@@ -9,6 +9,7 @@ import FAQ from '../Pages/FAQ';
 import BaoHanh from '../Pages/baoHanh';
 import DoiTra from '../Pages/doiTra';
 import AuthPage from '../Pages/Authentication';
+import AccountActivation from '../Pages/AccountActivation';
 import Cart from '../Pages/Cart';
 import WishList from '../Pages/WishList';
 import Profile from '../Pages/Profile';
@@ -17,7 +18,6 @@ import BuyNow from '../Pages/BuyNow';
 import Payment from '../Pages/Payment';
 import Blog from '../Pages/Blog';
 import PrivateRoute from '../components/PrivateRoute';
-
 const AppRoutes = () => {
     return (
         <Routes>
@@ -33,6 +33,7 @@ const AppRoutes = () => {
             <Route path="/blog" element={<Blog />} />
             <Route path="/login" element={<AuthPage />} />
             <Route path="/register" element={<AuthPage />} />
+            <Route path="/activate" element={<AccountActivation />} />
             <Route
                 path="/cart"
                 element={
