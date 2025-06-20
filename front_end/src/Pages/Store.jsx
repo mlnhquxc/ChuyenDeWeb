@@ -6,6 +6,7 @@ import ProductCard from "../components/ProductCard";
 import { productService } from "../services/productService";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
+import { scrollToTop } from '../hooks/useScrollToTop';
 
 const Shop = () => {
   const { t } = useTranslation();
@@ -108,10 +109,12 @@ const Shop = () => {
       [filterType]: value
     }));
     setCurrentPage(0); // Reset về trang đầu tiên khi thay đổi bộ lọc
+    scrollToTop(true); // Scroll to top when filter changes
   };
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
+    scrollToTop(true); // Scroll to top when page changes
   };
 
   return (
@@ -182,7 +185,12 @@ const Shop = () => {
                     onChange={(e) => setSearchKeyword(e.target.value)}
                     placeholder={t('store.search.placeholder')}
                     className="w-full px-5 py-3 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-md transition-all duration-200"
-                    onKeyPress={(e) => e.key === 'Enter' && loadProducts()}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        loadProducts();
+                        scrollToTop(true);
+                      }
+                    }}
                   />
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex">
                     {searchKeyword && (
@@ -198,7 +206,10 @@ const Shop = () => {
                       </button>
                     )}
                     <button
-                      onClick={loadProducts}
+                      onClick={() => {
+                        loadProducts();
+                        scrollToTop(true);
+                      }}
                       className="p-2 rounded-full text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors duration-200"
                       title={t('store.search.search')}
                     >

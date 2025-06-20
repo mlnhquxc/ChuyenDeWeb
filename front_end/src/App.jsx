@@ -20,6 +20,7 @@ import Wishlist from './Pages/WishList';
 import TokenCleaner from './components/TokenCleaner';
 import EmailVerification from './Pages/EmailVerification';
 import PaymentReturn from './Pages/PaymentReturn';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   // Thêm state và logic dark mode trực tiếp vào App
@@ -53,6 +54,7 @@ function App() {
           <CartProvider>
             <WishlistProvider>
               <TokenCleaner />
+              <ScrollToTop />
               <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900 ">
                 <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
                 <main className="flex-grow">

@@ -10,6 +10,7 @@ import { useAuth } from "../context/AuthContext";
 import RelatedProductsSlider from "../components/RelatedProductsSlider";
 import FacebookComments from "../components/FacebookComments";
 import { useTranslation } from 'react-i18next';
+import { useScrollToTop } from '../hooks/useScrollToTop';
 
 const ProductDetail = () => {
   const { t } = useTranslation();
@@ -26,6 +27,9 @@ const ProductDetail = () => {
   
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
+  
+  // Scroll to top when product ID changes
+  useScrollToTop(false, [id]); // Use instant scroll for product changes
 
   useEffect(() => {
     const loadProduct = async () => {
