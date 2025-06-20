@@ -91,7 +91,7 @@ const Wishlist = () => {
     <div className="max-w-5xl mx-auto px-4 py-10">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent mb-2 flex items-center justify-center gap-3">
-          <HiHeart className="text-rose-500 />
+          <HiHeart className="text-rose-500" />
           Danh sách yêu thích
         </h1>
         <div className="w-24 h-1 bg-gradient-to-r from-rose-500 to-pink-500 mx-auto rounded-full"></div>

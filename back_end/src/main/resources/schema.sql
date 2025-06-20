@@ -181,4 +181,30 @@ CREATE TABLE IF NOT EXISTS reviews (
     review_date DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+-- Tạo bảng payments
+CREATE TABLE IF NOT EXISTS payments (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    txn_ref VARCHAR(50) UNIQUE NOT NULL,
+    order_id BIGINT,
+    amount BIGINT NOT NULL,
+    order_info TEXT,
+    payment_method VARCHAR(50),
+    bank_code VARCHAR(20),
+    transaction_no VARCHAR(50),
+    response_code VARCHAR(10),
+    transaction_status VARCHAR(10),
+    status ENUM('PENDING', 'SUCCESS', 'FAILED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
+    secure_hash VARCHAR(500),
+    created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    payment_date DATETIME,
+    user_id BIGINT,
+    INDEX idx_txn_ref (txn_ref),
+    INDEX idx_order_id (order_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_status (status),
+    INDEX idx_created_date (created_date),
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
 ); 

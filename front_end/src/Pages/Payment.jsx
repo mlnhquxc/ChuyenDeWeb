@@ -13,6 +13,7 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import orderService from "../services/orderService";
 import userService from "../services/userService";
+import paymentService from "../services/paymentService";
 import { ProductImage } from "../utils/placeholderImage.jsx";
 import { useTranslation } from 'react-i18next';
 
@@ -123,17 +124,7 @@ const CheckoutPage = () => {
     if (!formData.ward) newErrors.ward = "Vui lòng chọn phường/xã";
     if (!formData.address) newErrors.address = "Vui lòng nhập địa chỉ cụ thể";
 
-    if (formData.paymentMethod === "vnpay") {
-      if (formData.cardNumber && !/^\d{16}$/.test(formData.cardNumber)) {
-        newErrors.cardNumber = "Số thẻ không hợp lệ";
-      }
-      if (formData.cvv && !/^\d{3}$/.test(formData.cvv)) {
-        newErrors.cvv = "Mã CVV không hợp lệ";
-      }
-      if (formData.expiryDate && !/^\d{2}\/\d{2}$/.test(formData.expiryDate)) {
-        newErrors.expiryDate = "Ngày hết hạn không hợp lệ";
-      }
-    }
+    // VnPay validation is handled on their platform, no need to validate card details here
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -187,16 +178,47 @@ const CheckoutPage = () => {
         
         if (response.result) {
           const orderNumber = response.result.id || 'N/A';
-          showToast.orderSuccess(orderNumber);
-          setShowSuccess(true);
           
-          // Clear cart after successful order
-          await clearCart();
-          
-          // Redirect to orders page after 2 seconds
-          setTimeout(() => {
-            navigate('/orders');
-          }, 2000);
+          // Handle VnPay payment
+          if (formData.paymentMethod === 'vnpay') {
+            try {
+              const paymentData = {
+                orderId: response.result.id,
+                amount: calculateTotal(),
+                orderInfo: `Thanh toán đơn hàng #${orderNumber}`,
+                userId: user?.id
+              };
+              
+              const paymentResponse = await paymentService.createPayment(paymentData);
+              
+              if (paymentResponse.result && paymentResponse.result.paymentUrl) {
+                // Clear cart before redirecting to payment
+                await clearCart();
+                
+                // Redirect to VnPay
+                paymentService.redirectToVnPay(paymentResponse.result.paymentUrl);
+                return;
+              } else {
+                throw new Error('Không thể tạo liên kết thanh toán');
+              }
+            } catch (paymentError) {
+              console.error('Payment creation failed:', paymentError);
+              showToast.error('Có lỗi xảy ra khi tạo thanh toán: ' + paymentError.message);
+              return;
+            }
+          } else {
+            // Handle COD payment
+            showToast.orderSuccess(orderNumber);
+            setShowSuccess(true);
+            
+            // Clear cart after successful order
+            await clearCart();
+            
+            // Redirect to orders page after 2 seconds
+            setTimeout(() => {
+              navigate('/orders');
+            }, 2000);
+          }
         }
       } catch (error) {
         console.error("Order submission failed:", error);
@@ -443,67 +465,16 @@ const CheckoutPage = () => {
                       </div>
 
                       {formData.paymentMethod === "vnpay" && (
-                          <div className="ml-7 space-y-4">
-                            <input
-                                type="text"
-                                placeholder="Số thẻ (16 chữ số)"
-                                className={`block w-full rounded-md border ${
-                                    errors.cardNumber ? "border-red-500" : "border-gray-300"
-                                } px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                                value={formData.cardNumber}
-                                onChange={(e) =>
-                                    setFormData({
-                                      ...formData,
-                                      cardNumber: e.target.value,
-                                    })
-                                }
-                            />
-                            {errors.cardNumber && (
-                                <p className="text-red-500 text-sm mt-1">
-                                  {errors.cardNumber}
-                                </p>
-                            )}
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <input
-                                    type="text"
-                                    placeholder="MM/YY"
-                                    className={`block w-full rounded-md border ${
-                                        errors.expiryDate ? "border-red-500" : "border-gray-300"
-                                    } px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                                    value={formData.expiryDate}
-                                    onChange={(e) =>
-                                        setFormData({
-                                          ...formData,
-                                          expiryDate: e.target.value,
-                                        })
-                                    }
-                                />
-                                {errors.expiryDate && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                      {errors.expiryDate}
-                                    </p>
-                                )}
-                              </div>
-                              <div>
-                                <input
-                                    type="text"
-                                    placeholder="CVV"
-                                    className={`block w-full rounded-md border ${
-                                        errors.cvv ? "border-red-500" : "border-gray-300"
-                                    } px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                                    value={formData.cvv}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, cvv: e.target.value })
-                                    }
-                                />
-                                {errors.cvv && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                      {errors.cvv}
-                                    </p>
-                                )}
-                              </div>
+                          <div className="ml-7 p-4 bg-blue-50 rounded-lg">
+                            <div className="flex items-center text-blue-700">
+                              <FaLock className="mr-2" />
+                              <span className="text-sm">
+                                Bạn sẽ được chuyển đến trang VNPay để hoàn tất thanh toán một cách an toàn
+                              </span>
                             </div>
+                            <p className="text-xs text-blue-600 mt-2">
+                              Hỗ trợ thanh toán qua thẻ ATM, thẻ tín dụng, ví điện tử và Internet Banking
+                            </p>
                           </div>
                       )}
                     </div>

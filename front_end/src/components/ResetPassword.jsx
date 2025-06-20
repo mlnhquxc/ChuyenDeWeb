@@ -135,8 +135,8 @@ const ResetPassword = ({ email, otp, onBack, onSuccess }) => {
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? 
-                <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-600 /> : 
-                <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-600 />
+                <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-600" /> : 
+                <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
               }
             </button>
           </div>
@@ -165,8 +165,8 @@ const ResetPassword = ({ email, otp, onBack, onSuccess }) => {
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             >
               {showConfirmPassword ? 
-                <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-600 /> : 
-                <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-600 />
+                <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-600" /> : 
+                <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
               }
             </button>
           </div>

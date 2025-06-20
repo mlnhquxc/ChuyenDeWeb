@@ -114,8 +114,12 @@ public class OrderServiceImpl implements IOrderService {
         User user = userService.findByUsername(username);
         Cart cart = cartService.getCartByUserId(user.getId());
         
-        if (cart.getCartItems().isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+        log.info("Creating order for user: {}, cart items count: {}", username, 
+                cart != null ? cart.getCartItems().size() : 0);
+        
+        if (cart == null || cart.getCartItems().isEmpty()) {
+            log.error("Cart is empty for user: {}. Cart: {}", username, cart);
+            throw new RuntimeException("Cart is empty for user: " + username);
         }
 
         BigDecimal subtotal = calculateTotalAmount(cart);

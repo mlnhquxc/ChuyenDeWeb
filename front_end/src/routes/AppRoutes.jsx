@@ -15,6 +15,9 @@ import Profile from '../Pages/Profile';
 import Orders from '../Pages/Orders';
 import BuyNow from '../Pages/BuyNow';
 import Payment from '../Pages/Payment';
+import PaymentResult from '../Pages/PaymentResult';
+import PaymentReturn from '../Pages/PaymentReturn';
+import PaymentTest from '../components/PaymentTest';
 import Blog from '../Pages/Blog';
 import EmailVerification from '../Pages/EmailVerification';
 import PrivateRoute from '../components/PrivateRoute';
@@ -98,6 +101,18 @@ const AppRoutes = () => {
                         <Payment />
                     </PrivateRoute>
                 }
+            />
+            <Route
+                path="/payment/result"
+                element={<PaymentResult />}
+            />
+            <Route
+                path="/payment/return"
+                element={<PaymentReturn />}
+            />
+            <Route
+                path="/payment/test"
+                element={<PaymentTest />}
             />
         </Routes>
     );

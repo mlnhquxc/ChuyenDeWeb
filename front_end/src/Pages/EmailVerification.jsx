@@ -110,7 +110,7 @@ const EmailVerification = () => {
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
               className="inline-block"
             >
-              <FaSpinner className="text-6xl text-indigo-600 />
+              <FaSpinner className="text-6xl text-indigo-600" />
             </motion.div>
           )}
           

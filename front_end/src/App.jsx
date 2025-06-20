@@ -18,6 +18,7 @@ import Store from './Pages/Store';
 import Wishlist from './Pages/WishList';
 import TokenCleaner from './components/TokenCleaner';
 import EmailVerification from './Pages/EmailVerification';
+import PaymentReturn from './Pages/PaymentReturn';
 
 function App() {
   // Thêm state và logic dark mode trực tiếp vào App
@@ -65,6 +66,7 @@ function App() {
                     <Route path="/store" element={<Store />} />
                     <Route path="/wishlist" element={<Wishlist />} />
                     <Route path="/verify-email" element={<EmailVerification />} />
+                    <Route path="/payment/return" element={<PaymentReturn />} />
                   </Routes>
                 </main>
                 <Footer />
