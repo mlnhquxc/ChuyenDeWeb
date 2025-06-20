@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 
 const Profile = () => {
-    const { user, updateUser } = useAuth();
+    const { user, updateUser, logout } = useAuth();
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -40,10 +40,14 @@ const Profile = () => {
             }
         } catch (error) {
             console.error('Profile load error:', error);
-            setError('Không thể tải thông tin hồ sơ. Phiên đăng nhập của bạn có thể đã hết hạn.');
             if (error.response?.status === 401) {
                 toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                // Tự động logout và redirect
+                logout().then(() => {
+                    navigate('/login');
+                });
             } else {
+                setError('Không thể tải thông tin hồ sơ. Vui lòng thử lại.');
                 toast.error('Không thể tải thông tin hồ sơ');
             }
         } finally {
@@ -51,10 +55,19 @@ const Profile = () => {
         }
     };
 
-    const handleForceLogin = () => {
-        authService.logout();
-        toast.info('Vui lòng đăng nhập lại');
-        navigate('/auth');
+    const handleForceLogin = async () => {
+        try {
+            const success = await logout();
+            if (success) {
+                toast.info('Đã đăng xuất thành công');
+                navigate('/login');
+            } else {
+                toast.error('Có lỗi xảy ra khi đăng xuất');
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            toast.error('Có lỗi xảy ra khi đăng xuất');
+        }
     };
 
     const handleChange = (e) => {
@@ -123,11 +136,13 @@ const Profile = () => {
                     <div className="text-center">
                         <div className="text-red-500 dark:text-red-400 text-lg mb-6">{error}</div>
                         <button
-                            onClick={handleForceLogin}
+                            onClick={() => {
+                                setError(null);
+                                loadUserProfile();
+                            }}
                             className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 mx-auto transition-all duration-300 transform hover:scale-[1.02] shadow-md"
                         >
-                            <FaSignOutAlt />
-                            Đăng nhập lại
+                            Thử lại
                         </button>
                     </div>
                 </div>

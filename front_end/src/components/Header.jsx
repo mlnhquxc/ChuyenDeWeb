@@ -31,6 +31,8 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
   useEffect(() => {
     if (isAuthenticated && user) {
       console.log('Header - User authenticated, updating UI');
+    } else {
+      console.log('Header - User not authenticated, updating UI');
     }
   }, [isAuthenticated, user]);
   
@@ -70,9 +72,14 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
   const handleLogout = async () => {
     try {
       console.log('Header: Initiating logout...');
-      await logout();
-      console.log('Header: Logout successful, navigating to login');
-      navigate('/login', { replace: true });
+      const success = await logout();
+      if (success) {
+        console.log('Header: Logout successful, navigating to login');
+        navigate('/login', { replace: true });
+      } else {
+        console.error('Header: Logout failed');
+        navigate('/login', { replace: true });
+      }
     } catch (error) {
       console.error('Header: Logout error:', error);
       // Even if logout fails, navigate to login page

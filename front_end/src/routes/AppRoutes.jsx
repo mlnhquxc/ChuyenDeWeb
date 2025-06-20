@@ -50,14 +50,7 @@ const AppRoutes = () => {
                     </PublicRoute>
                 } 
             />
-            <Route 
-                path="/auth" 
-                element={
-                    <PublicRoute>
-                        <AuthPage />
-                    </PublicRoute>
-                } 
-            />
+
             <Route
                 path="/cart"
                 element={

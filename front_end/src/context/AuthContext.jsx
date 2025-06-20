@@ -70,8 +70,19 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
+    const handleAuthLogout = () => {
+      console.log('AuthContext - Received auth-logout event');
+      setUser(null);
+      setIsAuthenticated(false);
+    };
+
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('auth-logout', handleAuthLogout);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('auth-logout', handleAuthLogout);
+    };
   }, []);
 
   const login = async (credentials) => {
@@ -115,18 +126,33 @@ export const AuthProvider = ({ children }) => {
       if (process.env.NODE_ENV !== 'production') {
         console.log('AuthContext - Attempting logout...');
       }
-      await authService.logout();
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('AuthContext - Logout successful, clearing user state');
-      }
+      
+      // Clear localStorage first
+      authService.logout();
+      
+      // Then update state
       setUser(null);
       setIsAuthenticated(false);
-      window.location.href = '/login';
+      
+      // Trigger custom event for same-tab updates
+      window.dispatchEvent(new Event('auth-logout'));
+      
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('AuthContext - Logout successful, user state cleared');
+      }
+      
+      return true;
     } catch (error) {
       console.error('AuthContext - Logout error:', error.message || 'Unknown error');
+      
+      // Even if there's an error, clear the state
       setUser(null);
       setIsAuthenticated(false);
-      window.location.href = '/login';
+      
+      // Trigger custom event even on error
+      window.dispatchEvent(new Event('auth-logout'));
+      
+      return false;
     }
   };
 

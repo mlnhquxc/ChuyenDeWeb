@@ -53,7 +53,7 @@ const EmailVerification = () => {
         
         // Chuyển hướng về trang đăng nhập sau 3 giây
         setTimeout(() => {
-          navigate('/auth');
+          navigate('/login');
         }, 3000);
       } else {
         // Trường hợp response có data nhưng không thành công
@@ -92,7 +92,7 @@ const EmailVerification = () => {
   };
 
   const handleGoToLogin = () => {
-    navigate('/auth');
+    navigate('/login');
   };
 
   return (

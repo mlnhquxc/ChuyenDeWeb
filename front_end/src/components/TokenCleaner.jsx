@@ -8,8 +8,8 @@ const TokenCleaner = () => {
     if (wasCleared) {
       console.log('Expired tokens cleared, user needs to login again');
       // Optionally redirect to login page
-      if (window.location.pathname !== '/auth' && window.location.pathname !== '/') {
-        window.location.href = '/auth';
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+        window.location.href = '/login';
       }
     }
   }, []);
