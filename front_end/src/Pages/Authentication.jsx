@@ -9,8 +9,11 @@ import { showToast } from "../utils/toast";
 import ForgotPassword from "../components/ForgotPassword";
 import VerifyOTP from "../components/VerifyOTP";
 import ResetPassword from "../components/ResetPassword";
+import { useTranslation } from 'react-i18next';
 
 const PasswordStrength = ({ password }) => {
+  const { t } = useTranslation();
+  
   const getStrength = (pass) => {
     let score = 0;
     if (pass.length >= 8) score++;
@@ -29,6 +32,14 @@ const PasswordStrength = ({ password }) => {
     return "bg-green-500";
   };
 
+  const getStrengthText = () => {
+    if (strength === 0) return t('auth.passwordStrength.enterPassword');
+    if (strength === 1) return t('auth.passwordStrength.weak');
+    if (strength === 2) return t('auth.passwordStrength.medium');
+    if (strength === 3) return t('auth.passwordStrength.good');
+    return t('auth.passwordStrength.strong');
+  };
+
   return (
     <div className="mt-2">
       <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
@@ -38,17 +49,14 @@ const PasswordStrength = ({ password }) => {
         ></div>
       </div>
       <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">
-        {strength === 0 && "Nhập mật khẩu"}
-        {strength === 1 && "Yếu"}
-        {strength === 2 && "Trung bình"}
-        {strength === 3 && "Tốt"}
-        {strength === 4 && "Mạnh"}
+        {getStrengthText()}
       </p>
     </div>
   );
 };
 
 const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -86,19 +94,19 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
         showToast.loginSuccess(formData.username);
         navigate('/');
       } else {
-        setErrors({ submit: 'Tên đăng nhập hoặc mật khẩu không đúng' });
-        showToast.loginError('Tên đăng nhập hoặc mật khẩu không đúng');
+        setErrors({ submit: t('auth.login.invalidCredentials') });
+        showToast.loginError(t('auth.login.invalidCredentials'));
       }
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error.response?.data?.message || 'Đã xảy ra lỗi khi đăng nhập';
+      const errorMessage = error.response?.data?.message || t('auth.login.error');
       
       // Kiểm tra nếu lỗi là email chưa được xác thực
       if (errorMessage.includes('Email is not verified') || errorMessage.includes('Email not verified')) {
         setErrors({ 
-          submit: 'Tài khoản chưa được xác thực. Vui lòng kiểm tra email để xác thực tài khoản.',
+          submit: t('auth.login.emailNotVerified'),
           showResendButton: true,
-          userEmail: formData.username // Có thể là email hoặc username
+          userEmail: formData.username
         });
       } else {
         setErrors({ submit: errorMessage });
@@ -115,14 +123,14 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
       const response = await authService.resendVerification({ email: errors.userEmail });
       
       if (response && response.result) {
-        showToast.success("Email xác thực đã được gửi lại. Vui lòng kiểm tra hộp thư.");
-        setErrors({ submit: "Email xác thực đã được gửi lại. Vui lòng kiểm tra hộp thư." });
+        showToast.success(t('auth.login.verificationEmailSent'));
+        setErrors({ submit: t('auth.login.verificationEmailSent') });
       } else {
-        showToast.error("Không thể gửi lại email xác thực. Vui lòng thử lại.");
+        showToast.error(t('auth.login.verificationEmailError'));
       }
     } catch (error) {
       console.error('Resend verification error:', error);
-      const errorMessage = error.response?.data?.message || 'Không thể gửi lại email xác thực';
+      const errorMessage = error.response?.data?.message || t('auth.login.verificationEmailError');
       showToast.error(errorMessage);
       setErrors({ submit: errorMessage });
     } finally {
@@ -140,15 +148,15 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
     >
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400">
-          Đăng nhập
+          {t('auth.login.title')}
         </h2>
-        <p className="mt-2 text-gray-600 dark:text-gray-300">Chào mừng bạn quay trở lại</p>
+        <p className="mt-2 text-gray-600 dark:text-gray-300">{t('auth.login.subtitle')}</p>
       </div>
 
       <form className="space-y-6" onSubmit={handleLogin}>
         {errors.submit && (
           <div className={`px-4 py-3 rounded-lg ${
-            errors.submit.includes('gửi lại') 
+            errors.submit.includes(t('auth.login.verificationEmailSent')) 
               ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400'
               : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400'
           }`} role="alert">
@@ -160,7 +168,7 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
                 disabled={isLoading}
                 className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
               >
-                {isLoading ? 'Đang gửi...' : 'Gửi lại email xác thực'}
+                {isLoading ? t('auth.login.sending') : t('auth.login.resendVerificationEmail')}
               </button>
             )}
           </div>
@@ -168,7 +176,7 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tên đăng nhập</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('auth.login.username')}</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <FaUser className="h-5 w-5 text-gray-400" />
@@ -179,14 +187,14 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
                 value={formData.username}
                 onChange={handleInputChange}
                 className={`pl-10 block w-full px-4 py-3 border ${errors.username ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
-                placeholder="Nhập tên đăng nhập"
+                placeholder={t('auth.login.usernamePlaceholder')}
               />
             </div>
             {errors.username && <p className="mt-1 text-sm text-red-500">{errors.username}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mật khẩu</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('auth.login.password')}</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <FaLock className="h-5 w-5 text-gray-400" />
@@ -197,7 +205,7 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
                 value={formData.password}
                 onChange={handleInputChange}
                 className={`pl-10 block w-full px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
-                placeholder="Nhập mật khẩu"
+                placeholder={t('auth.login.passwordPlaceholder')}
               />
               <button
                 type="button"
@@ -224,7 +232,7 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
               />
               <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                Ghi nhớ đăng nhập
+                {t('auth.login.rememberMe')}
               </label>
             </div>
             <div className="text-sm">
@@ -233,7 +241,7 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
                 onClick={onForgotPassword}
                 className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
               >
-                Quên mật khẩu?
+                {t('auth.login.forgotPassword')}
               </button>
             </div>
           </div>
@@ -251,10 +259,10 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Đang xử lý...
+                {t('auth.login.processing')}
               </span>
             ) : (
-              "Đăng nhập"
+              t('auth.login.loginButton')
             )}
           </button>
         </div>
@@ -267,7 +275,7 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
           </div>
           <div className="relative flex justify-center text-sm">
             <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-              Hoặc đăng nhập với
+              {t('auth.login.orLoginWith')}
             </span>
           </div>
         </div>
@@ -296,7 +304,7 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
           onClick={onSwitchToRegister}
           className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
         >
-          Chưa có tài khoản? Đăng ký ngay
+          {t('auth.login.noAccountRegister')}
         </button>
       </div>
     </motion.div>
@@ -304,6 +312,7 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
 };
 
 const RegisterForm = ({ onSwitchToLogin }) => {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -347,22 +356,22 @@ const RegisterForm = ({ onSwitchToLogin }) => {
     // Validate form
     const newErrors = {};
     if (!validateEmail(formData.email)) {
-      newErrors.email = "Vui lòng nhập địa chỉ email hợp lệ";
+      newErrors.email = t('auth.register.invalidEmail');
     }
     if (!validatePassword(formData.password)) {
-      newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, số và ký tự đặc biệt";
+      newErrors.password = t('auth.register.invalidPassword');
     }
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
+      newErrors.confirmPassword = t('auth.register.passwordMismatch');
     }
     if (!formData.fullName) {
-      newErrors.fullName = "Họ tên là bắt buộc";
+      newErrors.fullName = t('auth.register.fullNameRequired');
     }
     if (!validatePhone(formData.phone)) {
-      newErrors.phone = "Vui lòng nhập số điện thoại 10 chữ số hợp lệ";
+      newErrors.phone = t('auth.register.invalidPhone');
     }
     if (!formData.termsAccepted) {
-      newErrors.terms = "Vui lòng chấp nhận điều khoản và điều kiện";
+      newErrors.terms = t('auth.register.termsRequired');
     }
 
     setErrors(newErrors);
@@ -383,11 +392,11 @@ const RegisterForm = ({ onSwitchToLogin }) => {
         const response = await authService.register(userData);
 
         if (response && response.result) {
-          showToast.success("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.");
+          showToast.success(t('auth.register.success'));
           
           // Hiển thị thông báo thành công và chuyển về form đăng nhập
           setErrors({
-            submit: "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản trước khi đăng nhập."
+            submit: t('auth.register.successMessage')
           });
           
           // Chuyển về form đăng nhập sau 3 giây
@@ -395,17 +404,17 @@ const RegisterForm = ({ onSwitchToLogin }) => {
             onSwitchToLogin();
           }, 3000);
         } else {
-          showToast.error("Đăng ký thất bại. Vui lòng thử lại.");
+          showToast.error(t('auth.register.error'));
           setErrors({
-            submit: "Đăng ký thất bại. Vui lòng thử lại."
+            submit: t('auth.register.error')
           });
         }
       } catch (error) {
         console.error('Registration error:', error);
-        const errorMessage = error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại.";
+        const errorMessage = error.response?.data?.message || t('auth.register.error');
         showToast.registerError(errorMessage);
         setErrors({
-          submit: error.response?.data?.message || error.message || "Đăng ký thất bại. Vui lòng thử lại."
+          submit: error.response?.data?.message || error.message || t('auth.register.error')
         });
       } finally {
         setIsLoading(false);
@@ -423,15 +432,15 @@ const RegisterForm = ({ onSwitchToLogin }) => {
     >
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400">
-          Tạo tài khoản mới
+          {t('auth.register.title')}
         </h2>
-        <p className="mt-2 text-gray-600 dark:text-gray-300">Đăng ký để trải nghiệm dịch vụ của chúng tôi</p>
+        <p className="mt-2 text-gray-600 dark:text-gray-300">{t('auth.register.subtitle')}</p>
       </div>
 
       <form className="space-y-5" onSubmit={handleRegister}>
         {errors.submit && (
           <div className={`px-4 py-3 rounded-lg ${
-            errors.submit.includes('thành công') 
+            errors.submit.includes(t('auth.register.success')) 
               ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400'
               : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400'
           }`} role="alert">
@@ -441,60 +450,60 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Họ tên</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('auth.register.fullName')}</label>
             <input
               type="text"
               name="fullName"
               value={formData.fullName}
               onChange={handleInputChange}
               className={`block w-full px-4 py-3 border ${errors.fullName ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
-              placeholder="Nhập họ tên đầy đủ"
+              placeholder={t('auth.register.fullNamePlaceholder')}
             />
             {errors.fullName && <p className="mt-1 text-sm text-red-500">{errors.fullName}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Số điện thoại</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('auth.register.phone')}</label>
             <input
               type="tel"
               name="phone"
               value={formData.phone}
               onChange={handleInputChange}
               className={`block w-full px-4 py-3 border ${errors.phone ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
-              placeholder="Nhập số điện thoại"
+              placeholder={t('auth.register.phonePlaceholder')}
             />
             {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone}</p>}
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('auth.register.email')}</label>
           <input
             type="email"
             name="email"
             value={formData.email}
             onChange={handleInputChange}
             className={`block w-full px-4 py-3 border ${errors.email ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
-            placeholder="Nhập địa chỉ email"
+            placeholder={t('auth.register.emailPlaceholder')}
           />
           {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tên đăng nhập</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('auth.register.username')}</label>
           <input
             type="text"
             name="username"
             value={formData.username}
             onChange={handleInputChange}
             className={`block w-full px-4 py-3 border ${errors.username ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
-            placeholder="Chọn tên đăng nhập"
+            placeholder={t('auth.register.usernamePlaceholder')}
           />
           {errors.username && <p className="mt-1 text-sm text-red-500">{errors.username}</p>}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mật khẩu</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('auth.register.password')}</label>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -502,7 +511,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
               value={formData.password}
               onChange={handleInputChange}
               className={`block w-full px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
-              placeholder="Tạo mật khẩu mạnh"
+              placeholder={t('auth.register.passwordPlaceholder')}
             />
             <button
               type="button"
@@ -515,19 +524,19 @@ const RegisterForm = ({ onSwitchToLogin }) => {
               }
             </button>
           </div>
-          {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
           <PasswordStrength password={formData.password} />
+          {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Xác nhận mật khẩu</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('auth.register.confirmPassword')}</label>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             name="confirmPassword"
             value={formData.confirmPassword}
             onChange={handleInputChange}
             className={`block w-full px-4 py-3 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200`}
-            placeholder="Nhập lại mật khẩu"
+            placeholder={t('auth.register.confirmPasswordPlaceholder')}
           />
           {errors.confirmPassword && <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>}
         </div>
@@ -542,10 +551,13 @@ const RegisterForm = ({ onSwitchToLogin }) => {
             className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
           />
           <label htmlFor="terms" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-            Tôi đồng ý với <a href="#" className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">điều khoản</a> và <a href="#" className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">chính sách bảo mật</a>
+            {t('auth.register.agreeToTerms')}{' '}
+            <button type="button" className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
+              {t('auth.register.termsAndConditions')}
+            </button>
           </label>
         </div>
-        {errors.terms && <p className="mt-1 text-sm text-red-500">{errors.terms}</p>}
+        {errors.terms && <p className="text-sm text-red-500">{errors.terms}</p>}
 
         <div>
           <button
@@ -559,10 +571,10 @@ const RegisterForm = ({ onSwitchToLogin }) => {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Đang xử lý...
+                {t('auth.register.processing')}
               </span>
             ) : (
-              "Đăng ký"
+              t('auth.register.registerButton')
             )}
           </button>
         </div>
@@ -574,7 +586,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
           onClick={onSwitchToLogin}
           className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
         >
-          Đã có tài khoản? Đăng nhập ngay
+          {t('auth.register.hasAccountLogin')}
         </button>
       </div>
     </motion.div>
@@ -582,62 +594,79 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 };
 
 const AuthPage = () => {
-  const [authState, setAuthState] = useState("login");
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
-  const [forgotPasswordOTP, setForgotPasswordOTP] = useState("");
+  const { t } = useTranslation();
+  const [currentView, setCurrentView] = useState('login');
+  const [otpEmail, setOtpEmail] = useState('');
+  const [resetData, setResetData] = useState({ email: '', otp: '' });
 
   const handleSwitchToLogin = () => {
-    setAuthState("login");
+    setCurrentView('login');
   };
 
   const handleSwitchToRegister = () => {
-    setAuthState("register");
+    setCurrentView('register');
   };
 
   const handleForgotPassword = () => {
-    setAuthState("forgot-password");
+    setCurrentView('forgotPassword');
   };
 
   const handleOtpSent = (email) => {
-    setForgotPasswordEmail(email);
-    setAuthState("verify-otp");
+    setOtpEmail(email);
+    setCurrentView('verifyOTP');
   };
 
   const handleOtpVerified = (email, otp) => {
-    setForgotPasswordEmail(email);
-    setForgotPasswordOTP(otp);
-    setAuthState("reset-password");
+    setResetData({ email, otp });
+    setCurrentView('resetPassword');
   };
 
   const handlePasswordReset = () => {
-    toast.success("Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập với mật khẩu mới.");
-    setAuthState("login");
+    setCurrentView('login');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-indigo-950 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-10 transition-colors duration-200">
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden transition-colors duration-200">
-        <div className="px-6 py-8 sm:px-8 sm:py-10">
-          <AnimatePresence mode="wait">
-            {authState === "login" && (
-              <LoginForm 
-                onSwitchToRegister={handleSwitchToRegister} 
-                onForgotPassword={handleForgotPassword}
-              />
-            )}
-            
-            {authState === "register" && (
-              <RegisterForm onSwitchToLogin={handleSwitchToLogin} />
-            )}
-            
-            {authState === "forgot-password" && (
-              <ForgotPassword 
-                onBack={handleSwitchToLogin}
-                onSuccess={handleSwitchToLogin}
-              />
-            )}
-          </AnimatePresence>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-gray-900 dark:to-slate-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
+      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 transition-colors duration-200">
+        <AnimatePresence mode="wait">
+          {currentView === 'login' && (
+            <LoginForm 
+              key="login"
+              onSwitchToRegister={handleSwitchToRegister}
+              onForgotPassword={handleForgotPassword}
+            />
+          )}
+          {currentView === 'register' && (
+            <RegisterForm 
+              key="register"
+              onSwitchToLogin={handleSwitchToLogin}
+            />
+          )}
+          {currentView === 'forgotPassword' && (
+            <ForgotPassword 
+              key="forgotPassword"
+              onBack={handleSwitchToLogin}
+              onOtpSent={handleOtpSent}
+            />
+          )}
+          {currentView === 'verifyOTP' && (
+            <VerifyOTP 
+              key="verifyOTP"
+              email={otpEmail}
+              onBack={handleForgotPassword}
+              onVerified={handleOtpVerified}
+            />
+          )}
+          {currentView === 'resetPassword' && (
+            <ResetPassword 
+              key="resetPassword"
+              email={resetData.email}
+              otp={resetData.otp}
+              onBack={handleSwitchToLogin}
+              onPasswordReset={handlePasswordReset}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

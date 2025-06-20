@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaTrash, FaArrowLeft, FaShoppingCart, FaPlus, FaMinus, FaCreditCard, FaBoxOpen } from 'react-icons/fa';
 import { HiShoppingBag } from 'react-icons/hi';
 import { ProductImage } from '../utils/placeholderImage.jsx';
+import { useTranslation } from 'react-i18next';
 
 const Cart = () => {
     const { cart, loading, updateCartItem, removeFromCart } = useCart();
@@ -12,6 +13,7 @@ const Cart = () => {
     const [selectedItems, setSelectedItems] = useState({});
     const [selectAll, setSelectAll] = useState(false);
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     // Determine if cart is empty based on different possible structures
     const isCartEmpty = !cart || 
@@ -38,7 +40,7 @@ const Cart = () => {
             <div className="flex justify-center items-center h-64">
                 <div className="flex flex-col items-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-4 border-emerald-200 border-t-4 border-t-emerald-500 mb-4"></div>
-                    <p className="text-emerald-500 dark:text-emerald-400 font-medium">Đang tải giỏ hàng...</p>
+                    <p className="text-emerald-500 dark:text-emerald-400 font-medium">{t('cart.loading')}</p>
                 </div>
             </div>
         );
@@ -53,14 +55,14 @@ const Cart = () => {
                             <HiShoppingBag className="w-16 h-16" />
                         </div>
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">Giỏ hàng trống</h2>
-                    <p className="text-gray-600 dark:text-gray-300 mb-8 text-lg">Hãy thêm những sản phẩm yêu thích vào giỏ hàng để bắt đầu mua sắm nhé!</p>
+                    <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">{t('cart.emptyTitle')}</h2>
+                    <p className="text-gray-600 dark:text-gray-300 mb-8 text-lg">{t('cart.emptyDesc')}</p>
                     <Link
                         to="/store"
                         className="inline-flex items-center px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-lg hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 transform hover:scale-[1.05] shadow-lg hover:shadow-emerald-200 dark:hover:shadow-emerald-800"
                     >
                         <FaBoxOpen className="mr-3" />
-                        Khám phá sản phẩm
+                        {t('cart.exploreProducts')}
                     </Link>
                 </div>
             </div>
@@ -159,7 +161,7 @@ const Cart = () => {
         <div className="max-w-5xl mx-auto px-4 py-10">
             <div className="text-center mb-8">
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent dark:from-emerald-400 dark:to-teal-400 mb-2">
-                    Giỏ hàng của bạn
+                    {t('cart.title')}
                 </h1>
                 <div className="w-24 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 mx-auto rounded-full"></div>
             </div>
@@ -175,7 +177,7 @@ const Cart = () => {
                             className="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 dark:focus:ring-emerald-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 transition-all duration-200"
                         />
                         <span className="ml-3 text-base font-semibold text-gray-700 dark:text-gray-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-200">
-                            Chọn tất cả ({cartItems.length} sản phẩm)
+                            {t('cart.selectAll', { count: cartItems.length })}
                         </span>
                     </label>
                 </div>

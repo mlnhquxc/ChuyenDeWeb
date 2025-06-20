@@ -1,0 +1,469 @@
+{
+  "welcome": "Welcome",
+  "login": "Login",
+  "logout": "Logout",
+  "cart": {
+    "loading": "Loading cart...",
+    "emptyTitle": "Cart is empty",
+    "emptyDesc": "Add your favorite products to the cart to start shopping!",
+    "exploreProducts": "Explore products",
+    "title": "Your cart",
+    "selectAll": "Select all ({{count}} items)"
+  },
+  "profile": {
+    "retry": "Retry",
+    "title": "Account Information",
+    "personalInfo": "Personal Information",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "fullname": "Full Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "save": "Save changes",
+    "changePassword": "Change Password"
+  },
+  "settings": {
+    "title": "Settings",
+    "accountSettings": "Account Settings",
+    "email": "Email",
+    "name": "Name",
+    "security": "Security",
+    "changePassword": "Change Password",
+    "enableTwoFA": "Enable Two-Factor Authentication",
+    "notifications": "Notifications",
+    "emailNotifications": "Email Notifications",
+    "orderUpdates": "Order Updates",
+    "privacy": "Privacy",
+    "allowDataCollection": "Allow Data Collection",
+    "receiveMarketingEmails": "Receive Marketing Emails"
+  },
+  "home": "Home",
+  "search": "Search",
+  "order": "Order",
+  "wishlist": {
+    "loading": "Loading wishlist...",
+    "emptyTitle": "No favorite products yet",
+    "emptyDesc": "Add your favorite products to the list to easily find them later!",
+    "exploreProducts": "Explore products",
+    "title": "Wishlist",
+    "subtitle": "Your most favorite products",
+    "addToCart": "Add to cart",
+    "adding": "Adding...",
+    "removeFromWishlist": "Remove from wishlist",
+    "exploreMore": "Explore more products",
+    "addedToCart": "Added \"{{name}}\" to cart",
+    "addToCartError": "An error occurred while adding to cart",
+    "removedFromWishlist": "Removed \"{{name}}\" from wishlist",
+    "removeFromWishlistError": "An error occurred while removing from wishlist"
+  },
+  "product": "Product",
+  "quantity": "Quantity",
+  "price": "Price",
+  "total": "Total",
+  "checkout": "Checkout",
+  "add_to_cart": "Add to cart",
+  "buy_now": "Buy now",
+  "about_us": "About Us",
+  "contact": "Contact",
+  "blog": {
+    "title": "Tech Blog",
+    "subtitle": "Stay updated with the latest tech news, reviews and guides",
+    "readMore": "Read more",
+    "categories": {
+      "all": "All",
+      "smartphone": "Smartphone",
+      "laptop": "Laptop",
+      "technology": "Technology",
+      "security": "Security",
+      "audio": "Audio"
+    },
+    "tags": {
+      "gaming": "Gaming",
+      "laptop": "Laptop",
+      "review": "Review",
+      "comparison": "Comparison",
+      "cybersecurity": "Cybersecurity",
+      "security": "Security",
+      "data": "Data",
+      "ai": "Artificial Intelligence",
+      "future": "Future",
+      "headphones": "Headphones",
+      "shoppingGuide": "Shopping Guide"
+    },
+    "posts": {
+      "post1": {
+        "title": "Top 10 Best Gaming Laptops 2025",
+        "excerpt": "Discover the most powerful gaming laptops with outstanding performance, vivid graphics and efficient cooling for an amazing gaming experience.",
+        "author": "Minh Tuan"
+      },
+      "post2": {
+        "title": "iPhone 17 Pro vs Samsung Galaxy S26 Ultra Comparison",
+        "excerpt": "Detailed analysis of performance, camera, battery and unique features between the two leading flagships from Apple and Samsung in 2025.",
+        "author": "Thanh Ha"
+      },
+      "post3": {
+        "title": "How to Protect Personal Data in the Digital Age",
+        "excerpt": "Useful tips and tools to protect personal information, online accounts and important data from cybersecurity threats.",
+        "author": "Hoang Nam"
+      },
+      "post4": {
+        "title": "The Future of AI in Technology",
+        "excerpt": "Explore the latest trends and applications of artificial intelligence that are reshaping the technology industry and our daily lives.",
+        "author": "Lan Anh"
+      },
+      "post5": {
+        "title": "Guide to Choosing True Wireless Headphones",
+        "excerpt": "Important criteria to consider when choosing wireless headphones, from sound quality, battery life to water resistance.",
+        "author": "Quang Minh"
+      }
+    }
+  },
+  "faq": {
+    "title": "Support / Feedback",
+    "contactSupport": "Contact Support",
+    "tryDocumentation": "Did you try the documentation",
+    "documentationText": "We have lots of information available in our documentation that might help you with your issue. If you don't find your answer there, send us a message. We're happy to help!",
+    "message": "Message",
+    "messagePlaceholder": "Describe your issue or feedback...",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "email": "Email",
+    "emailPlaceholder": "your.email@example.com",
+    "screenshotHelp": "A screenshot or screen recording can be super helpful!",
+    "chooseFile": "Choose file",
+    "submit": "Submit",
+    "submitSuccess": "Thank you for your feedback! We'll get back to you soon.",
+    "faqsTitle": "FAQs",
+    "answerPlaceholder": "This is where the answer to \"{{question}}\" would appear. Click to expand and view detailed information about this topic.",
+    "questions": {
+      "q1": "How do I verify my email?",
+      "q2": "My page loads infinitely or crashes the browser",
+      "q3": "How do I contact the creator of a product?",
+      "q4": "What version of [library] is used?",
+      "q5": "What are forks?",
+      "q6": "Receipts, account cancellation and more"
+    }
+  },
+  "change_password": "Change Password",
+  "forgot_password": "Forgot Password",
+  "reset_password": "Reset Password",
+  "verify_otp": "Verify OTP",
+  "email": "Email",
+  "password": "Password",
+  "confirm_password": "Confirm Password",
+  "submit": "Submit",
+  "cancel": "Cancel",
+  "back": "Back",
+  "header": {
+    "email": "Nagis@gmail.com",
+    "phone": "+1 234 567 8900",
+    "profile": "Profile",
+    "orders": "Orders",
+    "wishlist": "Wishlist",
+    "settings": "Settings",
+    "logout": "Logout",
+    "login": "Login",
+    "techStore": "Tech Store",
+    "searchPlaceholder": "Search products...",
+    "voiceSearch": "Voice search",
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode",
+    "speechNotSupported": "Speech recognition is not supported in your browser",
+    "menu": {
+      "home": "Home",
+      "store": "Store",
+      "pages": "Pages",
+      "blog": "Blog",
+      "contact": "Contact"
+    },
+    "dropdown": {
+      "category1": "Category 1",
+      "category2": "Category 2",
+      "category3": "Category 3"
+    }
+  },
+  "home": {
+    "menu": {
+      "home": "Home",
+      "products": "Products",
+      "categories": "Categories",
+      "deals": "Deals",
+      "support": "Support",
+      "contact": "Contact"
+    },
+    "hero": {
+      "innovativeTech": "Innovative Technology",
+      "button": "Discover Now"
+    },
+    "categories": {
+      "popularCategories": "Popular Categories",
+      "description": "Explore our top technology product categories"
+    },
+    "featuredProducts": {
+      "title": "Featured Products",
+      "description": "Discover the most popular top tech products",
+      "viewAllProducts": "View All Products"
+    }
+  },
+  "orders": {
+    "title": "My Orders",
+    "emptyTitle": "No orders yet",
+    "emptyDesc": "You have no orders. Start shopping now!",
+    "orderNumber": "Order #{{number}}",
+    "orderedAt": "Ordered at: {{date}}",
+    "trackingNumber": "Tracking number: {{tracking}}",
+    "shippingAddress": "Shipping address: {{address}}",
+    "paymentMethod": "Payment method: {{method}}",
+    "total": "Total",
+    "viewDetail": "View details",
+    "cancelOrder": "Cancel order",
+    "prev": "Previous",
+    "next": "Next",
+    "page": "Page {{current}} / {{total}}",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "processing": "Processing"
+    }
+  },
+  "auth": {
+    "passwordStrength": {
+      "enterPassword": "Enter password",
+      "weak": "Weak",
+      "medium": "Medium",
+      "good": "Good",
+      "strong": "Strong"
+    },
+    "login": {
+      "title": "Sign In",
+      "subtitle": "Welcome back",
+      "username": "Username",
+      "usernamePlaceholder": "Enter your username",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "loginButton": "Sign In",
+      "processing": "Processing...",
+      "orLoginWith": "Or sign in with",
+      "noAccountRegister": "Don't have an account? Sign up now",
+      "invalidCredentials": "Invalid username or password",
+      "error": "An error occurred while signing in",
+      "emailNotVerified": "Account is not verified. Please check your email to verify your account.",
+      "verificationEmailSent": "Verification email has been resent. Please check your inbox.",
+      "verificationEmailError": "Unable to resend verification email. Please try again.",
+      "sending": "Sending...",
+      "resendVerificationEmail": "Resend verification email"
+    },
+    "register": {
+      "title": "Create New Account",
+      "subtitle": "Sign up to experience our services",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Enter your full name",
+      "phone": "Phone Number",
+      "phonePlaceholder": "Enter phone number",
+      "email": "Email",
+      "emailPlaceholder": "Enter email address",
+      "username": "Username",
+      "usernamePlaceholder": "Choose a username",
+      "password": "Password",
+      "passwordPlaceholder": "Create a strong password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Re-enter password",
+      "agreeToTerms": "I agree to the",
+      "termsAndConditions": "terms and conditions",
+      "registerButton": "Sign Up",
+      "processing": "Processing...",
+      "hasAccountLogin": "Already have an account? Sign in now",
+      "invalidEmail": "Please enter a valid email address",
+      "invalidPassword": "Password must be at least 8 characters, including uppercase, numbers and special characters",
+      "passwordMismatch": "Confirm password does not match",
+      "fullNameRequired": "Full name is required",
+      "invalidPhone": "Please enter a valid 10-digit phone number",
+      "termsRequired": "Please accept the terms and conditions",
+      "success": "Registration successful! Please check your email to verify your account.",
+      "successMessage": "Registration successful! Please check your email to verify your account before signing in.",
+      "error": "Registration failed. Please try again."
+    }
+  },
+  "footer": {
+    "aboutUs": {
+      "title": "About Us",
+      "description": "We provide high-quality technology products at reasonable prices."
+    },
+    "quickLinks": {
+      "title": "Quick Links",
+      "aboutUs": "About Us",
+      "warranty": "Warranty",
+      "returnPolicy": "Return Policy",
+      "faq": "FAQ"
+    },
+    "contact": {
+      "title": "Contact Information",
+      "address": "123 Nguyen Van Linh Street, Ho Chi Minh City",
+      "phone": "Phone: +84 123 456 789",
+      "email": "Email: Nagis@gmail.com"
+    },
+    "newsletter": {
+      "title": "Newsletter",
+      "placeholder": "Your email"
+    },
+    "copyright": "© {{year}} Nagis. All rights reserved.",
+    "designedBy": "Designed by",
+    "teamName": "Team 5"
+  },
+  "warranty": {
+    "title": "PRODUCT WARRANTY POLICY",
+    "subtitle": "(*) Free 30-day replacement",
+    "policyDescription": "Products purchased at Cellphones.com.vn, customers have the right to request free replacement policy up to 30 days",
+    "standardWarranty": "Standard warranty",
+    "table": {
+      "headers": {
+        "product": "Product",
+        "period": "Warranty period",
+        "decision": "Warranty benefits",
+        "location": "Warranty address"
+      },
+      "newDevice": "New device",
+      "newDevicePeriod": "12 months/Pair expired according to manufacturer's regulations",
+      "newDeviceDecision": "Manufacturer's warranty benefits",
+      "newDeviceLocation": "Official warranty center",
+      "activatedDevice": "Device with online warranty activated",
+      "activatedDevicePeriod": "12 months - Remaining warranty time at time of purchase at Cellphones",
+      "activatedDeviceDecision": "According to manufacturer's warranty benefits for remaining time",
+      "activatedDeviceLocation": "Official warranty center & Cellphones/ Dien Thoai Vui",
+      "usedDevice": "Used device",
+      "usedDevicePeriod": "6 months",
+      "usedDeviceDecision": "Repair, replace components",
+      "usedDeviceLocation": "Cellphones/ Dien Thoai Vui"
+    },
+    "conditions": {
+      "condition1": "Within the first 30 days return device, minus 20% of original price on invoice (not applicable for delivery return devices during holidays)",
+      "condition2": "After 30 days return device according to agreed price"
+    },
+    "categories": {
+      "phones": "Phones (Apple/Samsung/Xiaomi/OPPO/Vivo/Realme/Nokia/Macbook/Apple watch)",
+      "phonesPeriod": "30 days",
+      "samsungWatch": "Samsung watch",
+      "samsungWatchPeriod": "30 days",
+      "laptop": "Laptop",
+      "laptopPeriod": "30 days",
+      "accessories": "Accessories",
+      "accessoriesNew": "Above 1 million (New product):",
+      "accessoriesNewPeriod": "1 year",
+      "accessoriesNewNote": "Return not applicable",
+      "accessoriesUsed": "Above 1 million (Used product):",
+      "accessoriesUsedNote": "Return not applicable"
+    },
+    "extended": {
+      "accessoriesTitle": "Accessories above 1 million",
+      "accessoriesPeriod": "15 days",
+      "accessoriesCondition1": "Within the first 30 days return device, minus 20% of original price on invoice (not applicable for delivery return devices during holidays)",
+      "accessoriesCondition2": "After 30 days return device according to agreed price",
+      "extendedWarranty": "Extended warranty",
+      "extendedPeriod": "15 days",
+      "extendedCondition": "Within the first 7 days, if device has no issues, customer returns BHMR package - refund 50% of BHMR package price"
+    },
+    "exclusions": {
+      "exclusion1": "Device broken, dented, heavily scratched, deformed or water damaged, burned due to improper use",
+      "exclusion2": "Device tampered with, repaired by unauthorized third parties",
+      "exclusion3": "Accessories not provided by Cellphones or manufacturer with the device",
+      "exclusion4": "Device locked with accounts (iCloud, Google Account, Mi Account...) that cannot be unlocked"
+    },
+    "additionalNotes": {
+      "note1": "In addition to warranty policy, we guarantee replacement within the first 30 days if product has manufacturer defects.",
+      "note2": "(*) To be eligible for warranty, product must maintain original seals, warranty cards, purchase invoices and no hardware tampering.",
+      "note3": "Please contact Cellphones staff for detailed consultation on warranty conditions and procedures."
+    },
+    "notes": {
+      "title": "Important notes regarding manufacturer parts",
+      "conditionsTitle": "Return conditions:",
+      "conditionGeneral": "Product in original condition, not damaged, maintaining original shape"
+    },
+    "additional": {
+      "title": "Beyond warranty coverage:"
+    },
+    "info": {
+      "laptopTerms": "1. Laptop warranty terms:",
+      "laptopDescription1": "Phone and laptop products can be warranted at official warranty centers or at Cellphones if supported.",
+      "laptopDescription2": "Products are warranted according to manufacturer regulations, details please refer to warranty center or contact Cellphones.",
+      "warrantyCenter": "Warranty center:",
+      "centerWebsite": "Manufacturer warranty centers, see details at: https://cellphones.com.vn/bao-hanh/apple",
+      "processingTime": "Warranty processing time depends on each manufacturer's regulations and product condition.",
+      "notification": "Customers will be notified when product warranty is completed."
+    },
+    "accessories": {
+      "title": "Bundled accessories warranty regulations:",
+      "vinsmart": "Vinsmart: 6 months",
+      "asus": "Asus: 6 months",
+      "nokia": "Nokia: 6 months",
+      "note": "Warranty benefits replacement policy: 1-to-1 replacement for all defects"
+    },
+    "contact": {
+      "title": "Contact official warranty center details",
+      "description": "Please contact hotline or visit website for more information."
+    }
+  },
+  "payment": {
+    "emptyCart": {
+      "title": "Cart is empty",
+      "description": "You need to add products to the cart before checkout.",
+      "continueShopping": "Continue shopping"
+    },
+    "success": {
+      "title": "Order placed successfully!",
+      "description": "Thank you for your order. We will process your order and contact you soon.",
+      "redirecting": "Redirecting to orders page..."
+    },
+    "buyNow": "Buy now",
+    "checkout": "Checkout",
+    "deliveryInfo": "Delivery information"
+  },
+  "store": {
+    "title": "Products",
+    "filter": {
+      "title": "Product Filters",
+      "category": "Category",
+      "allCategories": "All Categories",
+      "sortBy": "Sort By",
+      "clearFilters": "Clear Filters"
+    },
+    "categories": {
+      "laptops": "Laptops",
+      "smartphones": "Smartphones", 
+      "tvs": "TVs",
+      "accessories": "Accessories"
+    },
+    "sort": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "nameAZ": "Name A-Z",
+      "nameZA": "Name Z-A",
+      "priceLowHigh": "Price Low to High",
+      "priceHighLow": "Price High to Low"
+    },
+    "search": {
+      "placeholder": "Search products...",
+      "clear": "Clear search",
+      "search": "Search",
+      "results": "Search results for:",
+      "noResults": "No products found"
+    },
+    "empty": {
+      "title": "No products found",
+      "description": "Try searching with different keywords or clear filters"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {{current}} / {{total}}"
+    },
+    "error": {
+      "loadProducts": "Unable to load product list. Please try again later."
+    }
+  }
+}

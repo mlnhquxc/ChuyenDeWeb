@@ -1,7 +1,9 @@
 import React from 'react';
 import { Users, Target, Award, TrendingUp, Heart, Shield, Zap, Globe } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const AboutUs = () => {
+    const { t } = useTranslation();
     const stats = [
         { number: '500+', label: 'Happy Customers', icon: Users },
         { number: '50+', label: 'Projects Completed', icon: Target },

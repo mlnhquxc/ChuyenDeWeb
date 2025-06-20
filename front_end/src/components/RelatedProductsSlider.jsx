@@ -153,7 +153,7 @@ const RelatedProductsSlider = ({ currentProductId, categoryName }) => {
     return (
       <div className="py-12">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Sản phẩm liên quan</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Sản phẩm liên quan</h2>
           <div className="flex justify-center items-center h-32">
             <div className="w-8 h-8 rounded-full border-4 border-purple-200 border-t-purple-600 animate-spin"></div>
           </div>
@@ -173,25 +173,25 @@ const RelatedProductsSlider = ({ currentProductId, categoryName }) => {
 
   return (
     <div 
-      className="py-12 bg-gray-50 dark:bg-gray-800 transition-colors duration-200"
+      className="py-12 bg-gray-50 "
       onMouseEnter={() => setIsAutoPlay(false)}
       onMouseLeave={() => setIsAutoPlay(true)}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Sản phẩm liên quan</h2>
+          <h2 className="text-2xl font-bold text-gray-900 phẩm liên quan</h2>
           
           {/* Navigation buttons */}
           <div className="flex gap-2">
             <button
               onClick={prevSlide}
-              className="p-2 rounded-full bg-white dark:bg-gray-700 shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
+              className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 hover:text-purple-600 dark:hover:text-purple-400"
             >
               <FiChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={nextSlide}
-              className="p-2 rounded-full bg-white dark:bg-gray-700 shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
+              className="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-all duration-300 text-gray-600 hover:text-purple-600 dark:hover:text-purple-400"
             >
               <FiChevronRight className="w-5 h-5" />
             </button>
@@ -208,7 +208,7 @@ const RelatedProductsSlider = ({ currentProductId, categoryName }) => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="bg-white dark:bg-gray-900 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group"
               >
               {/* Product image */}
               <div className="relative overflow-hidden">
@@ -228,8 +228,8 @@ const RelatedProductsSlider = ({ currentProductId, categoryName }) => {
                   disabled={isAddingToWishlist[product.id]}
                   className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-300 ${
                     isInWishlist(product.id)
-                      ? "bg-red-100 dark:bg-red-900 text-red-500 dark:text-red-300"
-                      : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-500 dark:hover:text-red-300"
+                      ? "bg-red-100 text-red-500 dark:text-red-300"
+                      : "bg-white text-gray-600 hover:bg-red-100 hover:text-red-500 dark:hover:text-red-300"
                   } opacity-0 group-hover:opacity-100`}
                 >
                   <FiHeart className="w-4 h-4" />
@@ -239,7 +239,7 @@ const RelatedProductsSlider = ({ currentProductId, categoryName }) => {
               {/* Product info */}
               <div className="p-4">
                 <h3
-                  className="font-semibold text-gray-900 dark:text-white mb-2 cursor-pointer hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300 overflow-hidden"
+                  className="font-semibold text-gray-900 mb-2 cursor-pointer hover:text-purple-600 transition-colors duration-300 overflow-hidden"
                   style={{
                     display: '-webkit-box',
                     WebkitLineClamp: 2,
@@ -284,7 +284,7 @@ const RelatedProductsSlider = ({ currentProductId, categoryName }) => {
               className={`w-3 h-3 rounded-full transition-all duration-300 ${
                 currentSlide === index
                   ? "bg-purple-600 dark:bg-purple-400"
-                  : "bg-gray-300 dark:bg-gray-600 hover:bg-purple-300 dark:hover:bg-purple-700"
+                  : "bg-gray-300 hover:bg-purple-300 dark:hover:bg-purple-700"
               }`}
             />
           ))}

@@ -14,8 +14,10 @@ import ProvinceSelect, { calculateShippingFee } from "../api/Location.jsx";
 import { useAuth } from "../context/AuthContext";
 import orderService from "../services/orderService";
 import userService from "../services/userService";
+import { useTranslation } from 'react-i18next';
 
 const BuyNowPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();

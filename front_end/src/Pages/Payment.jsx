@@ -14,8 +14,10 @@ import { useAuth } from "../context/AuthContext";
 import orderService from "../services/orderService";
 import userService from "../services/userService";
 import { ProductImage } from "../utils/placeholderImage.jsx";
+import { useTranslation } from 'react-i18next';
 
 const CheckoutPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { cart, loading: cartLoading, clearCart } = useCart();
@@ -219,14 +221,14 @@ const CheckoutPage = () => {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Giỏ hàng trống</h1>
-          <p className="text-gray-600 mb-8">Bạn cần thêm sản phẩm vào giỏ hàng trước khi thanh toán.</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">{t('payment.emptyCart.title')}</h1>
+          <p className="text-gray-600 mb-8">{t('payment.emptyCart.description')}</p>
           <button
             onClick={() => navigate('/store')}
             className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             <FaArrowLeft className="mr-2" />
-            Tiếp tục mua sắm
+            {t('payment.emptyCart.continueShopping')}
           </button>
         </div>
       </div>
@@ -240,11 +242,11 @@ const CheckoutPage = () => {
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="bg-white p-8 rounded-lg shadow-md">
             <div className="text-green-500 text-6xl mb-4">✓</div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">Đặt hàng thành công!</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">{t('payment.success.title')}</h1>
             <p className="text-gray-600 mb-8">
-              Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng và liên hệ với bạn sớm nhất.
+              {t('payment.success.description')}
             </p>
-            <p className="text-sm text-gray-500">Đang chuyển hướng đến trang đơn hàng...</p>
+            <p className="text-sm text-gray-500">{t('payment.success.redirecting')}</p>
           </div>
         </div>
       </div>
@@ -255,13 +257,13 @@ const CheckoutPage = () => {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400 mb-8">
-            {isFromBuyNow ? 'Mua ngay' : 'Thanh toán'}
+            {isFromBuyNow ? t('payment.buyNow') : t('payment.checkout')}
           </h1>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Form */}
             <div className="space-y-8">
               <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-2xl font-bold mb-6">Thông tin giao hàng</h2>
+                <h2 className="text-2xl font-bold mb-6">{t('payment.deliveryInfo')}</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">

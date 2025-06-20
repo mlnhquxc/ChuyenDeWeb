@@ -29,7 +29,7 @@ const CustomToast = ({ icon: Icon, title, message, type }) => (
         {title}
       </p>
       {message && (
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <p className="text-sm text-gray-500 mt-1">
           {message}
         </p>
       )}

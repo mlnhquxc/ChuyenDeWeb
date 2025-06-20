@@ -9,8 +9,10 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import RelatedProductsSlider from "../components/RelatedProductsSlider";
 import FacebookComments from "../components/FacebookComments";
+import { useTranslation } from 'react-i18next';
 
 const ProductDetail = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();

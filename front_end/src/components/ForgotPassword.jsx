@@ -53,7 +53,7 @@ const ForgotPassword = ({ onBack, onSuccess }) => {
       className="w-full"
     >
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:to-indigo-400">
           Quên mật khẩu
         </h2>
         <p className="mt-2 text-gray-600 dark:text-gray-300">
@@ -63,13 +63,13 @@ const ForgotPassword = ({ onBack, onSuccess }) => {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg" role="alert">
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg" role="alert">
             <span className="block sm:inline">{error}</span>
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Email
           </label>
           <div className="relative">
@@ -80,7 +80,7 @@ const ForgotPassword = ({ onBack, onSuccess }) => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="pl-10 block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200"
+              className="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white "
               placeholder="Nhập địa chỉ email của bạn"
               required
             />
@@ -111,7 +111,7 @@ const ForgotPassword = ({ onBack, onSuccess }) => {
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+            className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:hover:text-indigo-300"
           >
             <FaArrowLeft className="mr-2" />
             Quay lại đăng nhập

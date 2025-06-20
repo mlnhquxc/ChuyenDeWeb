@@ -96,12 +96,12 @@ const EmailVerification = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center"
+        className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center"
       >
         <div className="mb-6">
           {isLoading && (
@@ -110,7 +110,7 @@ const EmailVerification = () => {
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
               className="inline-block"
             >
-              <FaSpinner className="text-6xl text-indigo-600 dark:text-indigo-400" />
+              <FaSpinner className="text-6xl text-indigo-600 />
             </motion.div>
           )}
           
@@ -136,7 +136,7 @@ const EmailVerification = () => {
         </div>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
             {isLoading && 'Đang xác thực email...'}
             {!isLoading && status === 'success' && 'Xác thực thành công!'}
             {!isLoading && status === 'error' && 'Xác thực thất bại'}
@@ -160,7 +160,7 @@ const EmailVerification = () => {
                 </p>
                 <button
                   onClick={handleGoToLogin}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg "
                 >
                   Đăng nhập ngay
                 </button>
@@ -171,7 +171,7 @@ const EmailVerification = () => {
               <div className="space-y-4">
                 <button
                   onClick={handleGoToLogin}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg "
                 >
                   Quay lại đăng nhập
                 </button>

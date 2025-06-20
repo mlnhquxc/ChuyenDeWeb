@@ -118,16 +118,16 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md transition-colors duration-200">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md ">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-xl font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                    <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
                         <FaLock className="text-indigo-500" />
                         Đổi mật khẩu
                     </h2>
                     <button
                         onClick={handleClose}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                        className="text-gray-400 hover:text-gray-600 transition-colors"
                     >
                         <FaTimes size={20} />
                     </button>
@@ -137,7 +137,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     {/* Current Password */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                             Mật khẩu hiện tại
                         </label>
                         <div className="relative">
@@ -146,7 +146,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                                 name="currentPassword"
                                 value={formData.currentPassword}
                                 onChange={handleChange}
-                                className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200 ${
+                                className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500  ${
                                     errors.currentPassword ? 'border-red-500' : 'border-gray-300'
                                 }`}
                                 placeholder="Nhập mật khẩu hiện tại"
@@ -166,7 +166,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
                     {/* New Password */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                             Mật khẩu mới
                         </label>
                         <div className="relative">
@@ -175,7 +175,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                                 name="newPassword"
                                 value={formData.newPassword}
                                 onChange={handleChange}
-                                className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200 ${
+                                className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500  ${
                                     errors.newPassword ? 'border-red-500' : 'border-gray-300'
                                 }`}
                                 placeholder="Nhập mật khẩu mới"
@@ -195,7 +195,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
                     {/* Confirm Password */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                             Xác nhận mật khẩu mới
                         </label>
                         <div className="relative">
@@ -204,7 +204,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                                 name="confirmPassword"
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
-                                className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors duration-200 ${
+                                className={`w-full px-4 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500  ${
                                     errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                                 }`}
                                 placeholder="Xác nhận mật khẩu mới"
@@ -227,7 +227,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                         <button
                             type="button"
                             onClick={handleClose}
-                            className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                            className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 "
                         >
                             Hủy
                         </button>

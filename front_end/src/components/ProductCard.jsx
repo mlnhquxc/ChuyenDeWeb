@@ -7,6 +7,7 @@ import { showToast } from "../utils/toast";
 import { useWishlist } from "../context/WishlistContext";
 import { useAuth } from "../context/AuthContext";
 import { ProductImage } from "../utils/placeholderImage.jsx";
+import { useTranslation } from 'react-i18next';
 
 const ProductCard = ({ product }) => {
   if (!product) {
@@ -16,6 +17,7 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
 
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -107,8 +109,8 @@ const ProductCard = ({ product }) => {
   };
   
   const imageUrl = product.imageUrls?.[0] || product.image;
-  const productName = product.name || 'Không có tên';
-  const categoryName = product.categoryName || 'Không phân loại';
+  const productName = product.name || t('productCard.noName');
+  const categoryName = product.categoryName || t('productCard.noCategory');
   const price = product.price || 0;
 
   return (
@@ -152,7 +154,7 @@ const ProductCard = ({ product }) => {
                 onClick={handleBuyNow}
             >
               <FaShoppingBag className="mr-2" /> 
-              Mua ngay
+              {t('productCard.buyNow')}
             </button>
             <button
                 className={`w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2.5 px-4 rounded-lg flex items-center justify-center transition-all duration-300 transform hover:scale-[1.02] ${isAddingToCart ? 'opacity-70' : ''} shadow-md`}
@@ -160,7 +162,7 @@ const ProductCard = ({ product }) => {
                 disabled={isAddingToCart}
             >
               <FiShoppingCart className="mr-2" /> 
-              {isAddingToCart ? 'Đang thêm...' : 'Thêm vào giỏ'}
+              {isAddingToCart ? t('productCard.adding') : t('productCard.addToCart')}
             </button>
           </div>
         </div>

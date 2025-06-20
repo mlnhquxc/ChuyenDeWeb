@@ -1,7 +1,9 @@
 import React,{ useState, useEffect } from 'react';
 import { Phone, Mail, Globe } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const ReturnExchangePolicy = () => {
+    const { t } = useTranslation();
     const policyData = [
         {
             product: "Điện thoại/ Máy tính bảng/ Macbook",

@@ -51,7 +51,7 @@ function App() {
           <CartProvider>
             <WishlistProvider>
               <TokenCleaner />
-              <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-slate-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+              <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900 ">
                 <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
                 <main className="flex-grow">
                   <Routes>
