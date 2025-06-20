@@ -69,25 +69,49 @@ public class ProductServiceImpl implements ProductService {
 
     private ProductDetailDTO convertToDetailDTO(Product product) {
         List<String> allImages = product.getProductImages().stream()
+                .sorted((img1, img2) -> {
+                    // Sắp xếp theo thứ tự: ảnh chính trước, sau đó theo display_order
+                    if (img1.getIsPrimary() != null && img1.getIsPrimary()) return -1;
+                    if (img2.getIsPrimary() != null && img2.getIsPrimary()) return 1;
+                    return Integer.compare(
+                        img1.getDisplayOrder() != null ? img1.getDisplayOrder() : 0,
+                        img2.getDisplayOrder() != null ? img2.getDisplayOrder() : 0
+                    );
+                })
                 .map(ProductImage::getImageUrl)
                 .collect(Collectors.toList());
 
-        // Lấy ảnh chính (ảnh đầu tiên)
+        // Lấy ảnh chính (ảnh đầu tiên hoặc ảnh có is_primary = true)
         String mainImage = allImages.isEmpty() ? null : allImages.get(0);
 
-        // Lấy cả 3 ảnh làm ảnh phụ
+        // Lấy tất cả ảnh làm danh sách ảnh (bao gồm cả ảnh chính)
         List<String> additionalImages = allImages;
 
         return ProductDetailDTO.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .description(product.getDescription())
+                .shortDescription(product.getShortDescription())
                 .price(product.getPrice())
+                .originalPrice(product.getOriginalPrice())
                 .stock(product.getStock())
-                .categoryName(product.getCategory().getName())
+                .brand(product.getBrand())
+                .model(product.getModel())
+                .weight(product.getWeight())
+                .dimensions(product.getDimensions())
+                .color(product.getColor())
+                .material(product.getMaterial())
+                .warrantyPeriod(product.getWarrantyPeriod())
+                .specifications(product.getSpecifications())
+                .features(product.getFeatures())
+                .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
+                .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)
                 .imageUrls(allImages)
                 .mainImage(mainImage)
                 .additionalImages(additionalImages)
+                .active(product.getActive())
+                .createdAt(product.getCreatedAt())
+                .updatedAt(product.getUpdatedAt())
                 .build();
     }
 } 
