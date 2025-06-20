@@ -13,10 +13,10 @@ export const ENDPOINTS = {
 
   // User endpoints
   USER: {
-    PROFILE: '/user/profile',
-    UPDATE_PROFILE: '/user/update',
-    CHANGE_PASSWORD: '/user/change-password',
-    UPLOAD_AVATAR: '/user/upload-avatar',
+    PROFILE: '/users/profile',
+    UPDATE_PROFILE: '/users/update',
+    CHANGE_PASSWORD: '/users/change-password',
+    UPLOAD_AVATAR: '/users/upload-avatar',
   },
 
   // Product endpoints

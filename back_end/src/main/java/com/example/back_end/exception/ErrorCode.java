@@ -22,6 +22,8 @@ public enum ErrorCode {
     INVALID_EMAIL(1011, "Email must not be empty", HttpStatus.BAD_REQUEST),
     PASSWORD_TOO_SHORT(1012, "Password must be at least 6 characters", HttpStatus.BAD_REQUEST),
     INVALID_FULLNAME(1013, "Fullname must not be empty", HttpStatus.BAD_REQUEST),
+    INVALID_FILE_TYPE(1014, "Invalid file type. Only images are allowed", HttpStatus.BAD_REQUEST),
+    FILE_TOO_LARGE(1015, "File size exceeds maximum limit", HttpStatus.BAD_REQUEST),
     
     // Product related errors
     PRODUCT_NOT_FOUND(2000, "Product not found", HttpStatus.NOT_FOUND),

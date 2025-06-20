@@ -112,14 +112,35 @@ const Profile = () => {
         const file = e.target.files[0];
         if (!file) return;
 
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error('Vui lòng chọn file ảnh hợp lệ');
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Kích thước file không được vượt quá 5MB');
+            return;
+        }
+
+        setLoading(true);
         try {
             const response = await userService.uploadAvatar(file);
-            if (response.success) {
-                updateUser({...user, avatar: response.data.avatarUrl});
+            if (response.code === 200) {
+                // Update user context with new avatar URL
+                // Check if it's a Cloudinary URL (starts with https) or local URL
+                const avatarUrl = response.result.startsWith('http') 
+                    ? response.result 
+                    : `http://localhost:8080${response.result}`;
+                updateUser({...user, avatar: avatarUrl});
                 toast.success('Cập nhật ảnh đại diện thành công');
             }
         } catch (error) {
+            console.error('Avatar upload error:', error);
             toast.error(error.message || 'Không thể cập nhật ảnh đại diện');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -168,12 +189,12 @@ const Profile = () => {
                                     <div className="w-32 h-32 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden border-4 border-indigo-100 dark:border-indigo-900">
                                         {user?.avatar ? (
                                             <img 
-                                                src={user.avatar} 
+                                                src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:8080${user.avatar}`} 
                                                 alt="Profile" 
                                                 className="w-full h-full object-cover"
                                                 onError={(e) => {
                                                     e.target.onerror = null;
-                                                    e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.name || 'User');
+                                                    e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.name || 'User') + '&background=6366f1&color=ffffff';
                                                 }}
                                             />
                                         ) : (

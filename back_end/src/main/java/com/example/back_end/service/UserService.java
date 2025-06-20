@@ -55,6 +55,7 @@ public class UserService implements UserDetailsService {
     private final JwtService jwtService;
     private final OtpService otpService;
     private final EmailService emailService;
+    private final FileUploadService fileUploadService;
 
     @Value("${jwt.signer-key}")
     private String SIGNER_KEY;
@@ -290,34 +291,23 @@ public class UserService implements UserDetailsService {
 
 
 
-    public String uploadAvatar(String email, MultipartFile file) {
-        User user = findByEmail(email);
+    public String uploadAvatar(String username, MultipartFile file) {
+        User user = findByUsername(username);
         
-        try {
-            // Generate unique filename
-            String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String filename = UUID.randomUUID().toString() + extension;
-            
-            // Save file to filesystem
-            String uploadDir = "uploads/avatars/";
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-            
-            File destFile = new File(dir.getAbsolutePath() + File.separator + filename);
-            file.transferTo(destFile);
-            
-            // Update user avatar URL
-            String avatarUrl = "/uploads/avatars/" + filename;
-            user.setAvatar(avatarUrl);
-            userRepository.save(user);
-            
-            return avatarUrl;
-        } catch (IOException e) {
-            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+        // Delete old avatar if exists
+        if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
+            fileUploadService.deleteImage(user.getAvatar());
         }
+        
+        // Upload new avatar
+        String avatarUrl = fileUploadService.uploadAvatar(file, username);
+        
+        // Update user avatar URL
+        user.setAvatar(avatarUrl);
+        userRepository.save(user);
+        
+        log.info("Successfully updated avatar for user: {}", username);
+        return avatarUrl;
     }
 
     public String validateToken(String token) throws ParseException, JOSEException {
