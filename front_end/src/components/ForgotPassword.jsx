@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import authService from '../services/authService';
 import { toast } from 'react-toastify';
 
-const ForgotPassword = ({ onBack, onOtpSent }) => {
+const ForgotPassword = ({ onBack, onSuccess }) => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -29,12 +29,16 @@ const ForgotPassword = ({ onBack, onOtpSent }) => {
 
     try {
       const response = await authService.forgotPassword(email);
-      toast.success('Mã OTP đã được gửi đến email của bạn');
-      onOtpSent(email);
+      toast.success('Mật khẩu tạm thời đã được gửi đến email của bạn');
+      setError('');
+      // Show success message and redirect back to login
+      setTimeout(() => {
+        onSuccess && onSuccess();
+      }, 2000);
     } catch (error) {
       console.error('Forgot password error:', error);
       setError(error.userMessage || 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.');
-      toast.error('Không thể gửi mã OTP');
+      toast.error('Không thể gửi mật khẩu tạm thời');
     } finally {
       setIsLoading(false);
     }
@@ -53,7 +57,7 @@ const ForgotPassword = ({ onBack, onOtpSent }) => {
           Quên mật khẩu
         </h2>
         <p className="mt-2 text-gray-600 dark:text-gray-300">
-          Nhập email của bạn để nhận mã OTP đặt lại mật khẩu
+          Nhập email của bạn để nhận mật khẩu tạm thời
         </p>
       </div>
 
@@ -98,7 +102,7 @@ const ForgotPassword = ({ onBack, onOtpSent }) => {
                 Đang xử lý...
               </span>
             ) : (
-              "Gửi mã OTP"
+              "Gửi mật khẩu tạm thời"
             )}
           </button>
         </div>

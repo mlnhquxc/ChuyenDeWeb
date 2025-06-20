@@ -38,10 +38,10 @@ public enum ErrorCode {
     PRODUCT_ALREADY_IN_WISHLIST(4002, "Product is already in wishlist", HttpStatus.BAD_REQUEST),
     
     // Email verification related errors
-    INVALID_TOKEN(5000, "Invalid or malformed token", HttpStatus.BAD_REQUEST),
-    TOKEN_EXPIRED(5001, "Token has expired", HttpStatus.BAD_REQUEST),
-    EMAIL_ALREADY_VERIFIED(5002, "Email is already verified", HttpStatus.BAD_REQUEST),
-    EMAIL_NOT_VERIFIED(5003, "Email is not verified", HttpStatus.BAD_REQUEST),
+    INVALID_TOKEN(5000, "Token xác thực không hợp lệ hoặc đã bị hỏng", HttpStatus.BAD_REQUEST),
+    TOKEN_EXPIRED(5001, "Token xác thực đã hết hạn", HttpStatus.BAD_REQUEST),
+    EMAIL_ALREADY_VERIFIED(5002, "Email đã được xác thực trước đó", HttpStatus.BAD_REQUEST),
+    EMAIL_NOT_VERIFIED(5003, "Email chưa được xác thực", HttpStatus.BAD_REQUEST),
     ;
 
     private final int code;

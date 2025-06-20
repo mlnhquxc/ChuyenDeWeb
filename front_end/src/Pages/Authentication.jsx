@@ -633,24 +633,7 @@ const AuthPage = () => {
             {authState === "forgot-password" && (
               <ForgotPassword 
                 onBack={handleSwitchToLogin}
-                onOtpSent={handleOtpSent}
-              />
-            )}
-            
-            {authState === "verify-otp" && (
-              <VerifyOTP 
-                email={forgotPasswordEmail}
-                onBack={() => setAuthState("forgot-password")}
-                onVerified={handleOtpVerified}
-              />
-            )}
-            
-            {authState === "reset-password" && (
-              <ResetPassword 
-                email={forgotPasswordEmail}
-                otp={forgotPasswordOTP}
-                onBack={() => setAuthState("verify-otp")}
-                onSuccess={handlePasswordReset}
+                onSuccess={handleSwitchToLogin}
               />
             )}
           </AnimatePresence>

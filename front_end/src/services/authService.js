@@ -297,6 +297,35 @@ const authService = {
       error.userMessage = errorMessage;
       throw error;
     }
+  },
+
+  async changePassword(currentPassword, newPassword, confirmPassword) {
+    try {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Change password request');
+      }
+      const response = await axiosInstance.put(ENDPOINTS.USER.CHANGE_PASSWORD, { 
+        currentPassword, 
+        newPassword, 
+        confirmPassword 
+      });
+      
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Change password response:', response.data);
+      }
+      
+      return response.data;
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('authService - Change password error:', error);
+      } else {
+        console.error('Password change failed:', error.message || 'Unknown error');
+      }
+      
+      const errorMessage = error.response?.data?.message || 'Không thể đổi mật khẩu. Vui lòng thử lại.';
+      error.userMessage = errorMessage;
+      throw error;
+    }
   }
 };
 

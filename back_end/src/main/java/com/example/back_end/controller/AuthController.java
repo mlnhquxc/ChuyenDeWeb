@@ -1,5 +1,6 @@
 package com.example.back_end.controller;
 
+import com.example.back_end.dto.request.ChangePasswordRequest;
 import com.example.back_end.dto.request.ForgotPasswordRequest;
 import com.example.back_end.dto.request.IntrospectRequest;
 import com.example.back_end.dto.request.ResetPasswordRequest;
@@ -7,6 +8,7 @@ import com.example.back_end.dto.request.UserCreationRequest;
 import com.example.back_end.dto.request.VerifyOtpRequest;
 import com.example.back_end.dto.response.ApiResponse;
 import com.example.back_end.dto.response.AuthenticationResponse;
+import com.example.back_end.dto.response.ChangePasswordResponse;
 import com.example.back_end.dto.response.ForgotPasswordResponse;
 import com.example.back_end.dto.response.IntrospectResponse;
 import com.example.back_end.dto.response.ResetPasswordResponse;
@@ -18,6 +20,7 @@ import com.nimbusds.jose.JOSEException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

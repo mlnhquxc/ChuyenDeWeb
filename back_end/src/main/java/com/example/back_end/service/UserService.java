@@ -1,9 +1,11 @@
 package com.example.back_end.service;
 
 import com.example.back_end.constant.PredefinedRole;
+import com.example.back_end.dto.request.ChangePasswordRequest;
 import com.example.back_end.dto.request.IntrospectRequest;
 import com.example.back_end.dto.request.UserCreationRequest;
 import com.example.back_end.dto.response.AuthenticationResponse;
+import com.example.back_end.dto.response.ChangePasswordResponse;
 import com.example.back_end.dto.response.ForgotPasswordResponse;
 import com.example.back_end.dto.response.IntrospectResponse;
 import com.example.back_end.dto.response.ResetPasswordResponse;
@@ -62,6 +64,8 @@ public class UserService implements UserDetailsService {
     
     @Autowired
     private EmailVerificationService emailVerificationService;
+    
+
 
     public User createRequest(UserCreationRequest request) {
         log.info("Creating new user with email: {} and username: {}", request.getEmail(), request.getUsername());
@@ -284,18 +288,7 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
-    public void changePassword(String email, String oldPassword, String newPassword) {
-        User user = findByEmail(email);
-        
-        // Verify old password
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
-        
-        // Update password
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
-    }
+
 
     public String uploadAvatar(String email, MultipartFile file) {
         User user = findByEmail(email);
@@ -372,15 +365,21 @@ public class UserService implements UserDetailsService {
                         return new AppException(ErrorCode.USER_NOT_EXISTED);
                     });
             
-            // Generate OTP
-            String otp = otpService.generateOtp(email);
+            // Generate temporary password
+            String tempPassword = generateTemporaryPassword();
             
-            // Send OTP to user's email
-            emailService.sendOtpEmail(email, otp);
+            // Update user password
+            user.setPassword(passwordEncoder.encode(tempPassword));
+            userRepository.save(user);
+            
+            // Send temporary password to user's email
+            emailService.sendTemporaryPasswordEmail(email, user.getFullname(), tempPassword);
+            
+            log.info("Temporary password sent to user: {}", email);
             
             return ForgotPasswordResponse.builder()
                     .success(true)
-                    .message("OTP sent successfully to your email")
+                    .message("Mật khẩu tạm thời đã được gửi đến email của bạn")
                     .build();
         } catch (AppException e) {
             log.error("Forgot password failed: {}", e.getErrorCode().getMessage());
@@ -392,9 +391,25 @@ public class UserService implements UserDetailsService {
             log.error("Unexpected error during forgot password: {}", e.getMessage());
             return ForgotPasswordResponse.builder()
                     .success(false)
-                    .message("An unexpected error occurred")
+                    .message("Có lỗi xảy ra khi gửi email. Vui lòng thử lại sau.")
                     .build();
         }
+    }
+    
+    /**
+     * Generate a temporary password
+     * @return Temporary password string
+     */
+    private String generateTemporaryPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder tempPassword = new StringBuilder();
+        Random random = new Random();
+        
+        for (int i = 0; i < 8; i++) {
+            tempPassword.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        
+        return tempPassword.toString();
     }
     
     /**
@@ -502,6 +517,77 @@ public class UserService implements UserDetailsService {
         } catch (Exception e) {
             log.error("Unexpected error during password reset: {}", e.getMessage());
             return ResetPasswordResponse.builder()
+                    .success(false)
+                    .message("An unexpected error occurred")
+                    .build();
+        }
+    }
+    
+    /**
+     * Change password for authenticated user
+     * @param username Username from JWT token
+     * @param request Change password request with current and new password
+     * @return Response with success status and message
+     */
+    public ChangePasswordResponse changePassword(String username, ChangePasswordRequest request) {
+        log.info("Changing password for user: {}", username);
+        
+        try {
+            // Find user by username
+            User user = findByUsername(username);
+            
+            // Verify current password
+            if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                return ChangePasswordResponse.builder()
+                        .success(false)
+                        .message("Current password is incorrect")
+                        .build();
+            }
+            
+            // Validate new password
+            if (request.getNewPassword().length() < 6) {
+                return ChangePasswordResponse.builder()
+                        .success(false)
+                        .message("New password must be at least 6 characters long")
+                        .build();
+            }
+            
+            // Check if new password matches confirm password
+            if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+                return ChangePasswordResponse.builder()
+                        .success(false)
+                        .message("New password and confirm password do not match")
+                        .build();
+            }
+            
+            // Check if new password is different from current password
+            if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+                return ChangePasswordResponse.builder()
+                        .success(false)
+                        .message("New password must be different from current password")
+                        .build();
+            }
+            
+            // Update password
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+            
+            log.info("Password changed successfully for user: {}", username);
+            
+            return ChangePasswordResponse.builder()
+                    .success(true)
+                    .message("Password changed successfully")
+                    .build();
+                    
+        } catch (AppException e) {
+            log.error("Password change failed: {}", e.getErrorCode().getMessage());
+            return ChangePasswordResponse.builder()
+                    .success(false)
+                    .message(e.getErrorCode().getMessage())
+                    .build();
+        } catch (Exception e) {
+            log.error("Unexpected error during password change: {}", e.getMessage());
+            return ChangePasswordResponse.builder()
                     .success(false)
                     .message("An unexpected error occurred")
                     .build();

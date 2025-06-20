@@ -12,6 +12,7 @@ const EmailVerification = () => {
   const [status, setStatus] = useState('verifying'); // 'verifying', 'success', 'error'
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [hasVerified, setHasVerified] = useState(false); // Prevent multiple requests
 
   useEffect(() => {
     const token = searchParams.get('token');
@@ -23,31 +24,66 @@ const EmailVerification = () => {
       return;
     }
 
-    verifyEmail(token);
-  }, [searchParams]);
+    // Only verify once
+    if (!hasVerified) {
+      verifyEmail(token);
+    }
+  }, [searchParams]); // Remove hasVerified from dependency to avoid infinite loop
 
   const verifyEmail = async (token) => {
+    // Prevent multiple calls
+    if (hasVerified) return;
+    
     try {
       setIsLoading(true);
+      setHasVerified(true);
       const response = await axiosInstance.get(`${ENDPOINTS.AUTH.VERIFY_EMAIL}?token=${token}`);
       
-      if (response.data && response.data.result) {
+      // Kiểm tra response status và code để xác định thành công
+      if (response.status === 200 && response.data && response.data.code === 0) {
         setStatus('success');
         setMessage(response.data.result);
-        showToast.success('Email đã được xác thực thành công!');
+        
+        // Kiểm tra nếu là trường hợp email đã được xác thực trước đó
+        if (response.data.result.includes('đã được xác thực trước đó')) {
+          showToast.info('Email đã được xác thực trước đó.');
+        } else {
+          showToast.success('Email đã được xác thực thành công!');
+        }
         
         // Chuyển hướng về trang đăng nhập sau 3 giây
         setTimeout(() => {
           navigate('/auth');
         }, 3000);
       } else {
+        // Trường hợp response có data nhưng không thành công
         setStatus('error');
-        setMessage('Xác thực email thất bại.');
+        const errorMessage = response.data?.message || 'Xác thực email thất bại.';
+        setMessage(errorMessage);
+        showToast.error(errorMessage);
       }
     } catch (error) {
       console.error('Email verification error:', error);
       setStatus('error');
-      const errorMessage = error.response?.data?.message || 'Xác thực email thất bại. Vui lòng thử lại.';
+      
+      // Xử lý các loại lỗi khác nhau
+      let errorMessage = 'Xác thực email thất bại. Vui lòng thử lại.';
+      
+      if (error.response) {
+        // Server trả về response với error status
+        const { status, data } = error.response;
+        
+        if (status === 400 && data?.message) {
+          // Lỗi từ backend (như TOKEN_EXPIRED, INVALID_TOKEN, etc.)
+          errorMessage = data.message;
+        } else if (status === 500) {
+          errorMessage = 'Lỗi hệ thống. Vui lòng thử lại sau.';
+        }
+      } else if (error.request) {
+        // Network error
+        errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+      }
+      
       setMessage(errorMessage);
       showToast.error(errorMessage);
     } finally {

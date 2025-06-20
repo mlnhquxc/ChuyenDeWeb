@@ -42,6 +42,42 @@ public class EmailService {
     }
     
     /**
+     * Send temporary password to user
+     * @param to Recipient email
+     * @param fullName User's full name
+     * @param tempPassword Temporary password
+     */
+    @Async
+    public void sendTemporaryPasswordEmail(String to, String fullName, String tempPassword) {
+        try {
+            log.info("Sending temporary password email to: {}", to);
+            
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject("Mật khẩu tạm thời - Temporary Password");
+            
+            String emailContent = 
+                "Xin chào " + fullName + ",\n\n" +
+                "Chúng tôi nhận được yêu cầu lấy lại mật khẩu cho tài khoản của bạn.\n\n" +
+                "Mật khẩu tạm thời của bạn là: " + tempPassword + "\n\n" +
+                "Vui lòng sử dụng mật khẩu này để đăng nhập và thay đổi mật khẩu mới ngay sau khi đăng nhập thành công.\n\n" +
+                "Lưu ý: Vì lý do bảo mật, chúng tôi khuyến khích bạn thay đổi mật khẩu này ngay sau khi đăng nhập.\n\n" +
+                "Nếu bạn không yêu cầu lấy lại mật khẩu, vui lòng liên hệ với chúng tôi ngay lập tức.\n\n" +
+                "Trân trọng,\n" +
+                "Đội ngũ hỗ trợ";
+            
+            message.setText(emailContent);
+            mailSender.send(message);
+            
+            log.info("Temporary password email sent successfully to: {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send temporary password email to: {}", to, e);
+            throw new RuntimeException("Failed to send temporary password email", e);
+        }
+    }
+    
+    /**
      * Send password reset confirmation email
      * @param to Recipient email
      */

@@ -83,13 +83,16 @@ public class EmailVerificationService {
                 throw new AppException(ErrorCode.TOKEN_EXPIRED);
             }
             
-            // Check if already verified
-            if (verificationToken.isVerified()) {
-                throw new AppException(ErrorCode.EMAIL_ALREADY_VERIFIED);
+            // Get the user
+            User user = verificationToken.getUser();
+            
+            // Check if user is already active or token is already verified
+            if (user.getActive() || verificationToken.isVerified()) {
+                log.info("Email already verified for user: {}", user.getEmail());
+                return "Email của bạn đã được xác thực trước đó. Bạn có thể đăng nhập ngay.";
             }
             
             // Verify the user
-            User user = verificationToken.getUser();
             user.setActive(true);
             userRepository.save(user);
             

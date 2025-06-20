@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaSignOutAlt, FaEdit, FaCamera } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaSignOutAlt, FaEdit, FaCamera, FaLock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import userService from '../services/userService';
 import authService from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import ChangePasswordModal from '../components/ChangePasswordModal';
 
 const Profile = () => {
     const { user, updateUser } = useAuth();
@@ -12,6 +13,7 @@ const Profile = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -275,21 +277,37 @@ const Profile = () => {
                         </div>
                     </div>
                     
-                    <div className="px-8 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                        <button
-                            onClick={handleForceLogin}
-                            className="flex items-center text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-                        >
-                            <FaSignOutAlt className="mr-2" />
-                            Đăng xuất
-                        </button>
+                    <div className="px-8 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex justify-between items-center mb-4">
+                            <button
+                                onClick={() => setShowChangePasswordModal(true)}
+                                className="flex items-center text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                            >
+                                <FaLock className="mr-2" />
+                                Đổi mật khẩu
+                            </button>
+                            
+                            <button
+                                onClick={handleForceLogin}
+                                className="flex items-center text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                            >
+                                <FaSignOutAlt className="mr-2" />
+                                Đăng xuất
+                            </button>
+                        </div>
                         
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                        <div className="text-sm text-gray-500 dark:text-gray-400 text-center">
                             Tài khoản được tạo: {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
                         </div>
                     </div>
                 </div>
             </div>
+            
+            {/* Change Password Modal */}
+            <ChangePasswordModal 
+                isOpen={showChangePasswordModal}
+                onClose={() => setShowChangePasswordModal(false)}
+            />
         </div>
     );
 };
