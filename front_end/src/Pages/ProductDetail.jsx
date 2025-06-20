@@ -8,6 +8,7 @@ import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import RelatedProductsSlider from "../components/RelatedProductsSlider";
+import FacebookComments from "../components/FacebookComments";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -405,6 +406,16 @@ const ProductDetail = () => {
           </div>
         </div>
         
+        {/* Facebook Comments Section */}
+        <div className="mt-12">
+          <FacebookComments 
+            key={product.id}
+            url="https://developers.facebook.com/docs/plugins/comments#configurator"
+            width="100%"
+            numPosts={5}
+          />
+        </div>
+
         {/* Related Products Slider */}
         <RelatedProductsSlider 
           currentProductId={product.id} 
