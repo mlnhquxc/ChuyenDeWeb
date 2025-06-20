@@ -148,11 +148,21 @@ const Cart = () => {
             return;
         }
         
+        // Prepare checkout items with proper format
+        const checkoutItems = selectedCartItems.map(item => ({
+            id: item.productId,
+            name: item.productName,
+            price: item.productPrice,
+            image: item.productImage,
+            quantity: item.quantity,
+            subtotal: item.productPrice * item.quantity
+        }));
+        
         // Navigate to payment with selected items
         navigate('/payment', {
             state: {
-                selectedItems: selectedCartItems,
-                isFromCart: true
+                items: checkoutItems,
+                fromCart: true
             }
         });
     };

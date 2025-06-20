@@ -24,9 +24,46 @@ const CheckoutPage = () => {
   const { cart, loading: cartLoading, clearCart } = useCart();
   const { user } = useAuth();
   
-  // Get selected items from cart or buy now
-  const { selectedItems, isFromCart, isFromBuyNow } = location.state || {};
-  const cartItems = selectedItems || cart.items || [];
+  // Get data from location state
+  const stateData = location.state || {};
+  
+  // Handle different data formats
+  let cartItems = [];
+  let isFromCart = false;
+  let isFromBuyNow = false;
+  
+  if (stateData.fromBuyNow) {
+    // From BuyNow page - new format
+    isFromBuyNow = true;
+    cartItems = stateData.items || [];
+  } else if (stateData.fromCart) {
+    // From Cart page - new format
+    isFromCart = true;
+    cartItems = stateData.items || [];
+  } else if (stateData.selectedItems) {
+    // Legacy format - convert to new format
+    cartItems = (stateData.selectedItems || []).map(item => ({
+      id: item.productId || item.id, // Use productId if available, fallback to id
+      name: item.productName || item.name,
+      price: item.productPrice || item.price,
+      image: item.productImage || item.image,
+      quantity: item.quantity,
+      subtotal: (item.productPrice || item.price) * item.quantity
+    }));
+    isFromCart = stateData.isFromCart || false;
+    isFromBuyNow = stateData.isFromBuyNow || false;
+  } else if (cart && cart.items) {
+    // Default: use all cart items
+    isFromCart = true;
+    cartItems = cart.items.map(item => ({
+      id: item.productId,
+      name: item.productName,
+      price: item.productPrice,
+      image: item.productImage,
+      quantity: item.quantity,
+      subtotal: item.productPrice * item.quantity
+    }));
+  }
   
   const [formData, setFormData] = useState({
     fullName: "",
@@ -75,7 +112,15 @@ const CheckoutPage = () => {
     if (user) {
       loadUserProfile();
     }
-  }, [user]);
+    
+    // Load form data from BuyNow if available
+    if (isFromBuyNow && stateData.formData) {
+      setFormData(prev => ({
+        ...prev,
+        ...stateData.formData
+      }));
+    }
+  }, [user, isFromBuyNow, stateData]);
 
   // Check if cart is empty (when not coming from cart selection or buy now)
   const isCartEmpty = !isFromCart && !isFromBuyNow && (!cart || 
@@ -134,7 +179,12 @@ const CheckoutPage = () => {
     if (!cartItems.length) return 0;
     
     const subtotal = cartItems.reduce(
-        (sum, item) => sum + (item.productPrice * item.quantity),
+        (sum, item) => {
+          // Handle both old and new data formats
+          const price = item.price || item.productPrice || 0;
+          const quantity = item.quantity || 0;
+          return sum + (price * quantity);
+        },
         0
     );
     const shippingFee = shippingMethods[formData.shippingMethod]?.price || 0;
@@ -144,7 +194,12 @@ const CheckoutPage = () => {
   const getSubtotal = () => {
     if (!cartItems.length) return 0;
     return cartItems.reduce(
-        (sum, item) => sum + (item.productPrice * item.quantity),
+        (sum, item) => {
+          // Handle both old and new data formats
+          const price = item.price || item.productPrice || 0;
+          const quantity = item.quantity || 0;
+          return sum + (price * quantity);
+        },
         0
     );
   };
@@ -158,23 +213,47 @@ const CheckoutPage = () => {
         // Prepare shipping address
         const shippingAddress = `${formData.address}, ${formData.ward}, ${formData.district}, ${formData.province}`;
         
-        // Prepare order data
-        const orderData = {
-          shippingAddress,
-          billingAddress: shippingAddress, // Use same as shipping for now
-          phone: formData.phoneNumber,
-          email: formData.email,
-          customerName: formData.fullName,
-          paymentMethod: formData.paymentMethod,
-          shippingFee: shippingMethods[formData.shippingMethod]?.price || 0,
-          discountAmount: 0, // TODO: Implement discount logic
-          notes: formData.deliveryNotes
-        };
+        let orderData;
+        let response;
 
-        console.log('Creating order with data:', orderData);
-        
-        // Create order from cart
-        const response = await orderService.createOrderFromCart(orderData);
+        if (isFromBuyNow) {
+          // Create direct order for buy now
+          orderData = {
+            items: cartItems.map(item => ({
+              productId: parseInt(item.id), // Ensure productId is a number
+              quantity: item.quantity
+            })),
+            shippingAddress,
+            billingAddress: shippingAddress,
+            phone: formData.phoneNumber,
+            email: formData.email,
+            customerName: formData.fullName,
+            paymentMethod: formData.paymentMethod,
+            shippingFee: shippingMethods[formData.shippingMethod]?.price || 0,
+            discountAmount: 0,
+            notes: formData.deliveryNotes
+          };
+
+          console.log('Creating direct order with data:', orderData);
+          console.log('Cart items for direct order:', cartItems);
+          response = await orderService.createDirectOrder(orderData);
+        } else {
+          // Create order from cart
+          orderData = {
+            shippingAddress,
+            billingAddress: shippingAddress,
+            phone: formData.phoneNumber,
+            email: formData.email,
+            customerName: formData.fullName,
+            paymentMethod: formData.paymentMethod,
+            shippingFee: shippingMethods[formData.shippingMethod]?.price || 0,
+            discountAmount: 0,
+            notes: formData.deliveryNotes
+          };
+
+          console.log('Creating order from cart with data:', orderData);
+          response = await orderService.createOrderFromCart(orderData);
+        }
         
         if (response.result) {
           const orderNumber = response.result.id || 'N/A';
@@ -491,22 +570,22 @@ const CheckoutPage = () => {
                   {cartItems.map((item) => (
                       <div key={item.id} className="flex items-center space-x-4">
                         <ProductImage
-                            src={item.productImage}
-                            alt={item.productName}
+                            src={item.image || item.productImage}
+                            alt={item.name || item.productName}
                             className="w-20 h-20 object-cover rounded"
                             size="medium"
                         />
                         <div className="flex-1">
-                          <h3 className="font-medium">{item.productName}</h3>
+                          <h3 className="font-medium">{item.name || item.productName}</h3>
                           <p className="text-sm text-gray-500">
                             Số lượng: {item.quantity}
                           </p>
                           <p className="text-sm text-gray-500">
-                            Đơn giá: {item.productPrice?.toLocaleString('vi-VN')}₫
+                            Đơn giá: {(item.price || item.productPrice)?.toLocaleString('vi-VN')}₫
                           </p>
                         </div>
                         <p className="font-medium">
-                          {(item.productPrice * item.quantity).toLocaleString('vi-VN')}₫
+                          {((item.price || item.productPrice) * item.quantity).toLocaleString('vi-VN')}₫
                         </p>
                       </div>
                   ))}

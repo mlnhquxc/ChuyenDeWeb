@@ -9,6 +9,7 @@ import Home from './Pages/Home';
 import Authentication from './Pages/Authentication';
 import Cart from './Pages/Cart';
 import Payment from './Pages/Payment';
+import Checkout from './Pages/Checkout';
 import Orders from './Pages/Orders';
 import ProductDetail from './Pages/ProductDetail';
 import Profile from './Pages/Profile';
@@ -60,6 +61,7 @@ function App() {
                     <Route path="/login" element={<Authentication />} />
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/payment" element={<Payment />} />
+                    <Route path="/checkout" element={<Checkout />} />
                     <Route path="/orders" element={<Orders />} />
                     <Route path="/product/:id" element={<ProductDetail />} />
                     <Route path="/profile" element={<Profile />} />

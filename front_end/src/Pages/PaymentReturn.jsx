@@ -93,7 +93,7 @@ const PaymentReturn = () => {
     if (paymentStatus === 'success') {
       clearCartAfterPayment();
     }
-    navigate('/profile/orders');
+    navigate('/orders');
   };
 
   if (paymentStatus === 'processing') {

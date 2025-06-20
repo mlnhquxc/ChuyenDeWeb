@@ -1,6 +1,8 @@
 package com.example.back_end.service.impl;
 
 import com.example.back_end.configuration.VnpayConfig;
+import com.example.back_end.constant.OrderStatus;
+import com.example.back_end.constant.PaymentStatus;
 import com.example.back_end.dto.request.CreateOrderRequest;
 import com.example.back_end.dto.request.PaymentRequest;
 import com.example.back_end.dto.response.PaymentResponse;
@@ -9,6 +11,7 @@ import com.example.back_end.entity.Payment;
 import com.example.back_end.entity.User;
 import com.example.back_end.repositories.PaymentRepository;
 import com.example.back_end.service.IOrderService;
+import com.example.back_end.service.OrderStatusService;
 import com.example.back_end.service.PaymentService;
 import com.example.back_end.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +34,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final VnpayConfig vnpayConfig;
     private final PaymentRepository paymentRepository;
     private final IOrderService orderService;
+    private final OrderStatusService orderStatusService;
     private final UserService userService;
 
     @Override
@@ -142,9 +146,21 @@ public class PaymentServiceImpl implements PaymentService {
         if ("00".equals(responseCode) && "00".equals(transactionStatus)) {
             payment.setStatus(Payment.PaymentStatus.SUCCESS);
             
-            // Tự động tạo đơn hàng khi payment thành công
+            // Xử lý đơn hàng khi thanh toán thành công
             try {
-                if (payment.getUserId() != null && payment.getOrderId() == null) {
+                if (payment.getOrderId() != null) {
+                    // Nếu đã có orderId, cập nhật trạng thái đơn hàng và thanh toán
+                    Order existingOrder = orderService.getOrderById(payment.getOrderId());
+                    existingOrder.setPaymentStatus(PaymentStatus.PAID);
+                    
+                    // Sử dụng OrderStatusService để quản lý chuyển đổi trạng thái
+                    orderStatusService.processOrderStatusTransition(existingOrder, OrderStatus.PAID);
+                    log.info("Updated existing order {} status to PAID for payment: {}", 
+                            existingOrder.getId(), payment.getTxnRef());
+                } else if (payment.getUserId() != null) {
+                    // Chỉ tạo đơn hàng từ giỏ hàng khi không có orderId (thanh toán từ cart)
+                    log.info("Attempting to create order from cart for payment: {}", payment.getTxnRef());
+                    
                     User user = userService.findById(payment.getUserId().intValue());
                     
                     // Tạo order request từ thông tin payment
@@ -164,8 +180,14 @@ public class PaymentServiceImpl implements PaymentService {
                     while (order == null && retryCount < maxRetries) {
                         try {
                             order = orderService.createOrderFromCart(user.getUsername(), orderRequest);
+                            // Cập nhật trạng thái đơn hàng ngay sau khi tạo
+                            order.setPaymentStatus(PaymentStatus.PAID);
+                            
+                            // Sử dụng OrderStatusService để quản lý chuyển đổi trạng thái
+                            orderStatusService.processOrderStatusTransition(order, OrderStatus.PAID);
+                            
                             payment.setOrderId(order.getId());
-                            log.info("Order created successfully with ID: {} for payment: {} (attempt: {})", 
+                            log.info("Order created and updated to PAID status with ID: {} for payment: {} (attempt: {})", 
                                     order.getId(), payment.getTxnRef(), retryCount + 1);
                         } catch (RuntimeException e) {
                             retryCount++;
@@ -175,16 +197,22 @@ public class PaymentServiceImpl implements PaymentService {
                                 if (retryCount < maxRetries) {
                                     Thread.sleep(1000); // Wait 1 second before retry
                                 } else {
-                                    throw e; // Re-throw after max retries
+                                    log.error("Failed to create order from cart after {} retries for payment: {}. " +
+                                            "This might be a Buy Now payment where order was already created.", 
+                                            maxRetries, payment.getTxnRef());
+                                    // Không throw exception - có thể là Buy Now payment
+                                    break;
                                 }
                             } else {
                                 throw e; // Re-throw non-cart-empty errors immediately
                             }
                         }
                     }
+                } else {
+                    log.warn("Payment {} has no orderId and no userId - cannot process order", payment.getTxnRef());
                 }
             } catch (Exception e) {
-                log.error("Failed to create order for payment: {}", payment.getTxnRef(), e);
+                log.error("Failed to process order for payment: {}", payment.getTxnRef(), e);
                 // Không throw exception để không làm fail payment process
                 // Payment vẫn được mark là SUCCESS, order có thể tạo manual sau
             }

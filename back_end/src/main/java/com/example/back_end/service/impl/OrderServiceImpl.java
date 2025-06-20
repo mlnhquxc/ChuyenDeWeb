@@ -1,6 +1,7 @@
 package com.example.back_end.service.impl;
 
 import com.example.back_end.constant.OrderStatus;
+import com.example.back_end.constant.PaymentStatus;
 import com.example.back_end.dto.request.CreateDirectOrderRequest;
 import com.example.back_end.dto.request.CreateOrderRequest;
 import com.example.back_end.entity.*;
@@ -131,6 +132,7 @@ public class OrderServiceImpl implements IOrderService {
                 .user(user)
                 .orderDate(LocalDateTime.now())
                 .status(OrderStatus.PENDING)
+                .paymentStatus(PaymentStatus.PENDING)
                 .shippingAddress(request.getShippingAddress())
                 .billingAddress(request.getBillingAddress())
                 .phone(request.getPhone())
@@ -212,6 +214,7 @@ public class OrderServiceImpl implements IOrderService {
                 .user(user)
                 .orderDate(LocalDateTime.now())
                 .status(OrderStatus.PENDING)
+                .paymentStatus(PaymentStatus.PENDING)
                 .shippingAddress(request.getShippingAddress())
                 .billingAddress(request.getBillingAddress() != null ? request.getBillingAddress() : request.getShippingAddress())
                 .phone(request.getPhone())
@@ -227,7 +230,14 @@ public class OrderServiceImpl implements IOrderService {
 
         // Create order details and update product stock
         for (CreateDirectOrderRequest.OrderItemRequest item : request.getItems()) {
-            Product product = productRepository.findById(item.getProductId()).get();
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found with id: " + item.getProductId()));
+            
+            // Check stock availability
+            if (product.getStock() < item.getQuantity()) {
+                throw new RuntimeException("Insufficient stock for product: " + product.getName() + 
+                        ". Available: " + product.getStock() + ", Requested: " + item.getQuantity());
+            }
             
             OrderDetail orderDetail = OrderDetail.builder()
                     .order(order)

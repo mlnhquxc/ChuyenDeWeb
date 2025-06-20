@@ -89,21 +89,23 @@ const ProductCard = ({ product }) => {
       return;
     }
     
-    // Navigate directly to payment page with product data
-    const buyNowItem = {
-      id: `buynow_${product.id}`,
-      productId: product.id,
-      productName: product.name,
-      productPrice: product.price,
-      productImage: product.imageUrls?.[0] || product.image,
-      quantity: 1,
-      subtotal: product.price
-    };
+    // Prepare checkout items
+    const checkoutItems = [
+      {
+        id: product.id, // Use actual product ID, not prefixed
+        name: product.name,
+        price: product.price,
+        image: product.imageUrls?.[0] || product.image,
+        quantity: 1,
+        subtotal: product.price
+      }
+    ];
     
+    // Navigate to payment with buy now data
     navigate('/payment', {
       state: {
-        selectedItems: [buyNowItem],
-        isFromBuyNow: true
+        items: checkoutItems,
+        fromBuyNow: true
       }
     });
   };

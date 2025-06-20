@@ -4,6 +4,7 @@ import com.example.back_end.constant.OrderStatus;
 import com.example.back_end.constant.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -18,6 +19,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 @Table(name = "orders")
 public class Order {
     @Id
@@ -120,7 +122,7 @@ public class Order {
     }
 
     public boolean canBeCancelled() {
-        return status == OrderStatus.PENDING || status == OrderStatus.CONFIRMED;
+        return status == OrderStatus.PENDING || status == OrderStatus.PAID || status == OrderStatus.CONFIRMED;
     }
 
     public boolean isCompleted() {
@@ -131,11 +133,23 @@ public class Order {
         return status == OrderStatus.CANCELLED;
     }
 
+    public boolean isPaid() {
+        return paymentStatus == PaymentStatus.PAID;
+    }
+
+    public boolean isReadyForProcessing() {
+        return status == OrderStatus.PAID && paymentStatus == PaymentStatus.PAID;
+    }
+
     public void updateStatus(OrderStatus newStatus) {
         this.status = newStatus;
         LocalDateTime now = LocalDateTime.now();
         
         switch (newStatus) {
+            case PAID:
+                // Khi đơn hàng được thanh toán, có thể tự động chuyển sang CONFIRMED sau một khoảng thời gian
+                log.info("Order {} has been paid and is ready for confirmation", this.orderNumber);
+                break;
             case SHIPPED:
                 this.shippedDate = now;
                 break;

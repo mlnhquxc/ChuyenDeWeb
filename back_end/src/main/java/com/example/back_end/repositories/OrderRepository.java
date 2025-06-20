@@ -1,6 +1,7 @@
 package com.example.back_end.repositories;
 
 import com.example.back_end.constant.OrderStatus;
+import com.example.back_end.constant.PaymentStatus;
 import com.example.back_end.entity.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -54,4 +55,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "LEFT JOIN FETCH p.productImages " +
            "WHERE o.id = :orderId")
     Optional<Order> findByIdWithProductImages(@Param("orderId") Long orderId);
+    
+    // Methods for OrderStatusService
+    List<Order> findByStatusAndPaymentStatus(OrderStatus status, PaymentStatus paymentStatus);
 }
