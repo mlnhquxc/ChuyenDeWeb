@@ -3,6 +3,7 @@ import authService from '../services/authService';
 
 const TokenCleaner = () => {
   useEffect(() => {
+    console.log('TokenCleaner - Checking for expired tokens on app startup');
     // Clear expired tokens on app startup
     const wasCleared = authService.clearExpiredTokens();
     if (wasCleared) {

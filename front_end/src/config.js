@@ -1,4 +1,4 @@
-export const API_URL = 'http://localhost:8080';
+export const API_URL = 'http://192.168.2.11:8080';
 
 export const ENDPOINTS = {
     AUTH: {

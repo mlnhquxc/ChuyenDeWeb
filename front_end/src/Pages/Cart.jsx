@@ -310,7 +310,6 @@ const Cart = () => {
                         );
                     })}
                 </div>
-                
                 <div className="p-6 bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-gray-800 dark:to-gray-700">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-6">
                         <div className="text-gray-700 dark:text-gray-200 space-y-2">

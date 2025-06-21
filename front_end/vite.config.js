@@ -8,4 +8,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    host: '0.0.0.0', // Lắng nghe trên tất cả các địa chỉ IP
+    port: 5173,      // Sử dụng cổng 5173
+  },
 })

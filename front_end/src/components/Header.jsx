@@ -84,8 +84,15 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
       }
     } catch (error) {
       console.error('Header: Logout error:', error);
-      // Even if logout fails, navigate to login page
-      navigate('/login', { replace: true });
+      
+      // Đóng dropdown menu
+      setIsUserMenuOpen(false);
+      
+      // Kích hoạt sự kiện để cập nhật UI
+      window.dispatchEvent(new Event('auth-state-changed'));
+      
+      // Chuyển hướng về trang chủ
+      navigate('/', { replace: true });
     }
   };
 
@@ -188,6 +195,34 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  
+  // Lắng nghe sự kiện thay đổi trạng thái xác thực
+  useEffect(() => {
+    const handleAuthChange = () => {
+      console.log('Header - Auth state changed event received');
+      // Cập nhật lại state từ localStorage
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const currentUser = JSON.parse(userStr);
+          console.log('Header - Updated user from localStorage:', currentUser?.username);
+        } catch (error) {
+          console.error('Header - Error parsing user data:', error);
+        }
+      }
+    };
+
+    window.addEventListener('auth-state-changed', handleAuthChange);
+    return () => window.removeEventListener('auth-state-changed', handleAuthChange);
+  }, []);
+  
+  // Log khi trạng thái xác thực thay đổi
+  useEffect(() => {
+    console.log('Header - Authentication state changed:', { 
+      isAuthenticated, 
+      user: user?.username || 'No user' 
+    });
+  }, [isAuthenticated, user]);
 
   // Đảm bảo ngôn ngữ dropdown đồng bộ với i18n
   useEffect(() => {
@@ -431,6 +466,54 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
                     <span className="absolute -top-1 -right-1 lg:-top-2 lg:-right-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs rounded-full w-5 h-5 lg:w-6 lg:h-6 flex items-center justify-center shadow-lg font-semibold">
                       {cartCount}
                     </span>
+                  </div>
+                  
+                  {/* Icon User thay thế cho nút đăng nhập */}
+                  <div className="relative" ref={userMenuRef}>
+                    <FiUser 
+                      className="text-2xl text-gray-700 hover:text-red-600 cursor-pointer dark:text-gray-300" 
+                      onClick={isAuthenticated ? handleUserMenuClick : handleLogin}
+                    />
+                    {isAuthenticated && isUserMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50">
+                        <button
+                          onClick={handleProfileClick}
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
+                        >
+                          <FiUser className="mr-2" />
+                          Hồ sơ
+                        </button>
+                        <button
+                          onClick={handleOrdersClick}
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
+                        >
+                          <FiShoppingCart className="mr-2" />
+                          Đơn hàng
+                        </button>
+                        <button
+                          onClick={handleWishlistClick}
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
+                        >
+                          <FiHeart className="mr-2" />
+                          Yêu thích
+                        </button>
+                        <button
+                          onClick={handleSettingsClick}
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
+                        >
+                          <FiSettings className="mr-2" />
+                          Cài đặt
+                        </button>
+                        <div className="border-t border-gray-100 dark:border-gray-700"></div>
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
+                        >
+                          <FiLogOut className="mr-2" />
+                          Đăng xuất
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 

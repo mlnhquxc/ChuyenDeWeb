@@ -16,6 +16,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -125,14 +128,103 @@ public class UserController {
 
     @PostMapping("/upload-avatar")
     @PreAuthorize("isAuthenticated()")
-    ApiResponse<String> uploadAvatar(@RequestParam("avatar") MultipartFile file) {
+    ApiResponse<Map<String, String>> uploadAvatar(@RequestParam("avatar") MultipartFile file) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var avatarUrl = userService.uploadAvatar(authentication.getName(), file);
         
-        return ApiResponse.<String>builder()
+        Map<String, String> result = new HashMap<>();
+        result.put("avatarUrl", avatarUrl);
+        
+        return ApiResponse.<Map<String, String>>builder()
                 .code(200)
                 .message("Avatar uploaded successfully")
-                .result(avatarUrl)
+                .result(result)
                 .build();
+    }
+    
+    @GetMapping("/check-uploads")
+    @PreAuthorize("isAuthenticated()")
+    ApiResponse<List<String>> checkUploads() {
+        try {
+            // Kiểm tra thư mục uploads
+            File uploadDir = new File("uploads");
+            List<String> files = new ArrayList<>();
+            
+            if (uploadDir.exists() && uploadDir.isDirectory()) {
+                File[] fileList = uploadDir.listFiles();
+                if (fileList != null) {
+                    for (File file : fileList) {
+                        files.add(file.getName() + " (" + file.length() + " bytes)");
+                    }
+                }
+            } else {
+                files.add("Upload directory does not exist");
+            }
+            
+            return ApiResponse.<List<String>>builder()
+                    .code(200)
+                    .message("Upload directory checked")
+                    .result(files)
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.<List<String>>builder()
+                    .code(500)
+                    .message("Error checking upload directory: " + e.getMessage())
+                    .result(null)
+                    .build();
+        }
+    }
+    
+    @GetMapping("/fix-avatar-urls")
+    @PreAuthorize("isAuthenticated()")
+    ApiResponse<Map<String, Object>> fixAvatarUrls() {
+        try {
+            // Lấy thông tin người dùng hiện tại
+            var authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+            
+            // Tìm người dùng
+            User user = userService.findByUsername(username);
+            
+            // Kiểm tra URL avatar hiện tại
+            String currentAvatar = user.getAvatar();
+            Map<String, Object> result = new HashMap<>();
+            result.put("oldAvatar", currentAvatar);
+            
+            // Nếu URL chứa IP cụ thể, thay thế bằng đường dẫn tương đối
+            if (currentAvatar != null && currentAvatar.contains("192.168.2.11")) {
+                // Trích xuất tên file từ URL
+                String filename = currentAvatar.substring(currentAvatar.lastIndexOf("/") + 1);
+                
+                // Tạo URL mới
+                String newAvatar = "/uploads/" + filename;
+                user.setAvatar(newAvatar);
+                userService.saveUser(user);
+                
+                result.put("newAvatar", newAvatar);
+                result.put("fixed", true);
+                
+                return ApiResponse.<Map<String, Object>>builder()
+                        .code(200)
+                        .message("Avatar URL fixed successfully")
+                        .result(result)
+                        .build();
+            } else {
+                result.put("fixed", false);
+                result.put("message", "Avatar URL does not need fixing");
+                
+                return ApiResponse.<Map<String, Object>>builder()
+                        .code(200)
+                        .message("Avatar URL check completed")
+                        .result(result)
+                        .build();
+            }
+        } catch (Exception e) {
+            return ApiResponse.<Map<String, Object>>builder()
+                    .code(500)
+                    .message("Error fixing avatar URLs: " + e.getMessage())
+                    .result(null)
+                    .build();
+        }
     }
 }

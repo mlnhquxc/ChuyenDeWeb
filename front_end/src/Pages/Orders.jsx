@@ -4,7 +4,6 @@ import { toast } from 'react-toastify';
 import orderService from '../services/orderService';
 import { ProductImage } from '../utils/placeholderImage.jsx';
 import { useTranslation } from 'react-i18next';
-
 const Orders = () => {
   const { t } = useTranslation();
   const [orders, setOrders] = useState([]);

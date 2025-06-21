@@ -105,18 +105,41 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
     }));
   };
 
+  const [accountNotActivated, setAccountNotActivated] = useState(false);
+  const [inactiveAccountEmail, setInactiveAccountEmail] = useState("");
+  
   const handleLogin = async (e) => {
     e.preventDefault();
     
-    if (Object.keys(errors).length > 0) {
+    // Ngăn chặn hành vi mặc định của form
+    e.stopPropagation();
+    
+    // Xóa lỗi trước khi kiểm tra
+    setErrors({});
+    
+    // Kiểm tra dữ liệu đầu vào
+    let validationErrors = {};
+    
+    if (!formData.username.trim()) {
+      validationErrors.username = 'Vui lòng nhập tên đăng nhập';
+    }
+    
+    if (!formData.password) {
+      validationErrors.password = 'Vui lòng nhập mật khẩu';
+    }
+    
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
     
     try {
       setIsLoading(true);
-      const response = await login({
+      setAccountNotActivated(false); // Reset trạng thái tài khoản chưa kích hoạt
+      
+      console.log('Authentication - Attempting login with:', {
         username: formData.username,
-        password: formData.password
+        password: '********' // Không hiển thị mật khẩu trong log
       });
       
       if (response && response.authenticated) {
@@ -145,7 +168,6 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
       setIsLoading(false);
     }
   };
-
   const handleResendVerification = async () => {
     try {
       setIsLoading(true);
@@ -390,6 +412,9 @@ const RegisterForm = ({ onSwitchToLogin }) => {
     }));
   };
 
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -425,8 +450,8 @@ const RegisterForm = ({ onSwitchToLogin }) => {
           fullname: formData.fullName,
           phone: formData.phone,
           role: "USER",
-          username: formData.username,
-          active: true
+          username: formData.username
+          // Không cần đặt active: true vì mặc định sẽ là false để yêu cầu kích hoạt
         };
 
         const response = await authService.register(userData);
@@ -461,6 +486,19 @@ const RegisterForm = ({ onSwitchToLogin }) => {
       }
     }
   };
+  
+  const handleResendActivation = async () => {
+    try {
+      setIsLoading(true);
+      await authService.resendActivation(registeredEmail);
+      showToast.success("Email kích hoạt đã được gửi lại. Vui lòng kiểm tra hộp thư của bạn.");
+    } catch (error) {
+      console.error('Resend activation error:', error);
+      showToast.error(error.userMessage || "Không thể gửi lại email kích hoạt. Vui lòng thử lại sau.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <motion.div
@@ -486,7 +524,41 @@ const RegisterForm = ({ onSwitchToLogin }) => {
           }`} role="alert">
             <span className="block sm:inline">{errors.submit}</span>
           </div>
-        )}
+          
+          <div className="mt-6 space-y-4">
+            <button
+              type="button"
+              onClick={handleResendActivation}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300"
+              disabled={isLoading}
+            >
+              {isLoading ? "Đang gửi..." : "Gửi lại email kích hoạt"}
+            </button>
+            
+            <button
+              type="button"
+              onClick={onSwitchToLogin}
+              className="w-full flex justify-center py-3 px-4 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300"
+            >
+              Quay lại đăng nhập
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400">
+              Tạo tài khoản mới
+            </h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">Đăng ký để trải nghiệm dịch vụ của chúng tôi</p>
+          </div>
+
+          <form className="space-y-5" onSubmit={handleRegister}>
+            {errors.submit && (
+              <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg" role="alert">
+                <span className="block sm:inline">{errors.submit}</span>
+              </div>
+            )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -629,6 +701,8 @@ const RegisterForm = ({ onSwitchToLogin }) => {
           {t('auth.register.hasAccountLogin')}
         </button>
       </div>
+      </>
+      )}
     </motion.div>
   );
 };

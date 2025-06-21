@@ -9,6 +9,7 @@ import FAQ from '../Pages/FAQ';
 import BaoHanh from '../Pages/baoHanh';
 import DoiTra from '../Pages/doiTra';
 import AuthPage from '../Pages/Authentication';
+import AccountActivation from '../Pages/AccountActivation';
 import Cart from '../Pages/Cart';
 import WishList from '../Pages/WishList';
 import Profile from '../Pages/Profile';
@@ -22,7 +23,6 @@ import Blog from '../Pages/Blog';
 import EmailVerification from '../Pages/EmailVerification';
 import PrivateRoute from '../components/PrivateRoute';
 import PublicRoute from '../components/PublicRoute';
-
 const AppRoutes = () => {
     return (
         <Routes>
@@ -52,7 +52,6 @@ const AppRoutes = () => {
                     </PublicRoute>
                 } 
             />
-
             <Route
                 path="/cart"
                 element={

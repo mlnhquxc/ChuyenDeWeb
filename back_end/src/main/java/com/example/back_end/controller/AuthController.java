@@ -24,10 +24,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.userdetails.User;
 import com.example.back_end.exception.AppException;
+import com.example.back_end.entity.User;
 
 import java.text.ParseException;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -202,7 +203,7 @@ public class AuthController {
      */
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponse<ResetPasswordResponse>> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
-        log.info("Received password reset request for email: {}", request.getEmail());
+        log.info("Received password reset request for email: {} with OTP: {}", request.getEmail(), request.getOtp());
         
         ResetPasswordResponse response = userService.resetPassword(
                 request.getEmail(),
@@ -210,13 +211,17 @@ public class AuthController {
                 request.getNewPassword()
         );
         
+        log.info("Password reset response: {}", response);
+        
         if (response.isSuccess()) {
+            log.info("Password reset successful for email: {}", request.getEmail());
             return ResponseEntity.ok(ApiResponse.<ResetPasswordResponse>builder()
                     .code(0)
                     .result(response)
                     .message("Password reset successfully")
                     .build());
         } else {
+            log.warn("Password reset failed for email: {}, reason: {}", request.getEmail(), response.getMessage());
             return ResponseEntity.badRequest().body(ApiResponse.<ResetPasswordResponse>builder()
                     .code(400)
                     .result(response)
@@ -292,6 +297,7 @@ public class AuthController {
                             .result("Failed to send verification email")
                             .message("An unexpected error occurred")
                             .build());
+
         }
     }
 }

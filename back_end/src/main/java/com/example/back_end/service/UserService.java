@@ -30,6 +30,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -59,6 +60,9 @@ public class UserService implements UserDetailsService {
 
     @Value("${jwt.signer-key}")
     private String SIGNER_KEY;
+    
+    @Value("${app.frontend.url:http://localhost:3000}")
+    private String frontendUrl;
 
     @Autowired
     private TokenStorageService tokenStorageService;
@@ -280,6 +284,15 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
     }
+    
+    /**
+     * Save user to database
+     * @param user User to save
+     * @return Saved user
+     */
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
 
     public User updateProfile(String username, UserCreationRequest request) {
         var user = findByUsername(username);
@@ -305,7 +318,6 @@ public class UserService implements UserDetailsService {
         // Update user avatar URL
         user.setAvatar(avatarUrl);
         userRepository.save(user);
-        
         log.info("Successfully updated avatar for user: {}", username);
         return avatarUrl;
     }
@@ -409,25 +421,31 @@ public class UserService implements UserDetailsService {
      * @return Response with success status and message
      */
     public VerifyOtpResponse verifyOtp(String email, String otp) {
-        log.info("Verifying OTP for email: {}", email);
+        log.info("Verifying OTP for email: {} with OTP: {}", email, otp);
         
         try {
             // Check if user exists with this email
+            log.info("Finding user with email: {}", email);
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> {
                         log.error("User not found with email: {}", email);
                         return new AppException(ErrorCode.USER_NOT_EXISTED);
                     });
+            log.info("User found: {}", user.getUsername());
             
             // Verify OTP
+            log.info("Calling otpService.verifyOtp with email: {} and OTP: {}", email, otp);
             boolean isValid = otpService.verifyOtp(email, otp);
+            log.info("OTP verification result: {}", isValid);
             
             if (isValid) {
+                log.info("OTP verified successfully for email: {}", email);
                 return VerifyOtpResponse.builder()
                         .success(true)
                         .message("OTP verified successfully")
                         .build();
             } else {
+                log.warn("Invalid or expired OTP for email: {}", email);
                 return VerifyOtpResponse.builder()
                         .success(false)
                         .message("Invalid or expired OTP")
@@ -449,6 +467,187 @@ public class UserService implements UserDetailsService {
     }
     
     /**
+     * Generate activation token for a user
+     * @param user User to generate token for
+     * @return Activation token
+     */
+    public String generateActivationToken(User user) {
+        try {
+            log.info("Generating activation token for user: {}", user.getUsername());
+            
+            JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+            JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                    .subject(user.getUsername())
+                    .issuer("CDWED.com")
+                    .issueTime(new Date())
+                    .expirationTime(new Date(
+                            Instant.now().plus(24, ChronoUnit.HOURS).toEpochMilli()
+                    ))
+                    .claim("email", user.getEmail())
+                    .claim("type", "activation")
+                    .build();
+                    
+            log.info("JWT claims set created with subject: {}, email: {}, type: activation", 
+                    user.getUsername(), user.getEmail());
+
+            Payload payload = new Payload(jwtClaimsSet.toJSONObject());
+            JWSObject jwsObject = new JWSObject(header, payload);
+            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
+            
+            String token = jwsObject.serialize();
+            log.info("Activation token generated successfully: {}", token.substring(0, 20) + "...");
+            
+            return token;
+        } catch (JOSEException e) {
+            log.error("Error generating activation token: {}", e.getMessage());
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+    
+    /**
+     * Send activation email to user
+     * @param email User email
+     * @param fullName User's full name
+     * @param username Username
+     * @param activationToken Activation token
+     */
+    @Async
+    public void sendActivationEmail(String email, String fullName, String username, String activationToken) {
+        try {
+            log.info("Sending activation email to: {}", email);
+            
+            // Sử dụng URL từ cấu hình
+            String baseUrl = frontendUrl;
+            
+            String activationUrl = baseUrl + "/activate?token=" + activationToken + "&email=" + email;
+            
+            // Gửi email kích hoạt
+            emailService.sendActivationEmail(email, fullName, username, activationUrl);
+            
+            log.info("Activation email sent successfully to: {}", email);
+        } catch (Exception e) {
+            log.error("Failed to send activation email: {}", e.getMessage());
+            // Không throw exception vì đây không phải là lỗi nghiêm trọng
+        }
+    }
+    
+    /**
+     * Activate user account
+     * @param token Activation token
+     * @return true if activation successful, false otherwise
+     */
+    public boolean activateAccount(String token) {
+        try {
+            log.info("Activating account with token: {}", token);
+            
+            // Verify token
+            log.info("Verifying token with signer key: {}", SIGNER_KEY.substring(0, 10) + "...");
+            JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+            
+            log.info("Parsing JWT token");
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            
+            log.info("Verifying JWT signature");
+            if (!signedJWT.verify(verifier)) {
+                log.error("Invalid activation token - signature verification failed");
+                return false;
+            }
+            
+            // Check if token is expired
+            log.info("Checking token expiration");
+            Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+            Date currentTime = new Date();
+            log.info("Token expiry time: {}, current time: {}", expiryTime, currentTime);
+            
+            if (expiryTime.before(currentTime)) {
+                log.error("Activation token expired");
+                return false;
+            }
+            
+            // Check token type
+            log.info("Checking token type");
+            String tokenType = (String) signedJWT.getJWTClaimsSet().getClaim("type");
+            log.info("Token type: {}", tokenType);
+            
+            if (!"activation".equals(tokenType)) {
+                log.error("Invalid token type: {}", tokenType);
+                return false;
+            }
+            
+            // Get username from token
+            String username = signedJWT.getJWTClaimsSet().getSubject();
+            
+            // Find user
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> {
+                        log.error("User not found with username: {}", username);
+                        return new AppException(ErrorCode.USER_NOT_EXISTED);
+                    });
+            
+            // Activate account
+            user.setActive(true);
+            userRepository.save(user);
+            
+            log.info("Account activated successfully for user: {}", username);
+            return true;
+        } catch (Exception e) {
+            log.error("Error activating account: {}", e.getMessage(), e);
+            e.printStackTrace(); // In stack trace để debug
+            return false;
+        }
+    }
+    
+    /**
+     * Resend activation email
+     * @param email User email
+     * @return true if email sent successfully, false otherwise
+     */
+    public boolean resendActivation(String email) {
+        try {
+            log.info("Resending activation email to: {}", email);
+            
+            // Find user
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> {
+                        log.error("User not found with email: {}", email);
+                        return new AppException(ErrorCode.USER_NOT_EXISTED);
+                    });
+            
+            // Check if account is already activated
+            if (user.getActive()) {
+                log.info("Account already activated for user: {}", user.getUsername());
+                return false;
+            }
+            
+            // Generate new activation token
+            String activationToken = generateActivationToken(user);
+            
+            // Send activation email
+            sendActivationEmail(
+                user.getEmail(),
+                user.getFullname(),
+                user.getUsername(),
+                activationToken
+            );
+            
+            log.info("Activation email resent successfully to: {}", email);
+            return true;
+        } catch (Exception e) {
+            log.error("Error resending activation email: {}", e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Get current OTP for the given email (for debugging purposes)
+     * @param email User email
+     * @return Current OTP or null if not found
+     */
+    public String getCurrentOtp(String email) {
+        return otpService.getCurrentOtp(email);
+    }
+    
+    /**
      * Reset password with OTP verification
      * @param email User email
      * @param otp OTP for verification
@@ -456,20 +655,25 @@ public class UserService implements UserDetailsService {
      * @return Response with success status and message
      */
     public ResetPasswordResponse resetPassword(String email, String otp, String newPassword) {
-        log.info("Resetting password for email: {}", email);
+        log.info("Resetting password for email: {} with OTP: {}", email, otp);
         
         try {
             // Check if user exists with this email
+            log.info("Finding user with email: {}", email);
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> {
                         log.error("User not found with email: {}", email);
                         return new AppException(ErrorCode.USER_NOT_EXISTED);
                     });
+            log.info("User found: {}", user.getUsername());
             
             // Verify OTP
+            log.info("Verifying OTP: {} for email: {}", otp, email);
             boolean isValid = otpService.verifyOtp(email, otp);
+            log.info("OTP verification result: {}", isValid);
             
             if (!isValid) {
+                log.warn("Invalid or expired OTP for email: {}", email);
                 return ResetPasswordResponse.builder()
                         .success(false)
                         .message("Invalid or expired OTP")
@@ -477,7 +681,9 @@ public class UserService implements UserDetailsService {
             }
             
             // Validate new password
+            log.info("Validating new password length");
             if (newPassword.length() < 8) {
+                log.warn("Password too short for email: {}", email);
                 return ResetPasswordResponse.builder()
                         .success(false)
                         .message("Password must be at least 8 characters long")
@@ -485,15 +691,20 @@ public class UserService implements UserDetailsService {
             }
             
             // Update password
+            log.info("Updating password for user: {}", user.getUsername());
             user.setPassword(passwordEncoder.encode(newPassword));
             userRepository.save(user);
+            log.info("Password updated successfully for user: {}", user.getUsername());
             
             // Invalidate OTP
+            log.info("Invalidating OTP for email: {}", email);
             otpService.invalidateOtp(email);
             
             // Send confirmation email
+            log.info("Sending password reset confirmation email to: {}", email);
             emailService.sendPasswordResetConfirmationEmail(email);
             
+            log.info("Password reset completed successfully for email: {}", email);
             return ResetPasswordResponse.builder()
                     .success(true)
                     .message("Password reset successfully")
