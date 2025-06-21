@@ -342,7 +342,7 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
                   </div>
                 </div>
                 <div className="ml-3 transition-all duration-300">
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text dark:from-blue-400 dark:to-indigo-400 group-hover:from-blue-500 group-hover:to-indigo-500 gradient-animation">NAGIS</h1>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text dark:from-blue-400 dark:to-indigo-400 group-hover:from-blue-500 group-hover:to-indigo-500 gradient-animation">QT</h1>
                   <div className="h-0.5 w-0 bg-gradient-to-r from-blue-500 to-indigo-500 group-hover:w-full transition-all duration-500"></div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-1 group-hover:translate-y-0">{t('header.techStore')}</p>
                 </div>
@@ -458,7 +458,7 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
                         alt="Logo"
                         className="h-8 w-8 object-cover rounded-lg mr-3"
                       />
-                      <h2 className="text-lg font-bold text-gray-800 dark:text-white">NAGIS</h2>
+                      <h2 className="text-lg font-bold text-gray-800 dark:text-white">QT</h2>
                     </div>
                     <button onClick={() => setIsMenuOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
                       <FiX size={20} className="text-gray-700 dark:text-gray-300" />
