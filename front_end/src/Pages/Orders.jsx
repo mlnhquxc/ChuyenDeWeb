@@ -3,8 +3,9 @@ import { FaBox, FaTruck, FaCheckCircle, FaClock, FaTimes, FaEye } from 'react-ic
 import { toast } from 'react-toastify';
 import orderService from '../services/orderService';
 import { ProductImage } from '../utils/placeholderImage.jsx';
-
+import { useTranslation } from 'react-i18next';
 const Orders = () => {
+  const { t } = useTranslation();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
@@ -87,17 +88,17 @@ const Orders = () => {
   const getStatusText = (status) => {
     switch (status) {
       case 'PENDING':
-        return 'Chờ xác nhận';
+        return t('orders.status.pending');
       case 'CONFIRMED':
-        return 'Đã xác nhận';
+        return t('orders.status.confirmed');
       case 'SHIPPED':
-        return 'Đang giao hàng';
+        return t('orders.status.shipped');
       case 'DELIVERED':
-        return 'Đã giao hàng';
+        return t('orders.status.delivered');
       case 'CANCELLED':
-        return 'Đã hủy';
+        return t('orders.status.cancelled');
       default:
-        return 'Đang xử lý';
+        return t('orders.status.processing');
     }
   };
 
@@ -126,13 +127,13 @@ const Orders = () => {
 
   return (
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Đơn hàng của tôi</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-8">{t('orders.title')}</h1>
         
         {orders.length === 0 ? (
           <div className="text-center py-12">
             <FaBox className="mx-auto text-6xl text-gray-300 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-600 mb-2">Chưa có đơn hàng nào</h2>
-            <p className="text-gray-500">Bạn chưa có đơn hàng nào. Hãy bắt đầu mua sắm!</p>
+            <h2 className="text-xl font-semibold text-gray-600 mb-2">{t('orders.emptyTitle')}</h2>
+            <p className="text-gray-500">{t('orders.emptyDesc')}</p>
           </div>
         ) : (
           <>
@@ -143,14 +144,14 @@ const Orders = () => {
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <h2 className="text-lg font-semibold text-gray-800">
-                            Đơn hàng #{order.orderNumber}
+                            {t('orders.orderNumber', { number: order.orderNumber })}
                           </h2>
                           <p className="text-sm text-gray-600">
-                            Đặt ngày: {new Date(order.orderDate).toLocaleDateString('vi-VN')}
+                            {t('orders.orderedAt', { date: new Date(order.orderDate).toLocaleDateString('vi-VN') })}
                           </p>
                           {order.trackingNumber && (
                             <p className="text-sm text-gray-600">
-                              Mã vận đơn: {order.trackingNumber}
+                              {t('orders.trackingNumber', { tracking: order.trackingNumber })}
                             </p>
                           )}
                         </div>
@@ -194,11 +195,11 @@ const Orders = () => {
                       <div className="mt-4 pt-4 border-t border-gray-200">
                         <div className="flex justify-between items-center mb-4">
                           <div className="text-sm text-gray-600">
-                            <p>Địa chỉ giao hàng: {order.shippingAddress}</p>
-                            <p>Phương thức thanh toán: {order.paymentMethod === 'cod' ? 'COD' : 'VNPay'}</p>
+                            <p>{t('orders.shippingAddress', { address: order.shippingAddress })}</p>
+                            <p>{t('orders.paymentMethod', { method: order.paymentMethod === 'cod' ? 'COD' : 'VNPay' })}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm text-gray-600">Tổng cộng</p>
+                            <p className="text-sm text-gray-600">{t('orders.total')}</p>
                             <p className="text-lg font-bold text-red-600">
                               {order.totalAmount?.toLocaleString('vi-VN')}₫
                             </p>
@@ -211,7 +212,7 @@ const Orders = () => {
                             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                           >
                             <FaEye className="mr-2" />
-                            Xem chi tiết
+                            {t('orders.viewDetail')}
                           </button>
                           {order.canBeCancelled && (
                             <button
@@ -219,7 +220,7 @@ const Orders = () => {
                               className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-white hover:bg-red-50"
                             >
                               <FaTimes className="mr-2" />
-                              Hủy đơn hàng
+                              {t('orders.cancelOrder')}
                             </button>
                           )}
                         </div>
@@ -238,17 +239,17 @@ const Orders = () => {
                     disabled={currentPage === 0}
                     className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Trước
+                    {t('orders.prev')}
                   </button>
                   <span className="px-4 py-2 text-sm text-gray-700">
-                    Trang {currentPage + 1} / {totalPages}
+                    {t('orders.page', { current: currentPage + 1, total: totalPages })}
                   </span>
                   <button
                     onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
                     disabled={currentPage >= totalPages - 1}
                     className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Sau
+                    {t('orders.next')}
                   </button>
                 </div>
               </div>

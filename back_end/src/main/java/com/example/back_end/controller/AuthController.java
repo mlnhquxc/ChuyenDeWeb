@@ -1,5 +1,6 @@
 package com.example.back_end.controller;
 
+import com.example.back_end.dto.request.ChangePasswordRequest;
 import com.example.back_end.dto.request.ForgotPasswordRequest;
 import com.example.back_end.dto.request.IntrospectRequest;
 import com.example.back_end.dto.request.ResetPasswordRequest;
@@ -7,16 +8,19 @@ import com.example.back_end.dto.request.UserCreationRequest;
 import com.example.back_end.dto.request.VerifyOtpRequest;
 import com.example.back_end.dto.response.ApiResponse;
 import com.example.back_end.dto.response.AuthenticationResponse;
+import com.example.back_end.dto.response.ChangePasswordResponse;
 import com.example.back_end.dto.response.ForgotPasswordResponse;
 import com.example.back_end.dto.response.IntrospectResponse;
 import com.example.back_end.dto.response.ResetPasswordResponse;
 import com.example.back_end.dto.response.VerifyOtpResponse;
 import com.example.back_end.service.TokenStorageService;
 import com.example.back_end.service.UserService;
+import com.example.back_end.service.EmailVerificationService;
 import com.nimbusds.jose.JOSEException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,37 +38,30 @@ import java.util.Map;
 public class AuthController {
     private final UserService userService;
     private final TokenStorageService tokenStorageService;
+    private final EmailVerificationService emailVerificationService;
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<AuthenticationResponse>> register(@RequestBody @Valid UserCreationRequest request) {
+    public ResponseEntity<ApiResponse<String>> register(@RequestBody @Valid UserCreationRequest request) {
         log.info("Received registration request for email: {}", request.getEmail());
         try {
             com.example.back_end.entity.User user = userService.createRequest(request);
-            log.info("User created successfully");
+            log.info("User created successfully, verification email sent");
             
-            var userResponse = userService.getUserMapper().toUserResponse(user);
-            
-            AuthenticationResponse authResponse = AuthenticationResponse.builder()
-                    .authenticated(true)
-                    .user(userResponse)
-                    .build();
-            
-            log.info("Registration successful for user: {}", user.getEmail());
-            return ResponseEntity.ok(ApiResponse.<AuthenticationResponse>builder()
-                    .result(authResponse)
+            return ResponseEntity.ok(ApiResponse.<String>builder()
+                    .result("Registration successful! Please check your email to verify your account.")
                     .message("Registration successful")
                     .build());
         } catch (AppException e) {
             log.error("Registration failed: {}", e.getErrorCode().getMessage());
             return ResponseEntity.badRequest()
-                    .body(ApiResponse.<AuthenticationResponse>builder()
+                    .body(ApiResponse.<String>builder()
                             .message(e.getErrorCode().getMessage())
                             .build());
         } catch (Exception e) {
             log.error("Unexpected error during registration: {}", e.getMessage());
             return ResponseEntity.internalServerError()
-                    .body(ApiResponse.<AuthenticationResponse>builder()
+                    .body(ApiResponse.<String>builder()
                             .message("An unexpected error occurred")
                             .build());
         }
@@ -234,198 +231,73 @@ public class AuthController {
     }
     
     /**
-     * Endpoint for account activation
-     * @param request Map containing activation token
+     * Endpoint for email verification
+     * @param token Email verification token
      * @return Response with success status and message
      */
-    @PostMapping("/activate")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> activateAccount(@RequestBody Map<String, String> request) {
-        log.info("Received account activation request with data: {}", request);
-        
-        String token = request.get("token");
-        if (token == null || token.isEmpty()) {
-            log.error("Token is missing in the request");
-            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
-                    .code(400)
-                    .message("Token is required")
-                    .build());
-        }
-        
-        log.info("Calling userService.activateAccount with token: {}", token.substring(0, Math.min(20, token.length())) + "...");
-        boolean success = userService.activateAccount(token);
-        log.info("Account activation result: {}", success);
-        
-        if (success) {
-            Map<String, Object> result = new HashMap<>();
-            result.put("activated", true);
-            
-            log.info("Account activated successfully");
-            return ResponseEntity.ok(ApiResponse.<Map<String, Object>>builder()
-                    .code(0)
-                    .result(result)
-                    .message("Account activated successfully")
-                    .build());
-        } else {
-            log.error("Failed to activate account");
-            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
-                    .code(400)
-                    .message("Failed to activate account. Token may be invalid or expired.")
-                    .build());
-        }
-    }
-    
-    /**
-     * Endpoint to check account activation status
-     * @param request Map containing email
-     * @return Response with activation status
-     */
-    /**
-     * Endpoint to check current OTP for an email (for debugging only)
-     * @param request Map containing email
-     * @return Response with current OTP
-     */
-    @PostMapping("/check-otp")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> checkCurrentOtp(@RequestBody Map<String, String> request) {
-        log.info("Received check OTP request");
-        
-        String email = request.get("email");
-        if (email == null || email.isEmpty()) {
-            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
-                    .code(400)
-                    .message("Email is required")
-                    .build());
-        }
-        
+    @GetMapping("/verify-email")
+    public ResponseEntity<ApiResponse<String>> verifyEmail(@RequestParam("token") String token) {
+        log.info("Received email verification request");
         try {
-            // Get current OTP
-            String currentOtp = userService.getCurrentOtp(email);
+            String message = emailVerificationService.verifyEmail(token);
             
-            Map<String, Object> result = new HashMap<>();
-            result.put("email", email);
-            result.put("otp", currentOtp);
-            
-            return ResponseEntity.ok(ApiResponse.<Map<String, Object>>builder()
+            return ResponseEntity.ok(ApiResponse.<String>builder()
                     .code(0)
-                    .result(result)
-                    .message(currentOtp != null ? "Current OTP retrieved" : "No valid OTP found")
+                    .result(message)
+                    .message("Email verified successfully")
+                    .build());
+        } catch (AppException e) {
+            log.error("Email verification failed: {}", e.getErrorCode().getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.<String>builder()
+                    .code(400)
+                    .result("Email verification failed")
+                    .message(e.getErrorCode().getMessage())
                     .build());
         } catch (Exception e) {
-            log.error("Error checking OTP: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
-                    .code(400)
-                    .message("Failed to check OTP: " + e.getMessage())
-                    .build());
-        }
-    }
-    
-    @PostMapping("/check-activation")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> checkActivationStatus(@RequestBody Map<String, String> request) {
-        log.info("Received check activation status request");
-        
-        String email = request.get("email");
-        if (email == null || email.isEmpty()) {
-            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
-                    .code(400)
-                    .message("Email is required")
-                    .build());
-        }
-        
-        try {
-            // Find user by email
-            User user = userService.findByEmail(email);
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("activated", user.getActive());
-            
-            return ResponseEntity.ok(ApiResponse.<Map<String, Object>>builder()
-                    .code(0)
-                    .result(result)
-                    .message(user.getActive() ? "Account is activated" : "Account is not activated")
-                    .build());
-        } catch (Exception e) {
-            log.error("Error checking activation status: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
-                    .code(400)
-                    .message("Failed to check activation status: " + e.getMessage())
-                    .build());
+            log.error("Unexpected error during email verification: {}", e.getMessage());
+            return ResponseEntity.internalServerError()
+                    .body(ApiResponse.<String>builder()
+                            .code(500)
+                            .result("Email verification failed")
+                            .message("An unexpected error occurred")
+                            .build());
         }
     }
     
     /**
-     * Endpoint for direct account activation by email (for testing only)
+     * Endpoint for resending verification email
      * @param request Map containing email
      * @return Response with success status and message
      */
-    @PostMapping("/activate-by-email")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> activateByEmail(@RequestBody Map<String, String> request) {
-        log.info("Received direct account activation request");
-        
+    @PostMapping("/resend-verification")
+    public ResponseEntity<ApiResponse<String>> resendVerificationEmail(@RequestBody Map<String, String> request) {
         String email = request.get("email");
-        if (email == null || email.isEmpty()) {
-            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
-                    .code(400)
-                    .message("Email is required")
-                    .build());
-        }
+        log.info("Received resend verification request for email: {}", email);
         
         try {
-            // Find user by email
-            User user = userService.findByEmail(email);
+            emailVerificationService.resendVerificationEmail(email);
             
-            // Activate account
-            user.setActive(true);
-            userService.saveUser(user);
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("activated", true);
-            
-            return ResponseEntity.ok(ApiResponse.<Map<String, Object>>builder()
+            return ResponseEntity.ok(ApiResponse.<String>builder()
                     .code(0)
-                    .result(result)
-                    .message("Account activated successfully")
+                    .result("Verification email sent successfully")
+                    .message("Please check your email")
+                    .build());
+        } catch (AppException e) {
+            log.error("Resend verification failed: {}", e.getErrorCode().getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.<String>builder()
+                    .code(400)
+                    .result("Failed to send verification email")
+                    .message(e.getErrorCode().getMessage())
                     .build());
         } catch (Exception e) {
-            log.error("Error activating account: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
-                    .code(400)
-                    .message("Failed to activate account: " + e.getMessage())
-                    .build());
-        }
-    }
-    
-    /**
-     * Endpoint to resend activation email
-     * @param request Map containing email
-     * @return Response with success status and message
-     */
-    @PostMapping("/resend-activation")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> resendActivation(@RequestBody Map<String, String> request) {
-        log.info("Received resend activation request");
-        
-        String email = request.get("email");
-        if (email == null || email.isEmpty()) {
-            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
-                    .code(400)
-                    .message("Email is required")
-                    .build());
-        }
-        
-        boolean success = userService.resendActivation(email);
-        
-        if (success) {
-            Map<String, Object> result = new HashMap<>();
-            result.put("sent", true);
-            
-            return ResponseEntity.ok(ApiResponse.<Map<String, Object>>builder()
-                    .code(0)
-                    .result(result)
-                    .message("Activation email sent successfully")
-                    .build());
-        } else {
-            return ResponseEntity.badRequest().body(ApiResponse.<Map<String, Object>>builder()
-                    .code(400)
-                    .message("Failed to send activation email. Account may already be activated or email is invalid.")
-                    .build());
+            log.error("Unexpected error during resend verification: {}", e.getMessage());
+            return ResponseEntity.internalServerError()
+                    .body(ApiResponse.<String>builder()
+                            .code(500)
+                            .result("Failed to send verification email")
+                            .message("An unexpected error occurred")
+                            .build());
+
         }
     }
 }

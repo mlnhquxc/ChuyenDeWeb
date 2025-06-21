@@ -22,6 +22,8 @@ public enum ErrorCode {
     INVALID_EMAIL(1011, "Email must not be empty", HttpStatus.BAD_REQUEST),
     PASSWORD_TOO_SHORT(1012, "Password must be at least 6 characters", HttpStatus.BAD_REQUEST),
     INVALID_FULLNAME(1013, "Fullname must not be empty", HttpStatus.BAD_REQUEST),
+    INVALID_FILE_TYPE(1014, "Invalid file type. Only images are allowed", HttpStatus.BAD_REQUEST),
+    FILE_TOO_LARGE(1015, "File size exceeds maximum limit", HttpStatus.BAD_REQUEST),
     
     // Product related errors
     PRODUCT_NOT_FOUND(2000, "Product not found", HttpStatus.NOT_FOUND),
@@ -37,9 +39,11 @@ public enum ErrorCode {
     WISHLIST_ITEM_NOT_FOUND(4001, "Wishlist item not found", HttpStatus.NOT_FOUND),
     PRODUCT_ALREADY_IN_WISHLIST(4002, "Product is already in wishlist", HttpStatus.BAD_REQUEST),
     
-    // File upload related errors
-    INVALID_REQUEST(5000, "Invalid request", HttpStatus.BAD_REQUEST),
-    INTERNAL_SERVER_ERROR(5001, "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR),
+    // Email verification related errors
+    INVALID_TOKEN(5000, "Token xác thực không hợp lệ hoặc đã bị hỏng", HttpStatus.BAD_REQUEST),
+    TOKEN_EXPIRED(5001, "Token xác thực đã hết hạn", HttpStatus.BAD_REQUEST),
+    EMAIL_ALREADY_VERIFIED(5002, "Email đã được xác thực trước đó", HttpStatus.BAD_REQUEST),
+    EMAIL_NOT_VERIFIED(5003, "Email chưa được xác thực", HttpStatus.BAD_REQUEST),
     ;
 
     private final int code;

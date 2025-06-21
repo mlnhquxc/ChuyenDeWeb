@@ -13,9 +13,12 @@ import { toast } from "react-toastify";
 import ProvinceSelect, { calculateShippingFee } from "../api/Location.jsx";
 import { useAuth } from "../context/AuthContext";
 import orderService from "../services/orderService";
+import paymentService from "../services/paymentService";
 import userService from "../services/userService";
+import { useTranslation } from 'react-i18next';
 
 const BuyNowPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -160,50 +163,41 @@ const BuyNowPage = () => {
     e.preventDefault();
 
     if (validateForm()) {
-      setIsLoading(true);
-      try {
-        // Prepare shipping address
-        const shippingAddress = `${formData.address}, ${formData.ward}, ${formData.district}, ${formData.province}`;
-        
-        // Prepare order data
-        const orderData = {
-          items: [
-            {
-              productId: product.id,
-              quantity: quantity
-            }
-          ],
-          shippingAddress,
-          billingAddress: shippingAddress,
-          phone: formData.phoneNumber,
-          email: formData.email,
-          customerName: formData.fullName,
-          paymentMethod: formData.paymentMethod,
-          shippingFee: shippingMethods[formData.shippingMethod]?.price || 0,
-          discountAmount: 0,
-          notes: formData.deliveryNotes
-        };
-
-        console.log('Creating direct order with data:', orderData);
-        
-        // Create direct order
-        const response = await orderService.createDirectOrder(orderData);
-        
-        if (response.result) {
-          toast.success('Đặt hàng thành công!');
-          setShowSuccess(true);
-          
-          // Redirect to orders page after 2 seconds
-          setTimeout(() => {
-            navigate('/orders');
-          }, 2000);
+      // Prepare product data for checkout
+      const checkoutItems = [
+        {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+          quantity: quantity,
+          subtotal: product.price * quantity
         }
-      } catch (error) {
-        console.error("Order submission failed:", error);
-        toast.error(error.message || 'Có lỗi xảy ra khi đặt hàng');
-      } finally {
-        setIsLoading(false);
-      }
+      ];
+
+      // Prepare form data for checkout
+      const checkoutData = {
+        items: checkoutItems,
+        formData: {
+          fullName: formData.fullName,
+          phoneNumber: formData.phoneNumber,
+          email: formData.email,
+          province: formData.province,
+          district: formData.district,
+          ward: formData.ward,
+          address: formData.address,
+          deliveryNotes: formData.deliveryNotes,
+          shippingMethod: formData.shippingMethod,
+          paymentMethod: formData.paymentMethod
+        },
+        shippingFee: shippingMethods[formData.shippingMethod]?.price || 0,
+        fromBuyNow: true
+      };
+
+      // Navigate to payment page
+      navigate('/payment', { 
+        state: checkoutData
+      });
     }
   };
 

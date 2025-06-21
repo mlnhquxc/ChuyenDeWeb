@@ -1,8 +1,10 @@
 package com.example.back_end.controller;
 
 import com.example.back_end.dto.UserDTO;
+import com.example.back_end.dto.request.ChangePasswordRequest;
 import com.example.back_end.dto.request.UserCreationRequest;
 import com.example.back_end.dto.response.ApiResponse;
+import com.example.back_end.dto.response.ChangePasswordResponse;
 import com.example.back_end.entity.User;
 import com.example.back_end.mapper.CustomUserMapper;
 import com.example.back_end.service.UserService;
@@ -105,15 +107,23 @@ public class UserController {
 
     @PutMapping("/change-password")
     @PreAuthorize("isAuthenticated()")
-    ApiResponse<Void> changePassword(@RequestBody Map<String, String> passwords) {
+    ApiResponse<ChangePasswordResponse> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        userService.changePassword(authentication.getName(), passwords.get("oldPassword"), passwords.get("newPassword"));
+        ChangePasswordResponse response = userService.changePassword(authentication.getName(), request);
         
-        return ApiResponse.<Void>builder()
-                .code(200)
-                .message("Password changed successfully")
-                .result(null)
-                .build();
+        if (response.isSuccess()) {
+            return ApiResponse.<ChangePasswordResponse>builder()
+                    .code(200)
+                    .message("Password changed successfully")
+                    .result(response)
+                    .build();
+        } else {
+            return ApiResponse.<ChangePasswordResponse>builder()
+                    .code(400)
+                    .message(response.getMessage())
+                    .result(response)
+                    .build();
+        }
     }
 
     @PostMapping("/upload-avatar")

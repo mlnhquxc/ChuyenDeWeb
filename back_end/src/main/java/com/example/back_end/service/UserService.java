@@ -1,9 +1,11 @@
 package com.example.back_end.service;
 
 import com.example.back_end.constant.PredefinedRole;
+import com.example.back_end.dto.request.ChangePasswordRequest;
 import com.example.back_end.dto.request.IntrospectRequest;
 import com.example.back_end.dto.request.UserCreationRequest;
 import com.example.back_end.dto.response.AuthenticationResponse;
+import com.example.back_end.dto.response.ChangePasswordResponse;
 import com.example.back_end.dto.response.ForgotPasswordResponse;
 import com.example.back_end.dto.response.IntrospectResponse;
 import com.example.back_end.dto.response.ResetPasswordResponse;
@@ -54,6 +56,7 @@ public class UserService implements UserDetailsService {
     private final JwtService jwtService;
     private final OtpService otpService;
     private final EmailService emailService;
+    private final FileUploadService fileUploadService;
 
     @Value("${jwt.signer-key}")
     private String SIGNER_KEY;
@@ -63,6 +66,11 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     private TokenStorageService tokenStorageService;
+    
+    @Autowired
+    private EmailVerificationService emailVerificationService;
+    
+
 
     public User createRequest(UserCreationRequest request) {
         log.info("Creating new user with email: {} and username: {}", request.getEmail(), request.getUsername());
@@ -104,16 +112,12 @@ public class UserService implements UserDetailsService {
         }
         
         try {
-            // Store original password for email
-            String originalPassword = request.getPassword();
-            
             // Encrypt password for storage
             String encryptedPS = passwordEncoder.encode(request.getPassword());
             request.setPassword(encryptedPS);
             
             User user = userMapper.toUser(request);
-            // Đặt active = false (0 trong MySQL) để yêu cầu kích hoạt tài khoản
-            user.setActive(false);
+            user.setActive(false); // User is inactive until email is verified
             
             HashSet<Role> roles = new HashSet<>();
             Role userRole = roleRepository.findById(PredefinedRole.USER_ROLE)
@@ -128,16 +132,8 @@ public class UserService implements UserDetailsService {
             userRepository.flush();
             log.info("User created successfully with id: {} and username: {}", savedUser.getId(), savedUser.getUsername());
             
-            // Tạo token kích hoạt
-            String activationToken = generateActivationToken(savedUser);
-            
-            // Gửi email kích hoạt tài khoản
-            sendActivationEmail(
-                savedUser.getEmail(),
-                savedUser.getFullname(),
-                savedUser.getUsername(),
-                activationToken
-            );
+            // Send email verification
+            emailVerificationService.sendVerificationEmail(savedUser);
             
             return savedUser;
         } catch (Exception e) {
@@ -188,11 +184,17 @@ public class UserService implements UserDetailsService {
                         return new AppException(ErrorCode.USER_NOT_EXISTED);
                     });
             
-            log.info("Found user: username={}, email={}", user.getUsername(), user.getEmail());
+            log.info("Found user: username={}, email={}, active={}", user.getUsername(), user.getEmail(), user.getActive());
             
             if (!passwordEncoder.matches(password, user.getPassword())) {
                 log.error("Invalid password for user: {}", username);
                 throw new AppException(ErrorCode.INVALID_PASSWORD);
+            }
+            
+            // Check if email is verified
+            if (!user.getActive()) {
+                log.error("Email not verified for user: {}", username);
+                throw new AppException(ErrorCode.EMAIL_NOT_VERIFIED);
             }
             
             String scope = buildScope(user);
@@ -300,20 +302,25 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
-    public void changePassword(String email, String oldPassword, String newPassword) {
-        User user = findByEmail(email);
+
+
+    public String uploadAvatar(String username, MultipartFile file) {
+        User user = findByUsername(username);
         
-        // Verify old password
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        // Delete old avatar if exists
+        if (user.getAvatar() != null && !user.getAvatar().isEmpty()) {
+            fileUploadService.deleteImage(user.getAvatar());
         }
         
-        // Update password
-        user.setPassword(passwordEncoder.encode(newPassword));
+        // Upload new avatar
+        String avatarUrl = fileUploadService.uploadAvatar(file, username);
+        
+        // Update user avatar URL
+        user.setAvatar(avatarUrl);
         userRepository.save(user);
+        log.info("Successfully updated avatar for user: {}", username);
+        return avatarUrl;
     }
-
-
 
     public String validateToken(String token) throws ParseException, JOSEException {
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
@@ -360,15 +367,21 @@ public class UserService implements UserDetailsService {
                         return new AppException(ErrorCode.USER_NOT_EXISTED);
                     });
             
-            // Generate OTP
-            String otp = otpService.generateOtp(email);
+            // Generate temporary password
+            String tempPassword = generateTemporaryPassword();
             
-            // Send OTP to user's email
-            emailService.sendOtpEmail(email, otp);
+            // Update user password
+            user.setPassword(passwordEncoder.encode(tempPassword));
+            userRepository.save(user);
+            
+            // Send temporary password to user's email
+            emailService.sendTemporaryPasswordEmail(email, user.getFullname(), tempPassword);
+            
+            log.info("Temporary password sent to user: {}", email);
             
             return ForgotPasswordResponse.builder()
                     .success(true)
-                    .message("OTP sent successfully to your email")
+                    .message("Mật khẩu tạm thời đã được gửi đến email của bạn")
                     .build();
         } catch (AppException e) {
             log.error("Forgot password failed: {}", e.getErrorCode().getMessage());
@@ -380,9 +393,25 @@ public class UserService implements UserDetailsService {
             log.error("Unexpected error during forgot password: {}", e.getMessage());
             return ForgotPasswordResponse.builder()
                     .success(false)
-                    .message("An unexpected error occurred")
+                    .message("Có lỗi xảy ra khi gửi email. Vui lòng thử lại sau.")
                     .build();
         }
+    }
+    
+    /**
+     * Generate a temporary password
+     * @return Temporary password string
+     */
+    private String generateTemporaryPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder tempPassword = new StringBuilder();
+        Random random = new Random();
+        
+        for (int i = 0; i < 8; i++) {
+            tempPassword.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        
+        return tempPassword.toString();
     }
     
     /**
@@ -696,103 +725,73 @@ public class UserService implements UserDetailsService {
     }
     
     /**
-     * Upload avatar for user
-     * @param username Username
-     * @param file Avatar file
-     * @return Avatar URL
+     * Change password for authenticated user
+     * @param username Username from JWT token
+     * @param request Change password request with current and new password
+     * @return Response with success status and message
      */
-    @Value("${app.upload.dir:uploads}")
-    private String uploadDir;
-    
-    @Value("${app.upload.url:http://localhost:8080/uploads}")
-    private String uploadUrl;
-    
-    public String uploadAvatar(String username, MultipartFile file) {
-        log.info("Uploading avatar for user: {}", username);
+    public ChangePasswordResponse changePassword(String username, ChangePasswordRequest request) {
+        log.info("Changing password for user: {}", username);
         
         try {
-            // Find user
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> {
-                        log.error("User not found with username: {}", username);
-                        return new AppException(ErrorCode.USER_NOT_EXISTED);
-                    });
+            // Find user by username
+            User user = findByUsername(username);
             
-            // Check if file is empty
-            if (file.isEmpty()) {
-                log.error("Empty file submitted for avatar upload");
-                throw new AppException(ErrorCode.INVALID_REQUEST);
+            // Verify current password
+            if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                return ChangePasswordResponse.builder()
+                        .success(false)
+                        .message("Current password is incorrect")
+                        .build();
             }
             
-            // Check file type
-            String contentType = file.getContentType();
-            if (contentType == null || !contentType.startsWith("image/")) {
-                log.error("Invalid file type for avatar: {}", contentType);
-                throw new AppException(ErrorCode.INVALID_REQUEST);
+            // Validate new password
+            if (request.getNewPassword().length() < 6) {
+                return ChangePasswordResponse.builder()
+                        .success(false)
+                        .message("New password must be at least 6 characters long")
+                        .build();
             }
             
-            // Create upload directory if it doesn't exist
-            File uploadPath = new File(uploadDir);
-            log.info("Upload directory path: {}", uploadPath.getAbsolutePath());
-            
-            if (!uploadPath.exists()) {
-                log.info("Creating upload directory: {}", uploadPath.getAbsolutePath());
-                if (!uploadPath.mkdirs()) {
-                    log.error("Failed to create upload directory");
-                    throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
-                }
-            } else {
-                log.info("Upload directory already exists");
+            // Check if new password matches confirm password
+            if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+                return ChangePasswordResponse.builder()
+                        .success(false)
+                        .message("New password and confirm password do not match")
+                        .build();
             }
             
-            // Generate unique filename
-            String originalFilename = file.getOriginalFilename();
-            String fileExtension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-            String filename = "avatar_" + username + "_" + UUID.randomUUID() + fileExtension;
-            
-            // Save file
-            File destFile = new File(uploadPath.getAbsolutePath() + File.separator + filename);
-            log.info("Saving avatar to: {}", destFile.getAbsolutePath());
-            
-            try {
-                file.transferTo(destFile);
-                log.info("File saved successfully to: {}", destFile.getAbsolutePath());
-                
-                // Verify file was saved
-                if (!destFile.exists() || destFile.length() == 0) {
-                    log.error("File was not saved properly: {}", destFile.getAbsolutePath());
-                    throw new IOException("File was not saved properly");
-                }
-            } catch (IOException e) {
-                log.error("Error saving file: {}", e.getMessage());
-                throw e;
+            // Check if new password is different from current password
+            if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+                return ChangePasswordResponse.builder()
+                        .success(false)
+                        .message("New password must be different from current password")
+                        .build();
             }
             
-            // Update user avatar URL - use relative path for better compatibility
-            String avatarUrl = "/uploads/" + filename;
-            log.info("Setting avatar URL for user: {}, URL: {}", username, avatarUrl);
-            
-            // Log the absolute URL for debugging
-            String absoluteUrl = uploadUrl + "/" + filename;
-            log.info("Absolute URL would be: {}", absoluteUrl);
-            
-            user.setAvatar(avatarUrl);
+            // Update password
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
             userRepository.save(user);
             
-            log.info("Avatar uploaded successfully for user: {}, URL: {}", username, avatarUrl);
-            return avatarUrl;
+            log.info("Password changed successfully for user: {}", username);
+            
+            return ChangePasswordResponse.builder()
+                    .success(true)
+                    .message("Password changed successfully")
+                    .build();
+                    
         } catch (AppException e) {
-            log.error("Avatar upload failed: {}", e.getErrorCode().getMessage());
-            throw e;
-        } catch (IOException e) {
-            log.error("IO error during avatar upload: {}", e.getMessage());
-            throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
+            log.error("Password change failed: {}", e.getErrorCode().getMessage());
+            return ChangePasswordResponse.builder()
+                    .success(false)
+                    .message(e.getErrorCode().getMessage())
+                    .build();
         } catch (Exception e) {
-            log.error("Unexpected error during avatar upload: {}", e.getMessage());
-            throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
+            log.error("Unexpected error during password change: {}", e.getMessage());
+            return ChangePasswordResponse.builder()
+                    .success(false)
+                    .message("An unexpected error occurred")
+                    .build();
         }
     }
 }

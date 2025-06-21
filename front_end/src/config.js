@@ -9,9 +9,8 @@ export const ENDPOINTS = {
         FORGOT_PASSWORD: '/api/auth/forgot-password',
         VERIFY_OTP: '/api/auth/verify-otp',
         RESET_PASSWORD: '/api/auth/reset-password',
-        ACTIVATE_ACCOUNT: '/api/auth/activate',
-        RESEND_ACTIVATION: '/api/auth/resend-activation',
-        CHECK_ACTIVATION: '/api/auth/check-activation'
+        VERIFY_EMAIL: '/api/auth/verify-email',
+        RESEND_VERIFICATION: '/api/auth/resend-verification'
     },
     USER: {
         PROFILE: '/api/users/profile',

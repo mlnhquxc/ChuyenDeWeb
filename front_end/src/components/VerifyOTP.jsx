@@ -113,7 +113,7 @@ const VerifyOTP = ({ email, onBack, onVerified }) => {
       className="w-full"
     >
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:to-indigo-400">
           Xác thực OTP
         </h2>
         <p className="mt-2 text-gray-600 dark:text-gray-300">
@@ -126,13 +126,13 @@ const VerifyOTP = ({ email, onBack, onVerified }) => {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg" role="alert">
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg" role="alert">
             <span className="block sm:inline">{error}</span>
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          <label className="block text-sm font-medium text-gray-700 mb-3">
             Mã OTP
           </label>
           <div className="flex justify-center gap-2 sm:gap-4">
@@ -146,7 +146,7 @@ const VerifyOTP = ({ email, onBack, onVerified }) => {
                 onChange={(e) => handleInputChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={index === 0 ? handlePaste : null}
-                className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-bold border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-800 dark:text-white transition-colors duration-200"
+                className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl font-bold border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white "
                 required
               />
             ))}
@@ -177,7 +177,7 @@ const VerifyOTP = ({ email, onBack, onVerified }) => {
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+            className="inline-flex items-center font-medium text-indigo-600 hover:text-indigo-500 dark:hover:text-indigo-300"
           >
             <FaArrowLeft className="mr-2" />
             Quay lại
@@ -187,7 +187,7 @@ const VerifyOTP = ({ email, onBack, onVerified }) => {
             type="button"
             onClick={handleResendOTP}
             disabled={isLoading || timeLeft > 270} // Disable resend for first 30 seconds
-            className={`font-medium ${isLoading || timeLeft > 270 ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+            className={`font-medium ${isLoading || timeLeft > 270 ? 'text-gray-400 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-500 dark:hover:text-indigo-300'}`}
           >
             Gửi lại mã OTP {timeLeft > 270 && `(${formatTime(timeLeft - 270)})`}
           </button>

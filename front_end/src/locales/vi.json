@@ -1,0 +1,492 @@
+{
+  "welcome": "Chào mừng",
+  "login": "Đăng nhập",
+  "logout": "Đăng xuất",
+  "cart": {
+    "loading": "Đang tải giỏ hàng...",
+    "emptyTitle": "Giỏ hàng trống",
+    "emptyDesc": "Hãy thêm những sản phẩm yêu thích vào giỏ hàng để bắt đầu mua sắm nhé!",
+    "exploreProducts": "Khám phá sản phẩm",
+    "title": "Giỏ hàng của bạn",
+    "selectAll": "Chọn tất cả ({{count}} sản phẩm)"
+  },
+  "profile": {
+    "retry": "Thử lại",
+    "title": "Thông tin tài khoản",
+    "personalInfo": "Thông tin cá nhân",
+    "edit": "Chỉnh sửa",
+    "cancel": "Hủy",
+    "fullname": "Họ tên",
+    "email": "Email",
+    "phone": "Số điện thoại",
+    "address": "Địa chỉ",
+    "save": "Lưu thay đổi",
+    "changePassword": "Đổi mật khẩu"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "accountSettings": "Cài đặt tài khoản",
+    "email": "Email",
+    "name": "Tên",
+    "security": "Bảo mật",
+    "changePassword": "Đổi mật khẩu",
+    "enableTwoFA": "Bật xác thực hai bước",
+    "notifications": "Thông báo",
+    "emailNotifications": "Thông báo qua email",
+    "orderUpdates": "Cập nhật đơn hàng",
+    "privacy": "Quyền riêng tư",
+    "allowDataCollection": "Cho phép thu thập dữ liệu",
+    "receiveMarketingEmails": "Nhận email quảng cáo"
+  },
+  "home": "Trang chủ",
+  "search": "Tìm kiếm",
+  "order": "Đơn hàng",
+  "wishlist": {
+    "loading": "Đang tải danh sách yêu thích...",
+    "emptyTitle": "Chưa có sản phẩm yêu thích",
+    "emptyDesc": "Hãy thêm những sản phẩm bạn yêu thích vào danh sách để dễ dàng tìm lại sau này!",
+    "exploreProducts": "Khám phá sản phẩm",
+    "title": "Danh sách yêu thích",
+    "subtitle": "Những sản phẩm bạn yêu thích nhất",
+    "addToCart": "Thêm vào giỏ",
+    "adding": "Đang thêm...",
+    "removeFromWishlist": "Xóa khỏi danh sách yêu thích",
+    "exploreMore": "Khám phá thêm sản phẩm",
+    "addedToCart": "Đã thêm \"{{name}}\" vào giỏ hàng",
+    "addToCartError": "Có lỗi xảy ra khi thêm vào giỏ hàng",
+    "removedFromWishlist": "Đã xóa \"{{name}}\" khỏi danh sách yêu thích",
+    "removeFromWishlistError": "Có lỗi xảy ra khi xóa khỏi danh sách yêu thích"
+  },
+  "product": "Sản phẩm",
+  "quantity": "Số lượng",
+  "price": "Giá",
+  "total": "Tổng cộng",
+  "checkout": "Thanh toán",
+  "add_to_cart": "Thêm vào giỏ",
+  "buy_now": "Mua ngay",
+  "about_us": "Về chúng tôi",
+  "contact": "Liên hệ",
+  "blog": {
+    "title": "Blog Công Nghệ",
+    "subtitle": "Cập nhật những tin tức, đánh giá và hướng dẫn mới nhất về công nghệ",
+    "readMore": "Đọc tiếp",
+    "categories": {
+      "all": "Tất cả",
+      "smartphone": "Smartphone",
+      "laptop": "Laptop",
+      "technology": "Công nghệ",
+      "security": "Bảo mật",
+      "audio": "Âm thanh"
+    },
+    "tags": {
+      "gaming": "Gaming",
+      "laptop": "Laptop",
+      "review": "Review",
+      "comparison": "So sánh",
+      "cybersecurity": "An ninh mạng",
+      "security": "Bảo mật",
+      "data": "Dữ liệu",
+      "ai": "Trí tuệ nhân tạo",
+      "future": "Tương lai",
+      "headphones": "Tai nghe",
+      "shoppingGuide": "Hướng dẫn mua sắm"
+    },
+    "posts": {
+      "post1": {
+        "title": "Top 10 Laptop Gaming Tốt Nhất Năm 2025",
+        "excerpt": "Khám phá những mẫu laptop gaming mạnh mẽ nhất với hiệu năng vượt trội, đồ họa sống động và tản nhiệt hiệu quả cho trải nghiệm chơi game tuyệt vời.",
+        "author": "Minh Tuấn"
+      },
+      "post2": {
+        "title": "So Sánh iPhone 17 Pro và Samsung Galaxy S26 Ultra",
+        "excerpt": "Phân tích chi tiết về hiệu năng, camera, pin và các tính năng độc đáo giữa hai flagship hàng đầu từ Apple và Samsung trong năm 2025.",
+        "author": "Thanh Hà"
+      },
+      "post3": {
+        "title": "Cách Bảo Vệ Dữ Liệu Cá Nhân Trong Thời Đại Số",
+        "excerpt": "Những mẹo và công cụ hữu ích giúp bảo vệ thông tin cá nhân, tài khoản trực tuyến và dữ liệu quan trọng khỏi các mối đe dọa an ninh mạng.",
+        "author": "Hoàng Nam"
+      },
+      "post4": {
+        "title": "Tương Lai Của AI Trong Lĩnh Vực Công Nghệ",
+        "excerpt": "Khám phá những xu hướng và ứng dụng mới nhất của trí tuệ nhân tạo đang định hình lại ngành công nghệ và cuộc sống hàng ngày của chúng ta.",
+        "author": "Lan Anh"
+      },
+      "post5": {
+        "title": "Hướng Dẫn Chọn Mua Tai Nghe True Wireless",
+        "excerpt": "Những tiêu chí quan trọng cần cân nhắc khi lựa chọn tai nghe không dây, từ chất lượng âm thanh, thời lượng pin đến khả năng chống nước.",
+        "author": "Quang Minh"
+      }
+    }
+  },
+  "faq": {
+    "title": "Hỗ trợ / Phản hồi",
+    "contactSupport": "Liên hệ hỗ trợ",
+    "tryDocumentation": "Bạn đã thử tài liệu chưa",
+    "documentationText": "Chúng tôi có rất nhiều thông tin hữu ích trong tài liệu của chúng tôi có thể giúp bạn giải quyết vấn đề. Nếu bạn không tìm thấy câu trả lời ở đó, hãy gửi tin nhắn cho chúng tôi. Chúng tôi sẵn lòng giúp đỡ!",
+    "message": "Tin nhắn",
+    "messagePlaceholder": "Mô tả vấn đề hoặc phản hồi của bạn...",
+    "name": "Tên",
+    "namePlaceholder": "Tên của bạn",
+    "email": "Email",
+    "emailPlaceholder": "your.email@example.com",
+    "screenshotHelp": "Ảnh chụp màn hình hoặc video quay màn hình có thể rất hữu ích!",
+    "chooseFile": "Chọn tệp",
+    "submit": "Gửi",
+    "submitSuccess": "Cảm ơn phản hồi của bạn! Chúng tôi sẽ liên hệ lại sớm.",
+    "faqsTitle": "Câu hỏi thường gặp",
+    "answerPlaceholder": "Đây là nơi câu trả lời cho \"{{question}}\" sẽ xuất hiện. Nhấp để mở rộng và xem thông tin chi tiết về chủ đề này.",
+    "questions": {
+      "q1": "Làm thế nào để xác minh email của tôi?",
+      "q2": "Trang web tải vô hạn hoặc làm treo trình duyệt",
+      "q3": "Làm thế nào để liên hệ với người tạo sản phẩm?",
+      "q4": "Phiên bản [thư viện] nào được sử dụng?",
+      "q5": "Fork là gì?",
+      "q6": "Hóa đơn, hủy tài khoản và nhiều hơn nữa"
+    }
+  },
+  "change_password": "Đổi mật khẩu",
+  "forgot_password": "Quên mật khẩu",
+  "reset_password": "Đặt lại mật khẩu",
+  "verify_otp": "Xác thực OTP",
+  "password": "Mật khẩu",
+  "confirm_password": "Xác nhận mật khẩu",
+  "submit": "Gửi",
+  "cancel": "Hủy",
+  "back": "Quay lại",
+  "header": {
+    "email": "Nagis@gmail.com",
+    "phone": "+1 234 567 8900",
+    "profile": "Hồ sơ",
+    "orders": "Đơn hàng",
+    "wishlist": "Yêu thích",
+    "settings": "Cài đặt",
+    "logout": "Đăng xuất",
+    "login": "Đăng nhập",
+    "techStore": "Tech Store",
+    "searchPlaceholder": "Tìm kiếm sản phẩm...",
+    "voiceSearch": "Tìm kiếm bằng giọng nói",
+    "search": "Tìm kiếm",
+    "switchToLight": "Chuyển sang chế độ sáng",
+    "switchToDark": "Chuyển sang chế độ tối",
+    "speechNotSupported": "Trình duyệt không hỗ trợ nhận diện giọng nói",
+    "menu": {
+      "home": "Trang chủ",
+      "store": "Cửa hàng",
+      "pages": "Trang",
+      "blog": "Blog",
+      "contact": "Liên hệ"
+    },
+    "dropdown": {
+      "category1": "Danh mục 1",
+      "category2": "Danh mục 2", 
+      "category3": "Danh mục 3"
+    }
+  },
+  "home": {
+    "menu": {
+      "home": "Trang chủ",
+      "products": "Sản phẩm",
+      "categories": "Danh mục",
+      "deals": "Ưu đãi",
+      "support": "Hỗ trợ",
+      "contact": "Liên hệ"
+    },
+    "hero": {
+      "innovativeTech": "Công Nghệ Đổi Mới",
+      "button": "Khám Phá Ngay"
+    },
+    "categories": {
+      "popularCategories": "Danh Mục Phổ Biến",
+      "description": "Khám phá các danh mục sản phẩm công nghệ hàng đầu của chúng tôi"
+    },
+    "featuredProducts": {
+      "title": "Sản Phẩm Nổi Bật",
+      "description": "Khám phá những sản phẩm công nghệ hàng đầu được yêu thích nhất",
+      "viewAllProducts": "Xem Tất Cả Sản Phẩm"
+    }
+  },
+  "productCard": {
+    "noName": "Không có tên",
+    "noCategory": "Không phân loại",
+    "buyNow": "Mua ngay",
+    "addToCart": "Thêm vào giỏ",
+    "adding": "Đang thêm..."
+  },
+  "contact": {
+    "title": "Liên hệ",
+    "alertRequired": "Vui lòng điền đầy đủ các trường bắt buộc",
+    "alertThankYou": "Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất.",
+    "email": "Email",
+    "emailPlaceholder": "your.email@example.com",
+    "name": "Tên",
+    "namePlaceholder": "Tên của bạn",
+    "message": "Nội dung",
+    "messagePlaceholder": "Nội dung liên hệ...",
+    "submit": "Gửi",
+    "aboutClub": "Về CLB",
+    "sellingUI": "Giao diện bán hàng",
+    "phoneTitle": "Số điện thoại (bàn)",
+    "officeLocation": "Địa chỉ văn phòng"
+  },
+  "orders": {
+    "title": "Đơn hàng của tôi",
+    "emptyTitle": "Chưa có đơn hàng nào",
+    "emptyDesc": "Bạn chưa có đơn hàng nào. Hãy bắt đầu mua sắm!",
+    "orderNumber": "Đơn hàng #{{number}}",
+    "orderedAt": "Đặt ngày: {{date}}",
+    "trackingNumber": "Mã vận đơn: {{tracking}}",
+    "shippingAddress": "Địa chỉ giao hàng: {{address}}",
+    "paymentMethod": "Phương thức thanh toán: {{method}}",
+    "total": "Tổng cộng",
+    "viewDetail": "Xem chi tiết",
+    "cancelOrder": "Hủy đơn hàng",
+    "prev": "Trước",
+    "next": "Sau",
+    "page": "Trang {{current}} / {{total}}",
+    "status": {
+      "pending": "Chờ xác nhận",
+      "confirmed": "Đã xác nhận",
+      "shipped": "Đang giao hàng",
+      "delivered": "Đã giao hàng",
+      "cancelled": "Đã hủy",
+      "processing": "Đang xử lý"
+    }
+  },
+  "auth": {
+    "passwordStrength": {
+      "enterPassword": "Nhập mật khẩu",
+      "weak": "Yếu",
+      "medium": "Trung bình",
+      "good": "Tốt",
+      "strong": "Mạnh"
+    },
+    "login": {
+      "title": "Đăng nhập",
+      "subtitle": "Chào mừng bạn quay trở lại",
+      "username": "Tên đăng nhập",
+      "usernamePlaceholder": "Nhập tên đăng nhập",
+      "password": "Mật khẩu",
+      "passwordPlaceholder": "Nhập mật khẩu",
+      "rememberMe": "Ghi nhớ đăng nhập",
+      "forgotPassword": "Quên mật khẩu?",
+      "loginButton": "Đăng nhập",
+      "processing": "Đang xử lý...",
+      "orLoginWith": "Hoặc đăng nhập với",
+      "noAccountRegister": "Chưa có tài khoản? Đăng ký ngay",
+      "invalidCredentials": "Tên đăng nhập hoặc mật khẩu không đúng",
+      "error": "Đã xảy ra lỗi khi đăng nhập",
+      "emailNotVerified": "Tài khoản chưa được xác thực. Vui lòng kiểm tra email để xác thực tài khoản.",
+      "verificationEmailSent": "Email xác thực đã được gửi lại. Vui lòng kiểm tra hộp thư.",
+      "verificationEmailError": "Không thể gửi lại email xác thực. Vui lòng thử lại.",
+      "sending": "Đang gửi...",
+      "resendVerificationEmail": "Gửi lại email xác thực"
+    },
+    "register": {
+      "title": "Tạo tài khoản mới",
+      "subtitle": "Đăng ký để trải nghiệm dịch vụ của chúng tôi",
+      "fullName": "Họ tên",
+      "fullNamePlaceholder": "Nhập họ tên đầy đủ",
+      "phone": "Số điện thoại",
+      "phonePlaceholder": "Nhập số điện thoại",
+      "email": "Email",
+      "emailPlaceholder": "Nhập địa chỉ email",
+      "username": "Tên đăng nhập",
+      "usernamePlaceholder": "Chọn tên đăng nhập",
+      "password": "Mật khẩu",
+      "passwordPlaceholder": "Tạo mật khẩu mạnh",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
+      "agreeToTerms": "Tôi đồng ý với",
+      "termsAndConditions": "điều khoản và điều kiện",
+      "registerButton": "Đăng ký",
+      "processing": "Đang xử lý...",
+      "hasAccountLogin": "Đã có tài khoản? Đăng nhập ngay",
+      "invalidEmail": "Vui lòng nhập địa chỉ email hợp lệ",
+      "invalidPassword": "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, số và ký tự đặc biệt",
+      "passwordMismatch": "Mật khẩu xác nhận không khớp",
+      "fullNameRequired": "Họ tên là bắt buộc",
+      "invalidPhone": "Vui lòng nhập số điện thoại 10 chữ số hợp lệ",
+      "termsRequired": "Vui lòng chấp nhận điều khoản và điều kiện",
+      "success": "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.",
+      "successMessage": "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản trước khi đăng nhập.",
+      "error": "Đăng ký thất bại. Vui lòng thử lại."
+    }
+  },
+  "footer": {
+    "aboutUs": {
+      "title": "Về Chúng Tôi",
+      "description": "Chúng tôi cung cấp các sản phẩm công nghệ chất lượng cao với giá cả hợp lý."
+    },
+    "quickLinks": {
+      "title": "Liên Kết Nhanh",
+      "aboutUs": "Về Chúng Tôi",
+      "warranty": "Bảo Hành",
+      "returnPolicy": "Chính sách đổi trả",
+      "faq": "FAQ"
+    },
+    "contact": {
+      "title": "Thông Tin Liên Hệ",
+      "address": "123 Đường Nguyễn Văn Linh, TP. Hồ Chí Minh",
+      "phone": "Điện thoại: +84 123 456 789",
+      "email": "Email: Nagis@gmail.com"
+    },
+    "newsletter": {
+      "title": "Bản Tin",
+      "placeholder": "Email của bạn"
+    },
+    "copyright": "© {{year}} Nagis. Tất cả các quyền được bảo lưu.",
+    "designedBy": "Thiết kế bởi",
+    "teamName": "Nhóm 5"
+  },
+  "warranty": {
+    "title": "CHÍNH SÁCH BẢO HÀNH SẢN PHẨM",
+    "subtitle": "(*) Đổi mới 30 ngày miễn phí",
+    "policyDescription": "Sản phẩm mua hàng tại Cellphones.com.vn, khách hàng có quyền yêu cầu với chính sách đổi mới miễn phí tối đa 30 ngày",
+    "standardWarranty": "Bảo hành tiêu chuẩn",
+    "table": {
+      "headers": {
+        "product": "Sản phẩm",
+        "period": "Thời gian bảo hành",
+        "decision": "Quyền lợi bảo hành",
+        "location": "Địa chỉ bảo hành"
+      },
+      "newDevice": "Máy mới",
+      "newDevicePeriod": "12 tháng/Đôi đã hết theo quy định của hãng",
+      "newDeviceDecision": "Quyền lợi bảo hành của hãng",
+      "newDeviceLocation": "TTBH chính hãng",
+      "activatedDevice": "Máy đã kích hoạt bảo hành online",
+      "activatedDevicePeriod": "12 tháng - Thời gian bảo hành còn tại lúc mua hàng tại Cellphones",
+      "activatedDeviceDecision": "Theo quyền lợi bảo hành của hãng trong thời gian còn lại",
+      "activatedDeviceLocation": "TTBH chính hãng & Cellphones/ Điện Thoại Vui",
+      "usedDevice": "Máy cũ",
+      "usedDevicePeriod": "6 tháng",
+      "usedDeviceDecision": "Sửa chữa, thay thế linh kiện",
+      "usedDeviceLocation": "Cellphones/ Điện Thoại Vui"
+    },
+    "conditions": {
+      "condition1": "Trong 30 ngày đầu nhập lại máy, trừ phí 20% tiền gốc khi hóa đơn (không áp dụng máy như giao hàng nhập lại hưng lễ)",
+      "condition2": "Sau 30 ngày nhập lại máy theo giá thỏa thuận"
+    },
+    "categories": {
+      "phones": "Điện thoại (Apple/Samsung/Xiaomi/OPPO/Vivo/Realme/Nokia/Macbook/Apple watch)",
+      "phonesPeriod": "30 ngày",
+      "samsungWatch": "Samsung watch",
+      "samsungWatchPeriod": "30 ngày",
+      "laptop": "Laptop",
+      "laptopPeriod": "30 ngày",
+      "accessories": "Phụ kiện",
+      "accessoriesNew": " 1 triệu (Sản phẩm mua mới):",
+      "accessoriesNewPeriod": "1 năm",
+      "accessoriesNewNote": "Không áp dụng nhập lại",
+      "accessoriesUsed": " 1 triệu (Sản phẩm mua cũ):",
+      "accessoriesUsedNote": "Không áp dụng nhập lại"
+    },
+    "extended": {
+      "accessoriesTitle": "Phụ kiện 1 triệu",
+      "accessoriesPeriod": "15 ngày",
+      "accessoriesCondition1": "Trong 30 ngày đầu nhập lại máy, trừ phí 20% tiền gốc khi hóa đơn (không áp dụng máy như giao hàng nhập lại hưng lễ)",
+      "accessoriesCondition2": "Sau 30 ngày nhập lại máy theo giá thỏa thuận",
+      "extendedWarranty": "Bảo hành mở rộng",
+      "extendedPeriod": "15 ngày",
+      "extendedCondition": "Trong 7 ngày đầu, máy không lỗi, khách hàng trả lại gói BHMR - hoàn lại 50% giá gói BHMR"
+    },
+    "exclusions": {
+      "exclusion1": "Máy vỡ, móp méo, trầy xước nặng, biến dạng hoặc bị vào nước, cháy nổ do sử dụng sai cách",
+      "exclusion2": "Máy bị can thiệp, sửa chữa bởi bên thứ ba không được ủy quyền",
+      "exclusion3": "Phụ kiện không phải do Cellphones hoặc hãng sản xuất cung cấp kèm theo máy",
+      "exclusion4": "Thiết bị đã bị khóa tài khoản (iCloud, Google Account, Mi Account...) mà không thể mở khóa"
+    },
+    "additionalNotes": {
+      "note1": "Ngoài chính sách bảo hành, cam kết đổi mới trong 30 ngày đầu nếu sản phẩm bị lỗi do nhà sản xuất.",
+      "note2": "(*) Để được bảo hành, sản phẩm cần giữ nguyên tem, phiếu bảo hành, hóa đơn mua hàng và không bị can thiệp phần cứng.",
+      "note3": "Vui lòng liên hệ nhân viên Cellphones để được tư vấn chi tiết về điều kiện và thủ tục bảo hành."
+    },
+    "notes": {
+      "title": "Lưu ý phẩm cùng cơ phần nhà sản xuất",
+      "conditionsTitle": "Điều kiện đổi lại:",
+      "conditionGeneral": "Sản phẩm trong tình trạng nguyên vẹn, không bảo thiết, hình dạng lúc"
+    },
+    "additional": {
+      "title": "Ngoài bảo hành khoa:"
+    },
+    "info": {
+      "laptopTerms": "1. Điều khoản bảo hành Laptop:",
+      "laptopDescription1": "Các sản phẩm điện thoại, laptop có thể bảo hành tại trung tâm bảo hành chính hãng hoặc tại Cellphones nếu được hỗ trợ.",
+      "laptopDescription2": "Sản phẩm được bảo hành theo quy định của hãng, chi tiết vui lòng tham khảo tại trung tâm bảo hành hoặc liên hệ Cellphones.",
+      "warrantyCenter": "Trung tâm bảo hành:",
+      "centerWebsite": "Trung tâm bảo hành các hãng, xem chi tiết tại: https://cellphones.com.vn/bao-hanh/apple",
+      "processingTime": "Thời gian xử lý bảo hành tùy theo quy định của từng hãng và tình trạng sản phẩm.",
+      "notification": "Khách hàng sẽ được thông báo khi sản phẩm hoàn tất bảo hành."
+    },
+    "accessories": {
+      "title": "Quy định bảo hành phụ kiện theo kèm mày:",
+      "vinsmart": "Vinsmart: 6 tháng",
+      "asus": "Asus: 6 tháng",
+      "nokia": "Nokia: 6 tháng",
+      "note": "Quyền lợi bảo hành đổi sự phải sau trí: 1 đổi đên cả các lỗi"
+    },
+    "contact": {
+      "title": "Liên hệ chi tiết trung tâm bảo hành chính hãng",
+      "description": "Vui lòng liên hệ tổng đài hoặc truy cập website để biết thêm thông tin."
+    }
+  },
+  "payment": {
+    "emptyCart": {
+      "title": "Giỏ hàng trống",
+      "description": "Bạn cần thêm sản phẩm vào giỏ hàng trước khi thanh toán.",
+      "continueShopping": "Tiếp tục mua sắm"
+    },
+    "success": {
+      "title": "Đặt hàng thành công!",
+      "description": "Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng và liên hệ với bạn sớm nhất.",
+      "redirecting": "Đang chuyển hướng đến trang đơn hàng..."
+    },
+    "buyNow": "Mua ngay",
+    "checkout": "Thanh toán",
+    "deliveryInfo": "Thông tin giao hàng"
+  },
+  "store": {
+    "title": "Sản phẩm",
+    "filter": {
+      "title": "Bộ lọc sản phẩm",
+      "category": "Danh mục",
+      "allCategories": "Tất cả danh mục",
+      "sortBy": "Sắp xếp theo",
+      "clearFilters": "Xóa bộ lọc"
+    },
+    "categories": {
+      "laptops": "Laptop",
+      "smartphones": "Điện thoại",
+      "tvs": "TV",
+      "accessories": "Phụ kiện"
+    },
+    "sort": {
+      "newest": "Mới nhất",
+      "oldest": "Cũ nhất",
+      "nameAZ": "Tên A-Z",
+      "nameZA": "Tên Z-A",
+      "priceLowHigh": "Giá thấp đến cao",
+      "priceHighLow": "Giá cao đến thấp"
+    },
+    "search": {
+      "placeholder": "Tìm kiếm sản phẩm...",
+      "clear": "Xóa tìm kiếm",
+      "search": "Tìm kiếm",
+      "results": "Kết quả tìm kiếm cho:",
+      "noResults": "Không tìm thấy sản phẩm nào"
+    },
+    "empty": {
+      "title": "Không có sản phẩm nào",
+      "description": "Hãy thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc"
+    },
+    "pagination": {
+      "previous": "Trước",
+      "next": "Sau",
+      "page": "Trang {{current}} / {{total}}"
+    },
+    "error": {
+      "loadProducts": "Không thể tải danh sách sản phẩm. Vui lòng thử lại sau."
+    }
+  }
+}

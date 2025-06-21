@@ -101,19 +101,18 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    // Lắng nghe sự kiện storage change
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Lắng nghe sự kiện auth-state-changed
-    const handleAuthStateChanged = () => {
-      console.log('AuthContext - Auth state changed event received');
-      handleStorageChange();
+    const handleAuthLogout = () => {
+      console.log('AuthContext - Received auth-logout event');
+      setUser(null);
+      setIsAuthenticated(false);
     };
-    window.addEventListener('auth-state-changed', handleAuthStateChanged);
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('auth-logout', handleAuthLogout);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('auth-state-changed', handleAuthStateChanged);
+      window.removeEventListener('auth-logout', handleAuthLogout);
     };
   }, []);
 
@@ -187,37 +186,36 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async (redirectToHome = true) => {
     try {
-      console.log('AuthContext - Attempting logout...');
-      await authService.logout();
-      console.log('AuthContext - Logout successful, clearing user state');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('AuthContext - Attempting logout...');
+      }
       
-      // Cập nhật state
+      // Clear localStorage first
+      authService.logout();
+      
+      // Then update state
       setUser(null);
       setIsAuthenticated(false);
       
-      // Kích hoạt sự kiện để cập nhật UI
-      window.dispatchEvent(new Event('auth-state-changed'));
+      // Trigger custom event for same-tab updates
+      window.dispatchEvent(new Event('auth-logout'));
       
-      // Chỉ chuyển hướng nếu được yêu cầu
-      if (redirectToHome) {
-        console.log('AuthContext - Redirecting to home page');
-        window.location.href = '/';
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('AuthContext - Logout successful, user state cleared');
       }
+      
+      return true;
     } catch (error) {
       console.error('AuthContext - Logout error:', error.message || 'Unknown error');
       
-      // Cập nhật state
+      // Even if there's an error, clear the state
       setUser(null);
       setIsAuthenticated(false);
       
-      // Kích hoạt sự kiện để cập nhật UI
-      window.dispatchEvent(new Event('auth-state-changed'));
+      // Trigger custom event even on error
+      window.dispatchEvent(new Event('auth-logout'));
       
-      // Chỉ chuyển hướng nếu được yêu cầu
-      if (redirectToHome) {
-        console.log('AuthContext - Redirecting to home page after error');
-        window.location.href = '/';
-      }
+      return false;
     }
   };
 

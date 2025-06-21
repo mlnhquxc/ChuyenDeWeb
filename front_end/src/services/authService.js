@@ -121,19 +121,11 @@ const authService = {
         console.log('authService - Register response:', response.data);
       }
 
-      // Handle the API response structure: { code, result: { token, authenticated, user } }
+      // Handle the API response structure: { code, result: "message", message: "..." }
       const { result } = response.data;
-      if (result && result.user) {
-        const { token, user, authenticated } = result;
-        
-        // Không lưu token và user vào localStorage vì tài khoản chưa được kích hoạt
-        // Thay vào đó, chỉ trả về thông tin để hiển thị thông báo
-        return { 
-          user, 
-          needsActivation: true,
-          email: userData.email,
-          message: 'Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản.'
-        };
+      if (result) {
+        // For email verification flow, we don't store tokens immediately
+        return { result, message: response.data.message };
       }
       return null;
     } catch (error) {
@@ -476,6 +468,60 @@ const authService = {
       }
       
       const errorMessage = error.response?.data?.message || error.userMessage || 'Không thể đặt lại mật khẩu. Vui lòng thử lại.';
+      error.userMessage = errorMessage;
+      throw error;
+    }
+  },
+
+  async resendVerification(data) {
+    try {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Resend verification request for:', data.email);
+      }
+      const response = await axiosInstance.post(ENDPOINTS.AUTH.RESEND_VERIFICATION, data);
+      
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Resend verification response:', response.data);
+      }
+      
+      return response.data;
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('authService - Resend verification error:', error);
+      } else {
+        console.error('Resend verification failed:', error.message || 'Unknown error');
+      }
+      
+      const errorMessage = error.response?.data?.message || 'Không thể gửi lại email xác thực. Vui lòng thử lại.';
+      error.userMessage = errorMessage;
+      throw error;
+    }
+  },
+
+  async changePassword(currentPassword, newPassword, confirmPassword) {
+    try {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Change password request');
+      }
+      const response = await axiosInstance.put(ENDPOINTS.USER.CHANGE_PASSWORD, { 
+        currentPassword, 
+        newPassword, 
+        confirmPassword 
+      });
+      
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('authService - Change password response:', response.data);
+      }
+      
+      return response.data;
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('authService - Change password error:', error);
+      } else {
+        console.error('Password change failed:', error.message || 'Unknown error');
+      }
+      
+      const errorMessage = error.response?.data?.message || 'Không thể đổi mật khẩu. Vui lòng thử lại.';
       error.userMessage = errorMessage;
       throw error;
     }

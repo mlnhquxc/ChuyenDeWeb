@@ -9,6 +9,7 @@ import Home from './Pages/Home';
 import Authentication from './Pages/Authentication';
 import Cart from './Pages/Cart';
 import Payment from './Pages/Payment';
+import Checkout from './Pages/Checkout';
 import Orders from './Pages/Orders';
 import ProductDetail from './Pages/ProductDetail';
 import Profile from './Pages/Profile';
@@ -17,7 +18,9 @@ import Footer from './components/Footer';
 import Store from './Pages/Store';
 import Wishlist from './Pages/WishList';
 import TokenCleaner from './components/TokenCleaner';
-import ProtectedRoute from './components/ProtectedRoute';
+import EmailVerification from './Pages/EmailVerification';
+import PaymentReturn from './Pages/PaymentReturn';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   // Thêm state và logic dark mode trực tiếp vào App
@@ -51,42 +54,23 @@ function App() {
           <CartProvider>
             <WishlistProvider>
               <TokenCleaner />
-              <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-indigo-950 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+              <ScrollToTop />
+              <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900 ">
                 <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
                 <main className="flex-grow">
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Authentication />} />
-                    <Route path="/auth" element={<Authentication />} />
-                    <Route path="/store" element={<Store />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/payment" element={<Payment />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/orders" element={<Orders />} />
                     <Route path="/product/:id" element={<ProductDetail />} />
-                    
-                    {/* Protected Routes - Yêu cầu đăng nhập */}
-                    <Route path="/cart" element={
-                      <ProtectedRoute>
-                        <Cart />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/payment" element={
-                      <ProtectedRoute>
-                        <Payment />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/orders" element={
-                      <ProtectedRoute>
-                        <Orders />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/profile" element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/wishlist" element={
-                      <ProtectedRoute>
-                        <Wishlist />
-                      </ProtectedRoute>
-                    } />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/store" element={<Store />} />
+                    <Route path="/wishlist" element={<Wishlist />} />
+                    <Route path="/verify-email" element={<EmailVerification />} />
+                    <Route path="/payment/return" element={<PaymentReturn />} />
                   </Routes>
                 </main>
                 <Footer />
@@ -113,8 +97,8 @@ function App() {
                 bodyClassName={() => "text-sm font-medium p-3"}
                 progressClassName={() => 
                   isDarkMode 
-                    ? "bg-gradient-to-r from-purple-500 to-indigo-500" 
-                    : "bg-gradient-to-r from-purple-600 to-indigo-600"
+                    ? "bg-gradient-to-r from-blue-500 to-indigo-500" 
+                    : "bg-gradient-to-r from-blue-600 to-indigo-600"
                 }
                 closeButton={({ closeToast }) => (
                   <button

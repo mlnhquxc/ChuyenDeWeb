@@ -13,17 +13,57 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import orderService from "../services/orderService";
 import userService from "../services/userService";
+import paymentService from "../services/paymentService";
 import { ProductImage } from "../utils/placeholderImage.jsx";
+import { useTranslation } from 'react-i18next';
 
 const CheckoutPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { cart, loading: cartLoading, clearCart } = useCart();
   const { user } = useAuth();
   
-  // Get selected items from cart or buy now
-  const { selectedItems, isFromCart, isFromBuyNow } = location.state || {};
-  const cartItems = selectedItems || cart.items || [];
+  // Get data from location state
+  const stateData = location.state || {};
+  
+  // Handle different data formats
+  let cartItems = [];
+  let isFromCart = false;
+  let isFromBuyNow = false;
+  
+  if (stateData.fromBuyNow) {
+    // From BuyNow page - new format
+    isFromBuyNow = true;
+    cartItems = stateData.items || [];
+  } else if (stateData.fromCart) {
+    // From Cart page - new format
+    isFromCart = true;
+    cartItems = stateData.items || [];
+  } else if (stateData.selectedItems) {
+    // Legacy format - convert to new format
+    cartItems = (stateData.selectedItems || []).map(item => ({
+      id: item.productId || item.id, // Use productId if available, fallback to id
+      name: item.productName || item.name,
+      price: item.productPrice || item.price,
+      image: item.productImage || item.image,
+      quantity: item.quantity,
+      subtotal: (item.productPrice || item.price) * item.quantity
+    }));
+    isFromCart = stateData.isFromCart || false;
+    isFromBuyNow = stateData.isFromBuyNow || false;
+  } else if (cart && cart.items) {
+    // Default: use all cart items
+    isFromCart = true;
+    cartItems = cart.items.map(item => ({
+      id: item.productId,
+      name: item.productName,
+      price: item.productPrice,
+      image: item.productImage,
+      quantity: item.quantity,
+      subtotal: item.productPrice * item.quantity
+    }));
+  }
   
   const [formData, setFormData] = useState({
     fullName: "",
@@ -72,7 +112,15 @@ const CheckoutPage = () => {
     if (user) {
       loadUserProfile();
     }
-  }, [user]);
+    
+    // Load form data from BuyNow if available
+    if (isFromBuyNow && stateData.formData) {
+      setFormData(prev => ({
+        ...prev,
+        ...stateData.formData
+      }));
+    }
+  }, [user, isFromBuyNow, stateData]);
 
   // Check if cart is empty (when not coming from cart selection or buy now)
   const isCartEmpty = !isFromCart && !isFromBuyNow && (!cart || 
@@ -121,17 +169,7 @@ const CheckoutPage = () => {
     if (!formData.ward) newErrors.ward = "Vui lòng chọn phường/xã";
     if (!formData.address) newErrors.address = "Vui lòng nhập địa chỉ cụ thể";
 
-    if (formData.paymentMethod === "vnpay") {
-      if (formData.cardNumber && !/^\d{16}$/.test(formData.cardNumber)) {
-        newErrors.cardNumber = "Số thẻ không hợp lệ";
-      }
-      if (formData.cvv && !/^\d{3}$/.test(formData.cvv)) {
-        newErrors.cvv = "Mã CVV không hợp lệ";
-      }
-      if (formData.expiryDate && !/^\d{2}\/\d{2}$/.test(formData.expiryDate)) {
-        newErrors.expiryDate = "Ngày hết hạn không hợp lệ";
-      }
-    }
+    // VnPay validation is handled on their platform, no need to validate card details here
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -141,7 +179,12 @@ const CheckoutPage = () => {
     if (!cartItems.length) return 0;
     
     const subtotal = cartItems.reduce(
-        (sum, item) => sum + (item.productPrice * item.quantity),
+        (sum, item) => {
+          // Handle both old and new data formats
+          const price = item.price || item.productPrice || 0;
+          const quantity = item.quantity || 0;
+          return sum + (price * quantity);
+        },
         0
     );
     const shippingFee = shippingMethods[formData.shippingMethod]?.price || 0;
@@ -151,7 +194,12 @@ const CheckoutPage = () => {
   const getSubtotal = () => {
     if (!cartItems.length) return 0;
     return cartItems.reduce(
-        (sum, item) => sum + (item.productPrice * item.quantity),
+        (sum, item) => {
+          // Handle both old and new data formats
+          const price = item.price || item.productPrice || 0;
+          const quantity = item.quantity || 0;
+          return sum + (price * quantity);
+        },
         0
     );
   };
@@ -165,36 +213,91 @@ const CheckoutPage = () => {
         // Prepare shipping address
         const shippingAddress = `${formData.address}, ${formData.ward}, ${formData.district}, ${formData.province}`;
         
-        // Prepare order data
-        const orderData = {
-          shippingAddress,
-          billingAddress: shippingAddress, // Use same as shipping for now
-          phone: formData.phoneNumber,
-          email: formData.email,
-          customerName: formData.fullName,
-          paymentMethod: formData.paymentMethod,
-          shippingFee: shippingMethods[formData.shippingMethod]?.price || 0,
-          discountAmount: 0, // TODO: Implement discount logic
-          notes: formData.deliveryNotes
-        };
+        let orderData;
+        let response;
 
-        console.log('Creating order with data:', orderData);
-        
-        // Create order from cart
-        const response = await orderService.createOrderFromCart(orderData);
+        if (isFromBuyNow) {
+          // Create direct order for buy now
+          orderData = {
+            items: cartItems.map(item => ({
+              productId: parseInt(item.id), // Ensure productId is a number
+              quantity: item.quantity
+            })),
+            shippingAddress,
+            billingAddress: shippingAddress,
+            phone: formData.phoneNumber,
+            email: formData.email,
+            customerName: formData.fullName,
+            paymentMethod: formData.paymentMethod,
+            shippingFee: shippingMethods[formData.shippingMethod]?.price || 0,
+            discountAmount: 0,
+            notes: formData.deliveryNotes
+          };
+
+          console.log('Creating direct order with data:', orderData);
+          console.log('Cart items for direct order:', cartItems);
+          response = await orderService.createDirectOrder(orderData);
+        } else {
+          // Create order from cart
+          orderData = {
+            shippingAddress,
+            billingAddress: shippingAddress,
+            phone: formData.phoneNumber,
+            email: formData.email,
+            customerName: formData.fullName,
+            paymentMethod: formData.paymentMethod,
+            shippingFee: shippingMethods[formData.shippingMethod]?.price || 0,
+            discountAmount: 0,
+            notes: formData.deliveryNotes
+          };
+
+          console.log('Creating order from cart with data:', orderData);
+          response = await orderService.createOrderFromCart(orderData);
+        }
         
         if (response.result) {
           const orderNumber = response.result.id || 'N/A';
-          showToast.orderSuccess(orderNumber);
-          setShowSuccess(true);
           
-          // Clear cart after successful order
-          await clearCart();
-          
-          // Redirect to orders page after 2 seconds
-          setTimeout(() => {
-            navigate('/orders');
-          }, 2000);
+          // Handle VnPay payment
+          if (formData.paymentMethod === 'vnpay') {
+            try {
+              const paymentData = {
+                orderId: response.result.id,
+                amount: calculateTotal(),
+                orderInfo: `Thanh toán đơn hàng #${orderNumber}`,
+                userId: user?.id
+              };
+              
+              const paymentResponse = await paymentService.createPayment(paymentData);
+              
+              if (paymentResponse.result && paymentResponse.result.paymentUrl) {
+                // Clear cart before redirecting to payment
+                await clearCart();
+                
+                // Redirect to VnPay
+                paymentService.redirectToVnPay(paymentResponse.result.paymentUrl);
+                return;
+              } else {
+                throw new Error('Không thể tạo liên kết thanh toán');
+              }
+            } catch (paymentError) {
+              console.error('Payment creation failed:', paymentError);
+              showToast.error('Có lỗi xảy ra khi tạo thanh toán: ' + paymentError.message);
+              return;
+            }
+          } else {
+            // Handle COD payment
+            showToast.orderSuccess(orderNumber);
+            setShowSuccess(true);
+            
+            // Clear cart after successful order
+            await clearCart();
+            
+            // Redirect to orders page after 2 seconds
+            setTimeout(() => {
+              navigate('/orders');
+            }, 2000);
+          }
         }
       } catch (error) {
         console.error("Order submission failed:", error);
@@ -219,14 +322,14 @@ const CheckoutPage = () => {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Giỏ hàng trống</h1>
-          <p className="text-gray-600 mb-8">Bạn cần thêm sản phẩm vào giỏ hàng trước khi thanh toán.</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">{t('payment.emptyCart.title')}</h1>
+          <p className="text-gray-600 mb-8">{t('payment.emptyCart.description')}</p>
           <button
             onClick={() => navigate('/store')}
             className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             <FaArrowLeft className="mr-2" />
-            Tiếp tục mua sắm
+            {t('payment.emptyCart.continueShopping')}
           </button>
         </div>
       </div>
@@ -240,11 +343,11 @@ const CheckoutPage = () => {
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="bg-white p-8 rounded-lg shadow-md">
             <div className="text-green-500 text-6xl mb-4">✓</div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">Đặt hàng thành công!</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">{t('payment.success.title')}</h1>
             <p className="text-gray-600 mb-8">
-              Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng và liên hệ với bạn sớm nhất.
+              {t('payment.success.description')}
             </p>
-            <p className="text-sm text-gray-500">Đang chuyển hướng đến trang đơn hàng...</p>
+            <p className="text-sm text-gray-500">{t('payment.success.redirecting')}</p>
           </div>
         </div>
       </div>
@@ -255,13 +358,13 @@ const CheckoutPage = () => {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400 mb-8">
-            {isFromBuyNow ? 'Mua ngay' : 'Thanh toán'}
+            {isFromBuyNow ? t('payment.buyNow') : t('payment.checkout')}
           </h1>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Form */}
             <div className="space-y-8">
               <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-2xl font-bold mb-6">Thông tin giao hàng</h2>
+                <h2 className="text-2xl font-bold mb-6">{t('payment.deliveryInfo')}</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
@@ -441,67 +544,16 @@ const CheckoutPage = () => {
                       </div>
 
                       {formData.paymentMethod === "vnpay" && (
-                          <div className="ml-7 space-y-4">
-                            <input
-                                type="text"
-                                placeholder="Số thẻ (16 chữ số)"
-                                className={`block w-full rounded-md border ${
-                                    errors.cardNumber ? "border-red-500" : "border-gray-300"
-                                } px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                                value={formData.cardNumber}
-                                onChange={(e) =>
-                                    setFormData({
-                                      ...formData,
-                                      cardNumber: e.target.value,
-                                    })
-                                }
-                            />
-                            {errors.cardNumber && (
-                                <p className="text-red-500 text-sm mt-1">
-                                  {errors.cardNumber}
-                                </p>
-                            )}
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <input
-                                    type="text"
-                                    placeholder="MM/YY"
-                                    className={`block w-full rounded-md border ${
-                                        errors.expiryDate ? "border-red-500" : "border-gray-300"
-                                    } px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                                    value={formData.expiryDate}
-                                    onChange={(e) =>
-                                        setFormData({
-                                          ...formData,
-                                          expiryDate: e.target.value,
-                                        })
-                                    }
-                                />
-                                {errors.expiryDate && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                      {errors.expiryDate}
-                                    </p>
-                                )}
-                              </div>
-                              <div>
-                                <input
-                                    type="text"
-                                    placeholder="CVV"
-                                    className={`block w-full rounded-md border ${
-                                        errors.cvv ? "border-red-500" : "border-gray-300"
-                                    } px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                                    value={formData.cvv}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, cvv: e.target.value })
-                                    }
-                                />
-                                {errors.cvv && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                      {errors.cvv}
-                                    </p>
-                                )}
-                              </div>
+                          <div className="ml-7 p-4 bg-blue-50 rounded-lg">
+                            <div className="flex items-center text-blue-700">
+                              <FaLock className="mr-2" />
+                              <span className="text-sm">
+                                Bạn sẽ được chuyển đến trang VNPay để hoàn tất thanh toán một cách an toàn
+                              </span>
                             </div>
+                            <p className="text-xs text-blue-600 mt-2">
+                              Hỗ trợ thanh toán qua thẻ ATM, thẻ tín dụng, ví điện tử và Internet Banking
+                            </p>
                           </div>
                       )}
                     </div>
@@ -518,22 +570,22 @@ const CheckoutPage = () => {
                   {cartItems.map((item) => (
                       <div key={item.id} className="flex items-center space-x-4">
                         <ProductImage
-                            src={item.productImage}
-                            alt={item.productName}
+                            src={item.image || item.productImage}
+                            alt={item.name || item.productName}
                             className="w-20 h-20 object-cover rounded"
                             size="medium"
                         />
                         <div className="flex-1">
-                          <h3 className="font-medium">{item.productName}</h3>
+                          <h3 className="font-medium">{item.name || item.productName}</h3>
                           <p className="text-sm text-gray-500">
                             Số lượng: {item.quantity}
                           </p>
                           <p className="text-sm text-gray-500">
-                            Đơn giá: {item.productPrice?.toLocaleString('vi-VN')}₫
+                            Đơn giá: {(item.price || item.productPrice)?.toLocaleString('vi-VN')}₫
                           </p>
                         </div>
                         <p className="font-medium">
-                          {(item.productPrice * item.quantity).toLocaleString('vi-VN')}₫
+                          {((item.price || item.productPrice) * item.quantity).toLocaleString('vi-VN')}₫
                         </p>
                       </div>
                   ))}

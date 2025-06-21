@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     fullname VARCHAR(100) NOT NULL,
     email VARCHAR(45) NOT NULL UNIQUE,
     phone VARCHAR(20) NOT NULL,
+    address TEXT,
     avatar VARCHAR(255),
     active BOOLEAN NOT NULL DEFAULT FALSE
 );
@@ -23,6 +24,20 @@ CREATE TABLE IF NOT EXISTS user_roles (
     PRIMARY KEY (user_id, role_name),
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (role_name) REFERENCES roles(name)
+);
+
+-- Tạo bảng email_verification_tokens
+CREATE TABLE IF NOT EXISTS email_verification_tokens (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(500) NOT NULL UNIQUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL,
+    verified_at DATETIME NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_token (token),
+    INDEX idx_user_id (user_id),
+    INDEX idx_expires_at (expires_at)
 );
 
 -- Tạo bảng categories
@@ -166,4 +181,30 @@ CREATE TABLE IF NOT EXISTS reviews (
     review_date DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+-- Tạo bảng payments
+CREATE TABLE IF NOT EXISTS payments (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    txn_ref VARCHAR(50) UNIQUE NOT NULL,
+    order_id BIGINT,
+    amount BIGINT NOT NULL,
+    order_info TEXT,
+    payment_method VARCHAR(50),
+    bank_code VARCHAR(20),
+    transaction_no VARCHAR(50),
+    response_code VARCHAR(10),
+    transaction_status VARCHAR(10),
+    status ENUM('PENDING', 'SUCCESS', 'FAILED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
+    secure_hash VARCHAR(500),
+    created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    payment_date DATETIME,
+    user_id BIGINT,
+    INDEX idx_txn_ref (txn_ref),
+    INDEX idx_order_id (order_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_status (status),
+    INDEX idx_created_date (created_date),
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
 ); 

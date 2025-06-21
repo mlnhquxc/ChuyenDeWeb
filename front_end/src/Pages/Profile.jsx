@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaSignOutAlt, FaEdit, FaCamera } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaSignOutAlt, FaEdit, FaCamera, FaLock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import userService from '../services/userService';
 import authService from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import ChangePasswordModal from '../components/ChangePasswordModal';
+import { useTranslation } from 'react-i18next';
 
 // Hàm để sửa URL avatar
 const fixAvatarUrl = (url) => {
@@ -43,17 +45,19 @@ const fixAvatarUrl = (url) => {
 };
 
 const Profile = () => {
-    const { user, updateUser } = useAuth();
+    const { user, updateUser, logout } = useAuth();
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         phone: '',
         address: '',
     });
+    const { t } = useTranslation();
 
     useEffect(() => {
         loadUserProfile();
@@ -74,10 +78,14 @@ const Profile = () => {
             }
         } catch (error) {
             console.error('Profile load error:', error);
-            setError('Không thể tải thông tin hồ sơ. Phiên đăng nhập của bạn có thể đã hết hạn.');
             if (error.response?.status === 401) {
                 toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                // Tự động logout và redirect
+                logout().then(() => {
+                    navigate('/login');
+                });
             } else {
+                setError('Không thể tải thông tin hồ sơ. Vui lòng thử lại.');
                 toast.error('Không thể tải thông tin hồ sơ');
             }
         } finally {
@@ -85,10 +93,19 @@ const Profile = () => {
         }
     };
 
-    const handleForceLogin = () => {
-        authService.logout();
-        toast.info('Vui lòng đăng nhập lại');
-        navigate('/auth');
+    const handleForceLogin = async () => {
+        try {
+            const success = await logout();
+            if (success) {
+                toast.info('Đã đăng xuất thành công');
+                navigate('/login');
+            } else {
+                toast.error('Có lỗi xảy ra khi đăng xuất');
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            toast.error('Có lỗi xảy ra khi đăng xuất');
+        }
     };
 
     const handleChange = (e) => {
@@ -130,115 +147,35 @@ const Profile = () => {
     const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        
-        // Kiểm tra loại file
+        // Validate file type
         if (!file.type.startsWith('image/')) {
-            toast.error('Vui lòng chọn file hình ảnh');
+            toast.error('Vui lòng chọn file ảnh hợp lệ');
             return;
         }
-        
-        // Kiểm tra kích thước file (tối đa 5MB)
+
+        // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
             toast.error('Kích thước file không được vượt quá 5MB');
             return;
         }
-        
-        // Lưu URL của ảnh hiện tại để khôi phục nếu có lỗi
-        const currentAvatarUrl = user?.avatar;
-        
-        // Hiển thị preview trước khi upload
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const previewElement = document.getElementById('avatar-preview');
-            if (previewElement) {
-                previewElement.src = event.target.result;
-            }
-        };
-        reader.readAsDataURL(file);
-        
-        // Hiển thị thông báo đang tải lên
-        const toastId = toast.loading('Đang tải lên ảnh đại diện...');
-        
+        setLoading(true);
         try {
             console.log('Profile - Uploading avatar file:', file.name);
             const response = await userService.uploadAvatar(file);
-            
-            console.log('Profile - Upload response:', response);
-            
-            if (response && response.result && response.result.avatarUrl) {
-                // Lấy URL mới của avatar
-                const newAvatarUrl = response.result.avatarUrl;
-                console.log('Profile - New avatar URL:', newAvatarUrl);
-                
-                // Tạo một bản sao của user object để tránh tham chiếu
-                const updatedUser = JSON.parse(JSON.stringify(user));
-                
-                // Kiểm tra URL của ảnh
-                console.log('Profile - Testing avatar URL accessibility...');
-                
-                // Sử dụng hàm fixAvatarUrl để xử lý URL
-                let fullUrl = fixAvatarUrl(newAvatarUrl);
-                console.log('Profile - Fixed avatar URL:', fullUrl);
-                
-                // Tạo một đối tượng Image để kiểm tra URL
-                const testImage = new Image();
-                testImage.onload = () => {
-                    console.log('Profile - Avatar URL is accessible:', fullUrl);
-                };
-                testImage.onerror = () => {
-                    console.error('Profile - Avatar URL is NOT accessible:', fullUrl);
-                    // Hiển thị thông báo lỗi nhưng vẫn tiếp tục cập nhật
-                    toast.warning('Ảnh đại diện có thể không hiển thị đúng. Vui lòng kiểm tra lại.');
-                };
-                testImage.src = fullUrl;
-                
-                // Lưu URL tương đối vào user object
-                updatedUser.avatar = newAvatarUrl;
-                
-                // Cập nhật thông tin user trong context
-                updateUser(updatedUser);
-                
-                // Cập nhật trực tiếp ảnh preview để đảm bảo nó hiển thị đúng
-                const previewElement = document.getElementById('avatar-preview');
-                if (previewElement) {
-                    // Thêm timestamp để tránh cache
-                    previewElement.src = newAvatarUrl + '?t=' + new Date().getTime();
-                }
-                
-                // Cập nhật toast thành công
-                toast.update(toastId, {
-                    render: 'Cập nhật ảnh đại diện thành công',
-                    type: 'success',
-                    isLoading: false,
-                    autoClose: 3000
-                });
-                
-                console.log('Avatar updated successfully:', newAvatarUrl);
-                
-                // Cập nhật lại profile để đảm bảo dữ liệu mới nhất
-                setTimeout(() => {
-                    loadUserProfile();
-                }, 1000);
-            } else {
-                console.error('Profile - Invalid response format:', response);
-                throw new Error('Không nhận được URL ảnh đại diện từ server');
+            if (response.code === 200) {
+                // Update user context with new avatar URL
+                // Check if it's a Cloudinary URL (starts with https) or local URL
+                const avatarUrl = response.result.startsWith('http') 
+                    ? response.result 
+                    : `http://localhost:8080${response.result}`;
+                updateUser({...user, avatar: avatarUrl});
+                toast.success('Cập nhật ảnh đại diện thành công');
             }
         } catch (error) {
             console.error('Avatar upload error:', error);
-            
-            // Cập nhật toast thất bại
-            toast.update(toastId, {
-                render: error.message || 'Không thể cập nhật ảnh đại diện',
-                type: 'error',
-                isLoading: false,
-                autoClose: 3000
-            });
-            
-            // Reset preview về ảnh cũ
-            const previewElement = document.getElementById('avatar-preview');
-            if (previewElement && currentAvatarUrl) {
-                previewElement.src = currentAvatarUrl;
-            }
+            toast.error(error.message || 'Không thể cập nhật ảnh đại diện');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -257,11 +194,13 @@ const Profile = () => {
                     <div className="text-center">
                         <div className="text-red-500 dark:text-red-400 text-lg mb-6">{error}</div>
                         <button
-                            onClick={handleForceLogin}
+                            onClick={() => {
+                                setError(null);
+                                loadUserProfile();
+                            }}
                             className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 mx-auto transition-all duration-300 transform hover:scale-[1.02] shadow-md"
                         >
-                            <FaSignOutAlt />
-                            Đăng nhập lại
+                            {t('profile.retry')}
                         </button>
                     </div>
                 </div>
@@ -273,7 +212,7 @@ const Profile = () => {
         <div className="container mx-auto px-4 py-10">
             <div className="max-w-3xl mx-auto">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-purple-400 dark:to-indigo-400 mb-8">
-                    Thông tin tài khoản
+                    {t('profile.title')}
                 </h1>
                 
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition-colors duration-200">
@@ -285,8 +224,7 @@ const Profile = () => {
                                     <div className="w-32 h-32 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden border-4 border-indigo-100 dark:border-indigo-900">
                                         {user?.avatar ? (
                                             <img 
-                                                id="avatar-preview"
-                                                src={fixAvatarUrl(user.avatar)} 
+                                                src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:8080${user.avatar}`} 
                                                 alt="Profile" 
                                                 className="w-full h-full object-cover"
                                                 onError={(e) => {
@@ -294,12 +232,7 @@ const Profile = () => {
                                                     
                                                     // Ngăn chặn vòng lặp vô hạn bằng cách vô hiệu hóa xử lý lỗi
                                                     e.target.onerror = null;
-                                                    
-                                                    // Sử dụng UI Avatars làm fallback cuối cùng
-                                                    e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.name || 'User');
-                                                    
-                                                    // Hiển thị thông báo cho người dùng
-                                                    toast.warning('Không thể tải ảnh đại diện. Đang sử dụng ảnh mặc định.');
+                                                    e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.name || 'User') + '&background=6366f1&color=ffffff';
                                                 }}
                                                 onLoad={(e) => {
                                                     console.log('Avatar loaded successfully:', e.target.src);
@@ -414,21 +347,21 @@ const Profile = () => {
                             {/* Profile form */}
                             <div className="flex-1">
                                 <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">Thông tin cá nhân</h3>
+                                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">{t('profile.personalInfo')}</h3>
                                     <button
                                         type="button"
                                         onClick={() => setIsEditing(!isEditing)}
                                         className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 flex items-center gap-1"
                                     >
                                         <FaEdit />
-                                        {isEditing ? 'Hủy' : 'Chỉnh sửa'}
+                                        {isEditing ? t('profile.cancel') : t('profile.edit')}
                                     </button>
                                 </div>
                                 
                                 <form onSubmit={handleSubmit} className="space-y-5">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Họ tên</label>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('profile.fullname')}</label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                     <FaUser className="text-gray-400" />
@@ -445,7 +378,7 @@ const Profile = () => {
                                         </div>
                                         
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('profile.email')}</label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                     <FaEnvelope className="text-gray-400" />
@@ -461,7 +394,7 @@ const Profile = () => {
                                         </div>
                                         
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Số điện thoại</label>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('profile.phone')}</label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                                     <FaPhone className="text-gray-400" />
@@ -479,7 +412,7 @@ const Profile = () => {
                                     </div>
                                     
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Địa chỉ</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('profile.address')}</label>
                                         <div className="relative">
                                             <div className="absolute top-3 left-3 flex items-start pointer-events-none">
                                                 <FaMapMarkerAlt className="text-gray-400" />
@@ -495,36 +428,52 @@ const Profile = () => {
                                         </div>
                                     </div>
                                     
-                                    {isEditing && (
-                                        <div className="flex justify-end">
+                                    <div className="flex justify-end gap-4">
+                                        {isEditing && (
                                             <button
                                                 type="submit"
-                                                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-[1.02] shadow-md"
+                                                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-all duration-300 transform hover:scale-[1.02] shadow-md"
                                             >
-                                                Lưu thay đổi
+                                                {t('profile.save')}
                                             </button>
-                                        </div>
-                                    )}
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowChangePasswordModal(true)}
+                                            className="bg-gradient-to-r from-gray-200 to-gray-400 hover:from-gray-300 hover:to-gray-500 text-gray-800 dark:text-gray-900 px-6 py-3 rounded-lg flex items-center gap-2 transition-all duration-300 transform hover:scale-[1.02] shadow-md"
+                                        >
+                                            <FaLock />
+                                            {t('profile.changePassword')}
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         </div>
                     </div>
                     
-                    <div className="px-8 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                        <button
-                            onClick={handleForceLogin}
-                            className="flex items-center text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-                        >
-                            <FaSignOutAlt className="mr-2" />
-                            Đăng xuất
-                        </button>
+                    <div className="px-8 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex justify-between items-center mb-4">
+                            <button
+                                onClick={handleForceLogin}
+                                className="flex items-center text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                            >
+                                <FaSignOutAlt className="mr-2" />
+                                Đăng xuất
+                            </button>
+                        </div>
                         
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                        <div className="text-sm text-gray-500 dark:text-gray-400 text-center">
                             Tài khoản được tạo: {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
                         </div>
                     </div>
                 </div>
             </div>
+            
+            {/* Change Password Modal */}
+            <ChangePasswordModal 
+                isOpen={showChangePasswordModal}
+                onClose={() => setShowChangePasswordModal(false)}
+            />
         </div>
     );
 };

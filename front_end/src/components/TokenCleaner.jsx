@@ -7,11 +7,11 @@ const TokenCleaner = () => {
     // Clear expired tokens on app startup
     const wasCleared = authService.clearExpiredTokens();
     if (wasCleared) {
-      console.log('TokenCleaner - Expired tokens cleared, user needs to login again');
-      // Không tự động chuyển hướng đến trang đăng nhập
-      // Để người dùng có thể tiếp tục duyệt trang với tư cách khách
-    } else {
-      console.log('TokenCleaner - No expired tokens found');
+      console.log('Expired tokens cleared, user needs to login again');
+      // Optionally redirect to login page
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+        window.location.href = '/login';
+      }
     }
   }, []);
 
