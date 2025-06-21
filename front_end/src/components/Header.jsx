@@ -171,7 +171,7 @@ const Header = ({ isDarkMode, toggleDarkMode }) => {
 
   const menuItems = [
     { name: t('header.menu.home'), link: "/" },
-    { name: t('header.menu.store'), link: "/shop" },
+    { name: t('header.menu.store'), link: "/store" },
     { name: t('header.menu.pages'), link: "#", hasDropdown: true },
     { name: t('header.menu.blog'), link: "/blog" },
     { name: t('header.menu.contact'), link: "/contact" },

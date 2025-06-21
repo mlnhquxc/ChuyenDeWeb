@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook, FaEye, FaEyeSlash, FaUser, FaLock } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import authService from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 import { showToast } from "../utils/toast";
@@ -58,6 +58,7 @@ const PasswordStrength = ({ password }) => {
 const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -66,7 +67,35 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState(null);
   const { login } = useAuth();
+
+  // Check for email verification status from URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const verified = urlParams.get('verified');
+    const message = urlParams.get('message');
+    
+    if (verified !== null && message) {
+      if (verified === 'true') {
+        setVerificationMessage({
+          type: 'success',
+          text: decodeURIComponent(message)
+        });
+        showToast.success(decodeURIComponent(message));
+      } else {
+        setVerificationMessage({
+          type: 'error',
+          text: decodeURIComponent(message)
+        });
+        showToast.error(decodeURIComponent(message));
+      }
+      
+      // Clean up URL parameters
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, [location.search]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -154,6 +183,17 @@ const LoginForm = ({ onSwitchToRegister, onForgotPassword }) => {
       </div>
 
       <form className="space-y-6" onSubmit={handleLogin}>
+        {/* Email verification message */}
+        {verificationMessage && (
+          <div className={`px-4 py-3 rounded-lg ${
+            verificationMessage.type === 'success'
+              ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400'
+              : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400'
+          }`} role="alert">
+            <span className="block sm:inline">{verificationMessage.text}</span>
+          </div>
+        )}
+
         {errors.submit && (
           <div className={`px-4 py-3 rounded-lg ${
             errors.submit.includes(t('auth.login.verificationEmailSent')) 

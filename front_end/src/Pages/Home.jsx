@@ -188,7 +188,7 @@ const HomePage = () => {
             
             <div className="text-center mt-12">
               <button 
-                onClick={() => navigate('/shop')}
+                onClick={() => navigate('/store')}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 rounded-full hover:from-blue-700 hover:to-indigo-700 transition duration-300 shadow-lg transform hover:scale-105 hover:shadow-xl"
               >
                 {t('home.featuredProducts.viewAllProducts')}
